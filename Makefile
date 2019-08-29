@@ -1,15 +1,26 @@
-# GO parameters
-GOCMD=go
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
-BINARY_NAME=tools
-BINARY_UNIX=$(BINARY_NAME)_unix
+# Program arguments
+BINARY_NAME    ?= tools
+BINARY_UNIX    ?= $(BINARY_NAME)_unix
+CONTAINER_NAME ?= unikraft/tools:latest
 
+## Tools
+DOCKER   ?= docker
+TARGET   ?= binary
+GO       ?= go
+GOBUILD  ?= $(GO) build
+GOCLEAN  ?= $(GO) clean
+GOTEST   ?= $(GO) test
+GOGET    ?= $(GO) get
+
+# Targets
 all:	build
-
-build:  
+container:
+	$(DOCKER) build \
+		-t $(CONTAINER_NAME) \
+		-f Dockerfile \
+		--target=$(TARGET) \
+		.
+build: deps
 	$(GOBUILD) -o $(BINARY_NAME)  -v
 test:   
 	$(GOTEST) -v ./...

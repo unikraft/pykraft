@@ -12,7 +12,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	u "tools/utils_toolchain"
+
+	u "github.com/unikraft/tools/utils_toolchain"
 )
 
 // Folder
@@ -139,8 +140,7 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 			srcLanguages[extension] += 1
 
 			// Copy source files to the appFolder
-			if err = u.CopyFileContents(path, appFolder+info.Name());
-				err != nil {
+			if err = u.CopyFileContents(path, appFolder+info.Name()); err != nil {
 				return err
 			}
 		} else if extension == ".h" {
@@ -148,8 +148,7 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 			includesFiles = append(includesFiles, info.Name())
 
 			// Copy header files to the INCLUDE_FOLDER
-			if err = u.CopyFileContents(path, includeFolder+info.Name());
-				err != nil {
+			if err = u.CopyFileContents(path, includeFolder+info.Name()); err != nil {
 				return err
 			}
 		} else {

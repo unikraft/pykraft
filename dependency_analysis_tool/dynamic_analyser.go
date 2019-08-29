@@ -18,8 +18,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"tools/dependency_analysis_tool/utils_dependency"
-	u "tools/utils_toolchain"
+
+	u "github.com/unikraft/tools/utils_toolchain"
+
+	"github.com/unikraft/tools/dependency_analysis_tool/utils_dependency"
 )
 
 type DynamicArgs struct {

@@ -11,7 +11,8 @@ import (
 	"io"
 	"os"
 	"strings"
-	u "tools/utils_toolchain"
+
+	u "github.com/unikraft/tools/utils_toolchain"
 )
 
 const (

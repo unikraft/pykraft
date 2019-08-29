@@ -12,8 +12,10 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"tools/automatic_build_tool/utils_build"
-	u "tools/utils_toolchain"
+
+	u "github.com/unikraft/tools/utils_toolchain"
+
+	"github.com/unikraft/tools/automatic_build_tool/utils_build"
 )
 
 // STATES
@@ -175,8 +177,7 @@ func RunBuildTool(args u.Arguments, data *u.Data, outFolder string) {
 
 	// Generate Config.uk
 	if err := generateConfigUk(appFolder+"Config.uk",
-		strings.ToUpper(programName), matchedLibs);
-		err != nil {
+		strings.ToUpper(programName), matchedLibs); err != nil {
 		u.PrintErr(err)
 	}
 
