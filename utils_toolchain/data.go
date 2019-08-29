@@ -8,6 +8,7 @@ package util_tools
 
 type Data struct {
 	StaticData  StaticData  `json:"static_data"`
+	DynamicData DynamicData `json:"dynamic_data"`
 }
 
 type StaticData struct {
@@ -15,4 +16,10 @@ type StaticData struct {
 	SharedLibs   map[string][]string `json:"shared_libs"`
 	SystemCalls  map[string]string   `json:"system_calls"`
 	Symbols      map[string]string   `json:"symbols"`
+}
+
+type DynamicData struct {
+	SharedLibs  map[string][]string `json:"shared_libs"`
+	SystemCalls map[string]string   `json:"system_calls"`
+	Symbols     map[string]string   `json:"symbols"`
 }

@@ -190,3 +190,41 @@ func parseRecursive(rD RecursiveData) {
 		rD.glMap[rD.line] = libsAcc
 	}
 }
+
+// ------------------------------Dynamic Output --------------------------------
+
+// ParseTrace parses the output of the '(s)|(f)trace' command.
+//
+func ParseTrace(output string, data map[string]string) {
+
+	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\(.*\)`)
+	for _, match := range re.FindAllStringSubmatch(output, -1) {
+		// Add symbol to map
+		data[match[1]] = ""
+	}
+}
+
+// ParseLsof parses the output of the 'lsof' command.
+//
+// It returns an error if any, otherwise it returns nil.
+func ParseLsof(output string, data *util_tools.DynamicData, v bool) error {
+	lddMap := make(map[string][]string)
+	for _, line := range strings.Split(output, "\n") {
+		if strings.Contains(line, ".so") {
+			words := strings.Split(line, "/")
+			data.SharedLibs[words[len(words)-1]] = nil
+			if v {
+				// Execute ldd only if verbose mode is set
+				if out, err := util_tools.ExecutePipeCommand("ldd " + line +
+					" | awk '/ => / { print $1,$3 }'"); err != nil {
+					return err
+				} else {
+					data.SharedLibs[words[len(words)-1]] =
+						ParseLDD(out, data.SharedLibs, lddMap, v)
+				}
+			}
+		}
+	}
+
+	return nil
+}

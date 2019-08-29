@@ -106,6 +106,10 @@ func main() {
 		u.PrintHeader1("(1) RUN STATIC ANALYSIS")
 		runStaticAnalyser(args, programName, programPath, outFolder, data)
 
+		// Run dynamic analyser
+		u.PrintHeader1("(2) RUN DYNAMIC ANALYSIS")
+		runDynamicAnalyser(args, programName, programPath, outFolder, data)
+
 		// Save Data to JSON
 		if err = u.RecordDataJson(outFolder+programName, data); err != nil {
 			u.PrintErr(err)
@@ -154,6 +158,27 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	}
 }
 
+// runDynamicAnalyser runs the dynamic analyser.
+func runDynamicAnalyser(args *u.Arguments, programName, programPath,
+	outFolder string, data *u.Data) {
+
+	dep.RunDynamicAnalyser(*args, data, programPath, outFolder+"dynamic/")
+
+	// Save dynamic Data into text file if display mode is set
+	if args.BoolArg["display"] != nil {
+
+		fn := outFolder + "dynamic/" + programName + ".txt"
+		headersStr := []string{"Shared libraries list:", "System calls list:",
+			"Symbols list:"}
+
+		if err := u.RecordDataTxt(fn, headersStr, data.DynamicData); err != nil {
+			u.PrintWarning(err)
+		} else {
+			u.PrintOk("Data saved into " + fn)
+		}
+	}
+}
+
 // saveGraph saves dependency graphs of a given app into the output folder.
 func saveGraph(programName, outFolder string, data *u.Data) {
 	if len(data.StaticData.SharedLibs) > 0 {
@@ -164,5 +189,10 @@ func saveGraph(programName, outFolder string, data *u.Data) {
 	if len(data.StaticData.SharedLibs) > 0 {
 		utils_dependency.GenerateGraph(programName, outFolder+"static/"+
 			programName+"_dependencies", data.StaticData.Dependencies)
+	}
+
+	if len(data.StaticData.SharedLibs) > 0 {
+		utils_dependency.GenerateGraph(programName, outFolder+"dynamic/"+
+			programName+"_shared_libs", data.DynamicData.SharedLibs)
 	}
 }

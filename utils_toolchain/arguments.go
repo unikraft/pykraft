@@ -57,6 +57,14 @@ func (*Arguments) ParseArguments(args *Arguments) error {
 
 	args.initArgParse(p, args, STRING, "p",
 		"program", &Options{Required: true, Help: "Program name"})
+	args.initArgParse(p, args, STRING, "t", "testFile",
+		&Options{Required: false, Help: "Path of the test file"})
+	args.initArgParse(p, args, STRING, "o", "options",
+		&Options{Required: false, Default: "", Help: "Extra options for " +
+			"launching program"})
+	args.initArgParse(p, args, INT, "w", "waitTime",
+		&Options{Required: false, Default: 60, Help: "Time wait (" +
+			"sec) for external tests (default: 60 sec)"})
 
 	args.initArgParse(p, args, BOOL, "d", "display",
 		&Options{Required: false, Default: false,
