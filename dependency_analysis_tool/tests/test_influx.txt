@@ -1,0 +1,8 @@
+influx -execute 'SHOW DATABASES'
+influx -execute 'SELECT * FROM "h2o_feet" LIMIT 3' -database="NOAA_water_database" -precision=rfc3339 name: h2o_feet
+influx -execute 'SHOW DATABASES'
+influx -execute 'DROP DATABASE "NOAA_water_database"'
+influx -execute 'CREATE DATABASE NOAA_water_database'
+curl https://s3.amazonaws.com/noaa.water-database/NOAA_data.txt -o NOAA_data.txt
+influx -import -path=NOAA_data.txt -precision=s -database=NOAA_water_database
+influx -import -path=tests/influx_ddl.txt -precision=s

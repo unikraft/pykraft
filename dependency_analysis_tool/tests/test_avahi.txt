@@ -1,0 +1,18 @@
+avahi-browse --all --ignore-local --resolve --terminate
+nmap localhost
+ping 8.8.8.8
+avahi-browse --all --resolve --terminate
+avahi-browse --all --resolve
+avahi-browse --all 
+avahi-browse-domains 
+avahi-resolve-address 192.168.1.49
+avahi-resolve-host-name dlanwireless.lan
+avahi-resolve-host-name dlanwireless
+avahi-resolve-host-name dlanwire
+avahi-resolve-address 192.168.1
+avahi-set-host-name dlanwireless
+sudo avahi-set-host-name dlwireless
+avahi-resolve-host-name dlwireless
+sudo avahi-publish-address 192.168.1.111 hello
+sudo avahi-publish-service dns DNS 53
+sudo avahi-daemon -k

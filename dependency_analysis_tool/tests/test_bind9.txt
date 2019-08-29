@@ -1,0 +1,31 @@
+nslookup idneo.fr. vps196126.ovh.net
+nslookup 51.254.103.213 vps196126.ovh.net
+dig idneo.fr +nssearch
+sudo rndc dumpdb -cache
+sudo rndc flush
+sudo rndc status
+sudo rndc reload
+sudo rndc zonestatus idneo.fr
+sudo rndc reload idneo.fr
+sudo rndc refresh zone idneo.fr
+sudo rndc refresh idneo.fr
+sudo rndc status
+sudo rndc thaw idneo.fr
+sudo rndc thaw 
+sudo rndc notify
+sudo rndc dumpdb -all
+sudo rndc sign idneo.fr
+sudo rndc secroots
+sudo rndc trace
+sudo rndc recursing
+sudo rndc freeze
+sudo rndc freeze idneo.fr
+sudo rndc notify idneo.fr
+
+nslookup idneo.fr. vps196126.ovh.net
+nslookup 51.254.103.213 vps196126.ovh.net
+dig idneo.fr +nssearch
+
+sudo rndc notrace
+sudo rndc restart
+sudo rndc stop

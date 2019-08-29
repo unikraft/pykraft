@@ -1,0 +1,88 @@
+# DDL
+CREATE DATABASE pirates
+CREATE RETENTION POLICY oneday ON pirates DURATION 1d REPLICATION 1
+
+# DML
+# CONTEXT-DATABASE: pirates
+# CONTEXT-RETENTION-POLICY: oneday
+
+treasures,captain_id=dread_pirate_roberts value=801 1439856000
+treasures,captain_id=flint value=29 1439856000
+treasures,captain_id=sparrow value=38 1439856000
+treasures,captain_id=tetra value=47 1439856000
+treasures,captain_id=crunch value=109 1439858880
+
+
+SHOW DATABASES
+USE NOAA_water_database 
+SHOW measurements
+SHOW RETENTION POLICIES ON NOAA_water_database
+SHOW SERIES ON NOAA_water_database
+SHOW SERIES ON NOAA_water_database FROM "h2o_quality" WHERE "location" = 'coyote_creek' LIMIT 2
+SHOW MEASUREMENTS ON NOAA_water_database WITH MEASUREMENT =~ /h2o.*/ WHERE "randtag"  =~ /\d/
+SHOW TAG KEYS ON "NOAA_water_database"
+SHOW FIELD KEYS ON "NOAA_water_database"
+
+
+
+SELECT * FROM "h2o_feet"
+SELECT "level description","location","water_level" FROM "h2o_feet"
+SELECT "level description"::field,"location"::tag,"water_level"::field FROM "h2o_feet"
+SELECT *::field FROM "h2o_feet"
+SELECT * FROM "NOAA_water_database"."autogen"."h2o_feet"
+SELECT * FROM "NOAA_water_database".."h2o_feet"
+SELECT "location" FROM "h2o_feet"
+SELECT "water_level","location" FROM "h2o_feet"
+SELECT * FROM "h2o_feet" WHERE "water_level" > 8
+SELECT * FROM "h2o_feet" WHERE "level description" = 'below 3 feet'
+SELECT * FROM "h2o_feet" WHERE "water_level" + 2 > 11.9
+SELECT "water_level" FROM "h2o_feet" WHERE "location" = 'santa_monica'
+SELECT "water_level" FROM "h2o_feet" WHERE "location" <> 'santa_monica' AND (water_level < -0.59 OR water_level > 9.95)
+SELECT * FROM "h2o_feet" WHERE time > now() - 7d
+SELECT "water_level" FROM "h2o_feet" WHERE "location" = 'santa_monica
+SELECT "level description" FROM "h2o_feet" WHERE "level description" = "at or greater than 9 feet"
+SELECT MEAN("water_level") FROM "h2o_feet" GROUP BY "location"
+SELECT MEAN("index") FROM "h2o_quality" GROUP BY location,randtag
+SELECT MEAN("index") FROM "h2o_quality" GROUP BY *
+SELECT "water_level","location" FROM "h2o_feet" WHERE time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:30:00Z'
+SELECT COUNT("water_level") FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:30:00Z' GROUP BY time(12m)
+SELECT COUNT("water_level") FROM "h2o_feet" WHERE time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:30:00Z' GROUP BY time(12m),"location"
+SELECT "water_level" FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:18:00Z'
+SELECT MEAN("water_level") FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-08-18T00:06:00Z' AND time <= '2015-08-18T00:54:00Z' GROUP BY time(18m)
+SELECT COUNT("water_level") FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-08-18T00:06:00Z' AND time < '2015-08-18T00:18:00Z' GROUP BY time(12m,6m)
+SELECT COUNT("water_level") FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-08-18T00:06:00Z' AND time < '2015-08-18T00:18:00Z' GROUP BY time(12m)
+SELECT MAX("water_level") FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-09-18T16:00:00Z' AND time <= '2015-09-18T16:42:00Z' GROUP BY time(12m)
+SELECT MAX("water_level") FROM "h2o_feet" WHERE location = 'coyote_creek' AND time >= '2015-09-18T16:36:00Z' AND time <= '2015-09-18T16:54:00Z' GROUP BY time(12m) fill(previous)
+SELECT MEAN("tadpoles") FROM "pond" WHERE time > '2016-11-11T21:24:00Z' AND time <= '2016-11-11T22:06:00Z' GROUP BY time(12m) fill(linear)
+SELECT "water_level" FROM "h2o_feet" WHERE "location"='coyote_creek' AND time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:54:00Z'
+SELECT * FROM "h2o_feet","h2o_pH"
+SELECT "water_level" INTO "h2o_feet_copy_1" FROM "h2o_feet" WHERE "location" = 'coyote_creek'
+SELECT "water_level" INTO "where_else"."autogen"."h2o_feet_copy_2" FROM "h2o_feet" WHERE "location" = 'coyote_creek'
+SELECT * FROM "all_my_averages"
+SELECT * FROM "where_else"."autogen"./.*/
+SELECT "water_level" FROM "h2o_feet" WHERE "location" = 'santa_monica' ORDER BY time DESC
+SELECT MEAN("water_level") FROM "h2o_feet" WHERE time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:42:00Z' GROUP BY *,time(12m) LIMIT 2
+SELECT "water_level" FROM "h2o_feet" GROUP BY * SLIMIT 1
+SELECT "water_level","location" FROM "h2o_feet" LIMIT 3 OFFSET 3
+SELECT "water_level" FROM "h2o_feet" GROUP BY * SLIMIT 1 SOFFSET 1
+SELECT "water_level" FROM "h2o_feet" WHERE "location" = 'santa_monica' AND time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:18:00Z' tz('America/Chicago')
+SELECT "water_level" FROM "h2o_feet" WHERE "location" = 'santa_monica' AND time >= '2015-08-18T00:00:00.000000000Z' AND time <= '2015-08-18T00:12:00Z'
+SELECT "water_level" FROM "h2o_feet" WHERE "location" = 'santa_monica' AND time >= 1439856000s AND time <= 1439856720s
+SELECT "level description" FROM "h2o_feet" WHERE time > '2015-09-18T21:18:00Z' AND time < now() + 1000d
+SELECT MEAN("water_level") FROM "h2o_feet" WHERE "location"='santa_monica' AND time >= '2015-09-18T21:30:00Z' GROUP BY time(12m) fill(none)
+SELECT /l/ FROM "h2o_feet" LIMIT 1
+SELECT MEAN("water_level") FROM "h2o_feet" WHERE "location" =~ /./
+SELECT MEAN("water_level") FROM "h2o_feet"
+SELECT SUM("max") FROM (SELECT MAX("water_level") FROM "h2o_feet" GROUP BY "location")
+SELECT DERIVATIVE(MEAN("water_level")) AS "water_level_derivative" FROM "h2o_feet" WHERE time >= '2015-08-18T00:00:00Z' AND time <= '2015-08-18T00:30:00Z' GROUP BY time(12m),"location"
+
+SELECT * FROM "add" WHERE "A" + 5 > 10
+SELECT "A" ^ 4294967295 FROM "data"
+
+CREATE RETENTION POLICY "one_day_only" ON "NOAA_water_database" DURATION 23h60m REPLICATION 1 DEFAULT
+ALTER RETENTION POLICY "what_is_time" ON "NOAA_water_database" DURATION 3w SHARD DURATION 2h DEFAULT
+DROP RETENTION POLICY "what_is_time" ON "NOAA_water_database"
+DROP SERIES FROM "h2o_feet" WHERE "location" = 'santa_monica'
+DROP SERIES FROM "h2o_feet"
+
+

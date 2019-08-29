@@ -1,0 +1,14 @@
+sudo -u gaulthiergain psql postgres
+\conninfo
+\l
+\dt
+\dn
+\df
+\dv
+\du
+\g
+\i postgres.sql
+
+\d test
+\q
+SELECT version();

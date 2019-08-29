@@ -1,0 +1,29 @@
+sudo knotc  status     
+dig @127.0.0.1 SOA example.com
+sudo knotc  zonestatus
+sudo knotc  reload 
+sudo knotc stats
+sudo knotc -h
+dig @127.0.0.1 SOA whoami.domain.example
+sudo knotc  status 
+sudo knotc
+sudo knotc -h
+sudo knotc stats
+sudo knotc -h
+sudo knotc  zone-read example
+sudo knotc  zone-read example.com
+sudo knotc zone-refresh example.com
+sudo knotc zone-reload example.com
+sudo knotc zone-get example.com
+sudo knotc zone-stats example.com
+sudo knotc zone-status example.com
+sudo knotc conf-check
+sudo knotc conf-list
+sudo knotc conf-diff
+sudo knotc conf-export test.db
+sudo knotc conf-import test.db
+sudo knotc zone-flush example.com
+sudo knotc zone-status
+sudo knotc  zone-check 
+sudo knotc stats
+sudo knotc stop

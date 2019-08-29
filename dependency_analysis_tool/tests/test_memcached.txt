@@ -1,0 +1,19 @@
+stats
+stats slabs
+stats items
+stats cachedump 1 0
+get testkey
+VALUE testkey 0 9
+test data
+add newkey 0 60 5
+replace key 0 60 5
+prepend key 0 60 15
+stats malloc
+flush_all
+set tutorialspoint 0 900 9
+memcached
+get tutorialspoint
+VALUE tutorialspoint 0 9
+Memcached
+get tutorialspoint
+delete tutorialspoint
