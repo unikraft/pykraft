@@ -9,6 +9,7 @@ package util_tools
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -25,6 +26,29 @@ func Contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+// DownloadFile downloads a file from an URL and reads its content.
+//
+// It returns a pointer to a string that represents the file content and an
+// error if any, otherwise it returns nil.
+func DownloadFile(url string) (*string, error) {
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var bodyString string
+	if resp.StatusCode == http.StatusOK {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		bodyString = string(bodyBytes)
+	}
+	return &bodyString, err
 }
 
 // GetProgramPath returns the absolute path of a given program.
@@ -148,4 +172,28 @@ func RecordDataJson(filename string, data *Data) error {
 	}
 
 	return nil
+}
+
+// ReadDataJson load json from a json file named by filename.
+//
+// It returns a Data structure initialized and an error if any, otherwise it
+// returns nil.
+func ReadDataJson(filename string, data *Data) (*Data, error) {
+
+	jsonFile, err := os.Open(filename + ".json")
+	if err != nil {
+		return nil, err
+	}
+	defer jsonFile.Close()
+
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(byteValue, &data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

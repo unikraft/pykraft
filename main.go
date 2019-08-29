@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	build "tools/automatic_build_tool"
 	dep "tools/dependency_analysis_tool"
 	"tools/dependency_analysis_tool/utils_dependency"
 	u "tools/utils_toolchain"
@@ -125,15 +126,16 @@ func main() {
 	}
 
 	if all || *args.BoolArg["build"] {
-		u.PrintHeader1("(*) AUTOMATIC BUILD TOOL")
+		u.PrintHeader1("(3) AUTOMATIC BUILD TOOL")
+		build.RunBuildTool(*args, data, outFolder)
 	}
 
 	if all || *args.BoolArg["verif"] {
-		u.PrintHeader1("(*) VERIFICATION TOOL")
+		u.PrintHeader1("(4) VERIFICATION TOOL")
 	}
 
 	if all || *args.BoolArg["perf"] {
-		u.PrintHeader1("(*) PERFORMANCE OPTIMIZATION TOOL")
+		u.PrintHeader1("(5) PERFORMANCE OPTIMIZATION TOOL")
 	}
 }
 

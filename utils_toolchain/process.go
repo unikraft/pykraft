@@ -69,6 +69,37 @@ func ExecuteCommand(command string, arguments []string) (string, error) {
 	return string(out), nil
 }
 
+// ExecuteWaitCommand runs command and waits to its termination without
+// displaying the output.
+//
+// It returns a string which represents stdout and an error if any, otherwise
+// it returns nil.
+func ExecuteWaitCommand(dir, command string, args ...string) (*string, *string,
+	error) {
+
+	cmd := exec.Command(command, args...)
+	cmd.Dir = dir
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	bufOut, bufErr := &bytes.Buffer{}, &bytes.Buffer{}
+	cmd.Stdout = io.MultiWriter(bufOut) // Add os.Stdin to record on stdout
+	cmd.Stderr = io.MultiWriter(bufErr) // Add os.Stdin to record on stderr
+	cmd.Stdin = os.Stdin
+
+	if err := cmd.Start(); err != nil {
+		return nil, nil, err
+	}
+
+	PrintInfo("Waiting command: " + command + " " + strings.Join(args, " "))
+
+	// Ignore error
+	_ = cmd.Wait()
+
+	strOut, strErr := bufOut.String(), bufErr.String()
+
+	return &strOut, &strErr, nil
+}
+
 // PKill kills a given running process with a particular signal
 //
 // It returns an error if any, otherwise it returns nil.
@@ -91,6 +122,21 @@ func PKill(programName string, sig syscall.Signal) error {
 	}
 
 	return nil
+}
+
+// PidOf gets PIDs of a particular process.
+//
+// It returns a list of integer which represents the pids of particular process
+// and  an error if any, otherwise it returns nil.
+func PidOf(name string) ([]int, error) {
+	if len(name) == 0 {
+		return []int{}, errors.New("name should not be empty")
+	}
+	re, err := regexp.Compile("(^|/)" + name + "$")
+	if err != nil {
+		return []int{}, err
+	}
+	return getPids(re), nil
 }
 
 // getPids gets PIDs of a particular process.

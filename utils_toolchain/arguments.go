@@ -65,6 +65,12 @@ func (*Arguments) ParseArguments(args *Arguments) error {
 	args.initArgParse(p, args, INT, "w", "waitTime",
 		&Options{Required: false, Default: 60, Help: "Time wait (" +
 			"sec) for external tests (default: 60 sec)"})
+	args.initArgParse(p, args, STRING, "u", "unikraft",
+		&Options{Required: false, Default: "", Help: "Unikraft Path"})
+	args.initArgParse(p, args, STRING, "s", "sources",
+		&Options{Required: false, Default: "", Help: "App Source Folder"})
+	args.initArgParse(p, args, STRING, "m", "makefile",
+		&Options{Required: false, Help: "Add additional properties for Makefile"})
 
 	args.initArgParse(p, args, BOOL, "d", "display",
 		&Options{Required: false, Default: false,
