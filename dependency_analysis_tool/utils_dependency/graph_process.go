@@ -7,10 +7,12 @@
 package utils_dependency
 
 import (
-	"github.com/awalterschulze/gographviz"
 	"math/rand"
 	"os"
-	"tools/utils_toolchain"
+
+	util_tools "github.com/unikraft/tools/utils_toolchain"
+
+	"github.com/awalterschulze/gographviz"
 )
 
 const letterBytes = "0123456789ABCDEF"
@@ -39,7 +41,7 @@ func ColorGenerator() string {
 // It returns a graph which represents all the direct and no-direct dependencies
 // of a given application and an error if any, otherwise it returns nil.
 func CreateGraph(programName string, data map[string][]string) (*gographviz.
-Escape, error) {
+	Escape, error) {
 	graph := gographviz.NewEscape()
 
 	if err := graph.SetName(programName); err != nil {

@@ -11,7 +11,8 @@ import (
 	"os"
 	"strings"
 	"sync"
-	u "tools/utils_toolchain"
+
+	u "github.com/unikraft/tools/utils_toolchain"
 )
 
 const (
@@ -84,8 +85,7 @@ func fetchSymbolsExternalLibs(url string,
 			go func(lib, git string, microLibs map[string][]string) {
 				defer wg.Done()
 				u.PrintInfo("Retrieving symbols of external lib: " + lib)
-				if symbols, err := u.DownloadFile(PREFIX_URL + git + SUFFIX_URL);
-					err != nil {
+				if symbols, err := u.DownloadFile(PREFIX_URL + git + SUFFIX_URL); err != nil {
 					u.PrintWarning(err)
 				} else {
 					processSymbols(lib, *symbols, microLibs)

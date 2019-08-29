@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"tools/utils_toolchain"
+
+	util_tools "github.com/unikraft/tools/utils_toolchain"
 )
 
 type RecursiveData struct {

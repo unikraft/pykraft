@@ -8,16 +8,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"os/user"
 	"runtime"
 	"strconv"
 	"strings"
-	build "tools/automatic_build_tool"
-	dep "tools/dependency_analysis_tool"
-	"tools/dependency_analysis_tool/utils_dependency"
-	u "tools/utils_toolchain"
+
+	"github.com/fatih/color"
+	build "github.com/unikraft/tools/automatic_build_tool"
+	dep "github.com/unikraft/tools/dependency_analysis_tool"
+	"github.com/unikraft/tools/dependency_analysis_tool/utils_dependency"
+	u "github.com/unikraft/tools/utils_toolchain"
 )
 
 const OUT_FOLDER = "output/"
