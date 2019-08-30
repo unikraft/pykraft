@@ -1,6 +1,6 @@
 # UNICORE tools: 
 
-UNICORE tools version 0.1.0
+[![version](https://img.shields.io/badge/version-0.1.0-yellow.svg)](https://semver.org)
 
 ### What is UNICORE tools?
 
