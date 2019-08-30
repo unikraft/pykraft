@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"os"
 
-	util_tools "github.com/unikraft/tools/utils_toolchain"
+	util_tools "github.com/unikraft/tools/utils"
 
 	"github.com/awalterschulze/gographviz"
 )

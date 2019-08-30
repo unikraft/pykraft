@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	u "github.com/unikraft/tools/utils_toolchain"
+	u "github.com/unikraft/tools/utils"
 )
 
 const (

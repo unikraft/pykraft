@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package automatic_build_tool
+package buildtool
 
 import (
 	"errors"
@@ -13,9 +13,9 @@ import (
 	"regexp"
 	"strings"
 
-	u "github.com/unikraft/tools/utils_toolchain"
+	u "github.com/unikraft/tools/utils"
 
-	"github.com/unikraft/tools/automatic_build_tool/utils_build"
+	"github.com/unikraft/tools/buildtool/utils_build"
 )
 
 // STATES

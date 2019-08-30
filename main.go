@@ -15,10 +15,10 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	build "github.com/unikraft/tools/automatic_build_tool"
-	dep "github.com/unikraft/tools/dependency_analysis_tool"
-	"github.com/unikraft/tools/dependency_analysis_tool/utils_dependency"
-	u "github.com/unikraft/tools/utils_toolchain"
+	build "github.com/unikraft/tools/buildtool"
+	"github.com/unikraft/tools/dependtool/utils_dependency"
+	dep "github.com/unikraft/tools/dependtool"
+	u "github.com/unikraft/tools/utils"
 )
 
 const OUT_FOLDER = "output/"

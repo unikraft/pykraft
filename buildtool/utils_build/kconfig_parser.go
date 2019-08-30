@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	u "github.com/unikraft/tools/utils_toolchain"
+	u "github.com/unikraft/tools/utils"
 )
 
 const (

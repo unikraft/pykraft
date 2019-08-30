@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	u "github.com/unikraft/tools/utils_toolchain"
+	u "github.com/unikraft/tools/utils"
 )
 
 // Folder

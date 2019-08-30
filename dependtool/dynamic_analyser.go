@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package dependency_analysis_tool
+package dependtool
 
 import (
 	"bufio"
@@ -19,9 +19,9 @@ import (
 	"syscall"
 	"time"
 
-	u "github.com/unikraft/tools/utils_toolchain"
+	u "github.com/unikraft/tools/utils"
 
-	"github.com/unikraft/tools/dependency_analysis_tool/utils_dependency"
+	"github.com/unikraft/tools/dependtool/utils_dependency"
 )
 
 type DynamicArgs struct {

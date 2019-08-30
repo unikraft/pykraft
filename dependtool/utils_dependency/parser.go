@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	util_tools "github.com/unikraft/tools/utils_toolchain"
+	util_tools "github.com/unikraft/tools/utils"
 )
 
 type RecursiveData struct {
