@@ -35,7 +35,8 @@ deps:
 	$(GOGET) github.com/fatih/color
 	$(GOGET) github.com/akamensky/argparse
 	$(GOGET) github.com/awalterschulze/gographviz
-
+	$(GOGET) github.com/unikraft/tools/dependtool
+	$(GOGET) github.com/unikraft/tools/buildtool
 # Cross compilation
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
