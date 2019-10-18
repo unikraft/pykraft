@@ -16,8 +16,8 @@ import (
 
 	"github.com/fatih/color"
 	build "github.com/unikraft/tools/buildtool"
-	"github.com/unikraft/tools/dependtool/utils_dependency"
 	dep "github.com/unikraft/tools/dependtool"
+	"github.com/unikraft/tools/dependtool/utils_dependency"
 	u "github.com/unikraft/tools/utils"
 )
 
