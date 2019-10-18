@@ -7,6 +7,7 @@
 package util_tools
 
 import (
+	"bufio"
 	"io"
 	"io/ioutil"
 	"os"
@@ -90,7 +91,41 @@ func Exists(path string) (bool, error) {
 	return true, err
 }
 
-// copyFileContents copies the contents of the file named src to the file named
+// Reads a file line by line and saves its content into a slice.
+//
+// It returns a slice of string which represents each line of a file and an
+// error if any, otherwise it returns nil.
+func ReadLinesFile(path string) ([]string, error) {
+
+	f, err := os.Open(path)
+	defer f.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rd := bufio.NewReader(f)
+
+	var lines []string
+	for {
+		line, err := rd.ReadString('\n')
+
+		// End of file, break the reading
+		if err == io.EOF {
+			lines = append(lines, line)
+			break
+		}
+
+		if err != nil {
+			return nil, err
+		}
+		lines = append(lines, line)
+	}
+
+	return lines, err
+}
+
+// CopyFileContents copies the contents of the file named src to the file named
 // by dst. The file will be created if it does not already exist. If the
 // destination file exists, all it's contents will be replaced by the contents
 // of the source file.

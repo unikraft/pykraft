@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_dependency
+package util_tools
 
 import (
 	"math/rand"
@@ -36,15 +36,24 @@ func ColorGenerator() string {
 	return "#" + RandStringBytes(6)
 }
 
-// CreateGraph creates a graph from a map.
+// CreateGraph is a wrapper to CreateGraphLabel.
 //
 // It returns a graph which represents all the direct and no-direct dependencies
 // of a given application and an error if any, otherwise it returns nil.
-func CreateGraph(programName string, data map[string][]string) (*gographviz.
-	Escape, error) {
+func CreateGraph(name string, data map[string][]string) (*gographviz.Escape, error) {
+	return CreateGraphLabel(name, data, nil)
+}
+
+// CreateGraphLabel creates a graph from a map.
+//
+// It returns a graph which represents all the direct and no-direct dependencies
+// of a given application and an error if any, otherwise it returns nil.
+func CreateGraphLabel(name string, data map[string][]string,
+	mapLabel map[string]string) (*gographviz.Escape, error) {
+
 	graph := gographviz.NewEscape()
 
-	if err := graph.SetName(programName); err != nil {
+	if err := graph.SetName(name); err != nil {
 		return nil, err
 	}
 
@@ -63,20 +72,31 @@ func CreateGraph(programName string, data map[string][]string) (*gographviz.
 			colorsMap[key] = ColorGenerator()
 		}
 
-		if values != nil {
-			colorAttr := map[string]string{"color": colorsMap[key]}
+		attributes := map[string]string{"color": colorsMap[key]}
 
-			// Create nodes
-			if err := graph.AddNode("\""+key+"\"", "\""+key+"\"",
-				colorAttr); err != nil {
-				return nil, err
-			}
+		// Create nodes
+		if err := graph.AddNode("\""+key+"\"", "\""+key+"\"",
+			attributes); err != nil {
+			return nil, err
+		}
+
+		if values != nil {
 
 			// Add edges
 			for _, v := range values {
+
+				if label, ok := mapLabel[v]; ok {
+					attributes["label"] = label
+				}
+
 				if err := graph.AddEdge("\""+key+"\"", "\""+v+"\"", true,
-					colorAttr); err != nil {
+					attributes); err != nil {
 					return nil, err
+				}
+
+				// Delete label attributes if necessary
+				if _, ok := mapLabel[v]; ok {
+					delete(attributes, "label")
 				}
 			}
 		}

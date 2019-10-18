@@ -42,42 +42,42 @@ func (*Arguments) ParseArguments(args *Arguments) error {
 	p := NewParser("UNICORE toolchain",
 		"The UNICORE toolchain allows to build unikernels")
 
-	args.initArgParse(p, args, BOOL, "", "dep",
+	args.InitArgParse(p, args, BOOL, "", "dep",
 		&Options{Required: false, Default: false,
 			Help: "Execute only the dependency analysis tool"})
-	args.initArgParse(p, args, BOOL, "", "build",
+	args.InitArgParse(p, args, BOOL, "", "build",
 		&Options{Required: false, Default: false,
 			Help: "Execute only the automatic build tool"})
-	args.initArgParse(p, args, BOOL, "", "verif",
+	args.InitArgParse(p, args, BOOL, "", "verif",
 		&Options{Required: false, Default: false,
 			Help: "Execute only the verification tool"})
-	args.initArgParse(p, args, BOOL, "", "perf",
+	args.InitArgParse(p, args, BOOL, "", "perf",
 		&Options{Required: false, Default: false,
 			Help: "Execute only the performance tool"})
 
-	args.initArgParse(p, args, STRING, "p",
+	args.InitArgParse(p, args, STRING, "p",
 		"program", &Options{Required: true, Help: "Program name"})
-	args.initArgParse(p, args, STRING, "t", "testFile",
+	args.InitArgParse(p, args, STRING, "t", "testFile",
 		&Options{Required: false, Help: "Path of the test file"})
-	args.initArgParse(p, args, STRING, "o", "options",
+	args.InitArgParse(p, args, STRING, "o", "options",
 		&Options{Required: false, Default: "", Help: "Extra options for " +
 			"launching program"})
-	args.initArgParse(p, args, INT, "w", "waitTime",
+	args.InitArgParse(p, args, INT, "w", "waitTime",
 		&Options{Required: false, Default: 60, Help: "Time wait (" +
 			"sec) for external tests (default: 60 sec)"})
-	args.initArgParse(p, args, STRING, "u", "unikraft",
+	args.InitArgParse(p, args, STRING, "u", "unikraft",
 		&Options{Required: false, Default: "", Help: "Unikraft Path"})
-	args.initArgParse(p, args, STRING, "s", "sources",
+	args.InitArgParse(p, args, STRING, "s", "sources",
 		&Options{Required: false, Default: "", Help: "App Source Folder"})
-	args.initArgParse(p, args, STRING, "m", "makefile",
+	args.InitArgParse(p, args, STRING, "m", "makefile",
 		&Options{Required: false, Help: "Add additional properties for Makefile"})
 
-	args.initArgParse(p, args, BOOL, "d", "display",
+	args.InitArgParse(p, args, BOOL, "d", "display",
 		&Options{Required: false, Default: false,
 			Help: "Save results as TXT file and graphs as PNG file"})
-	args.initArgParse(p, args, BOOL, "v", "verbose",
+	args.InitArgParse(p, args, BOOL, "v", "verbose",
 		&Options{Required: false, Default: false, Help: "Verbose mode"})
-	args.initArgParse(p, args, BOOL, "b", "background",
+	args.InitArgParse(p, args, BOOL, "b", "background",
 		&Options{Required: false, Default: true,
 			Help: "Specify if the given process is a background process (" +
 				"web server, database)"})
@@ -89,10 +89,10 @@ func (*Arguments) ParseArguments(args *Arguments) error {
 	return nil
 }
 
-// initArgParse initializes the Arguments structure depending the type of
+// InitArgParse initializes the Arguments structure depending the type of
 // the variable.
 //
-func (*Arguments) initArgParse(p *Parser, args *Arguments, typeVar int, short,
+func (*Arguments) InitArgParse(p *Parser, args *Arguments, typeVar int, short,
 	long string, options *Options) {
 	switch typeVar {
 	case INT:
