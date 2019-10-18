@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	u "tools/utils"
+	u "tools/common"
 )
 
 const CONFIG_UK = "Config.uk"

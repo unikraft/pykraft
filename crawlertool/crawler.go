@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	u "tools/utils"
+	u "tools/common"
 )
 
 // Individual tool (out of the UNICORE toolchain)

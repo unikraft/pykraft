@@ -10,7 +10,7 @@ import (
 	"errors"
 	. "github.com/akamensky/argparse"
 	"os"
-	u "tools/utils"
+	u "tools/common"
 )
 
 const (
