@@ -4,13 +4,11 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package util_tools
+package common
 
 import (
 	"math/rand"
 	"os"
-
-	util_tools "github.com/unikraft/tools/utils"
 
 	"github.com/awalterschulze/gographviz"
 )
@@ -132,14 +130,14 @@ func GenerateGraph(programName, fullPathName string, data map[string][]string) {
 
 	// Save graph as '.dot' file
 	if err = SaveGraphToFile(fullPathName+".dot", graph); err != nil {
-		util_tools.PrintWarning(err)
+		PrintWarning(err)
 	}
 
 	// Save graph as '.png' file
-	if _, err := util_tools.ExecuteCommand("dot", []string{"-Tpng",
+	if _, err := ExecuteCommand("dot", []string{"-Tpng",
 		fullPathName + ".dot", "-o", fullPathName + ".png"}); err != nil {
-		util_tools.PrintWarning(err)
+		PrintWarning(err)
 	} else {
-		util_tools.PrintOk("Graph saved into " + fullPathName + ".png")
+		PrintOk("Graph saved into " + fullPathName + ".png")
 	}
 }

@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package main
+package crawlertool
 
 import (
 	"os"

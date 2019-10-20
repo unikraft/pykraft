@@ -10,10 +10,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-
-	u "github.com/unikraft/tools/utils"
-
-	"github.com/unikraft/tools/dependtool/utils_dependency"
+	u "tools/common"
 )
 
 // ---------------------------------Gather Data---------------------------------
@@ -30,7 +27,7 @@ func gatherStaticSymbols(programPath string, data *u.StaticData) error {
 	} else {
 		// Init symbols members
 		data.Symbols = make(map[string]string)
-		utils_dependency.ParseReadELF(output, data)
+		parseReadELF(output, data)
 	}
 	return nil
 }
@@ -47,7 +44,7 @@ func gatherStaticSystemCalls(programPath string, data *u.StaticData) error {
 	} else {
 		// Init system calls members
 		data.SystemCalls = make(map[string]string)
-		utils_dependency.ParseNM(output, data)
+		parseNM(output, data)
 	}
 	return nil
 }
@@ -66,7 +63,7 @@ func gatherStaticSharedLibs(programPath string, data *u.StaticData,
 		// Init SharedLibs
 		data.SharedLibs = make(map[string][]string)
 		lddGlMap := make(map[string][]string)
-		_ = utils_dependency.ParseLDD(output, data.SharedLibs, lddGlMap, v)
+		_ = parseLDD(output, data.SharedLibs, lddGlMap, v)
 	}
 	return nil
 }
@@ -86,7 +83,7 @@ func gatherDependencies(programName string, data *u.StaticData, v bool) error {
 	// If the name of the package is know, execute apt-cache depends
 	if len(output) > 0 {
 		// Parse package name
-		packageName := utils_dependency.ParsePackagesName(output)
+		packageName := parsePackagesName(output)
 
 		if len(packageName) > 0 {
 			return executeDependAptCache(packageName, data, v)
@@ -122,7 +119,7 @@ func gatherDependencies(programName string, data *u.StaticData, v bool) error {
 		if len(output) == 0 {
 			u.PrintWarning("Skip dependencies analysis from apt-cache depends")
 		} else {
-			packageName := utils_dependency.ParsePackagesName(output)
+			packageName := parsePackagesName(output)
 			return executeDependAptCache(packageName, data, v)
 		}
 	}
@@ -145,7 +142,7 @@ func executeDependAptCache(programName string, data *u.StaticData,
 		data.Dependencies = make(map[string][]string)
 		dependenciesMap := make(map[string][]string)
 		printDep := make(map[string][]string)
-		_ = utils_dependency.ParseDependencies(output, data.Dependencies, dependenciesMap,
+		_ = parseDependencies(output, data.Dependencies, dependenciesMap,
 			printDep, verbose, 0)
 	}
 
@@ -155,10 +152,10 @@ func executeDependAptCache(programName string, data *u.StaticData,
 
 // -------------------------------------Run-------------------------------------
 
-// RunStaticAnalyser runs the static analysis to get shared libraries,
+// staticAnalyser runs the static analysis to get shared libraries,
 // system calls and library calls of a given application.
 //
-func RunStaticAnalyser(args u.Arguments, data *u.Data, programPath,
+func staticAnalyser(args u.Arguments, data *u.Data, programPath,
 	outFolder string) {
 
 	programName := *args.StringArg["program"]

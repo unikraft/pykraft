@@ -4,14 +4,14 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_dependency
+package dependtool
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 
-	util_tools "github.com/unikraft/tools/utils"
+	u "tools/common"
 )
 
 type RecursiveData struct {
@@ -23,9 +23,9 @@ type RecursiveData struct {
 
 // --------------------------------Static Output--------------------------------
 
-// ParseReadELF parses the output of the 'readelf' command.
+// parseReadELF parses the output of the 'readelf' command.
 //
-func ParseReadELF(output string, data *util_tools.StaticData) {
+func parseReadELF(output string, data *u.StaticData) {
 	types := map[string]bool{"FUNC": true, "FILE": true, "OBJECT": true}
 
 	// Check the output of 'readelf' command
@@ -39,11 +39,11 @@ func ParseReadELF(output string, data *util_tools.StaticData) {
 	}
 }
 
-// ParseNM parses the output of the 'nm' command.
+// parseNM parses the output of the 'nm' command.
 //
-func ParseNM(output string, data *util_tools.StaticData) {
+func parseNM(output string, data *u.StaticData) {
 	// Get the list of system calls
-	systemCalls := InitSystemCalls()
+	systemCalls := initSystemCalls()
 
 	// Check the output of 'nm' command
 	var re = regexp.MustCompile(`(?m)([U|T|B|D]\s)(.*)\s*`)
@@ -57,11 +57,11 @@ func ParseNM(output string, data *util_tools.StaticData) {
 	}
 }
 
-// ParsePackagesName parses the output of the 'apt-cache pkgnames' command.
+// parsePackagesName parses the output of the 'apt-cache pkgnames' command.
 //
 // It returns a string which represents the name of application used by the
 // package manager (apt, ...).
-func ParsePackagesName(output string) string {
+func parsePackagesName(output string) string {
 
 	var i = 1
 	lines := strings.Split(output, "\n")
@@ -76,15 +76,15 @@ func ParsePackagesName(output string) string {
 	for true {
 		fmt.Print("Please enter your choice (0 to exit): ")
 		if _, err := fmt.Scanf("%d", &input); err != nil {
-			util_tools.PrintWarning("Choice must be numeric! Try again")
+			u.PrintWarning("Choice must be numeric! Try again")
 		} else {
 			if input == 0 {
-				util_tools.PrintWarning("Abort dependencies analysis from apt-cache")
+				u.PrintWarning("Abort dependencies analysis from apt-cache")
 				return ""
 			} else if (input >= 0) && (input <= i) {
 				return lines[input-1]
 			} else {
-				util_tools.PrintWarning("Invalid input! Try again")
+				u.PrintWarning("Invalid input! Try again")
 			}
 		}
 	}
@@ -93,11 +93,11 @@ func ParsePackagesName(output string) string {
 
 const LEVEL = 5
 
-// ParseDependencies parses the output of the 'apt-cache depends' command.
+// parseDependencies parses the output of the 'apt-cache depends' command.
 //
 // It returns a slice of strings which represents all the dependencies of
 // a particular package.
-func ParseDependencies(output string, data, dependenciesMap,
+func parseDependencies(output string, data, dependenciesMap,
 	printDep map[string][]string, verbose bool, level int) []string {
 	listDep := make([]string, 0)
 	for _, line := range strings.Split(output, "\n") {
@@ -129,11 +129,11 @@ func ParseDependencies(output string, data, dependenciesMap,
 	return listDep
 }
 
-// ParseLDD parses the output of the 'ldd' command.
+// parseLDD parses the output of the 'ldd' command.
 //
 // It returns a slice of strings which represents all the shared libs of
 // a particular package.
-func ParseLDD(output string, data map[string][]string, lddMap map[string][]string,
+func parseLDD(output string, data map[string][]string, lddMap map[string][]string,
 	v bool) []string {
 
 	listLdd := make([]string, 0)
@@ -164,7 +164,7 @@ func ParseLDD(output string, data map[string][]string, lddMap map[string][]strin
 	return listLdd
 }
 
-// parseRecursive is used by ParseDependencies and ParseLDD to factorize code.
+// parseRecursive is used by parseDependencies and parseLDD to factorize code.
 //
 func parseRecursive(rD RecursiveData) {
 
@@ -174,15 +174,15 @@ func parseRecursive(rD RecursiveData) {
 	} else {
 
 		var libsAcc []string
-		out, err := util_tools.ExecutePipeCommand(rD.cmd)
+		out, err := u.ExecutePipeCommand(rD.cmd)
 		if err != nil {
-			util_tools.PrintErr(err)
+			u.PrintErr(err)
 		}
 
 		if rD.printDep == nil {
-			libsAcc = ParseLDD(out, rD.data, rD.glMap, true)
+			libsAcc = parseLDD(out, rD.data, rD.glMap, true)
 		} else {
-			libsAcc = ParseDependencies(out, rD.data, rD.glMap, rD.printDep,
+			libsAcc = parseDependencies(out, rD.data, rD.glMap, rD.printDep,
 				true, rD.level+1)
 		}
 
@@ -194,9 +194,9 @@ func parseRecursive(rD RecursiveData) {
 
 // ------------------------------Dynamic Output --------------------------------
 
-// ParseTrace parses the output of the '(s)|(f)trace' command.
+// parseTrace parses the output of the '(s)|(f)trace' command.
 //
-func ParseTrace(output string, data map[string]string) {
+func parseTrace(output string, data map[string]string) {
 
 	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\(.*\)`)
 	for _, match := range re.FindAllStringSubmatch(output, -1) {
@@ -205,10 +205,10 @@ func ParseTrace(output string, data map[string]string) {
 	}
 }
 
-// ParseLsof parses the output of the 'lsof' command.
+// parseLsof parses the output of the 'lsof' command.
 //
 // It returns an error if any, otherwise it returns nil.
-func ParseLsof(output string, data *util_tools.DynamicData, v bool) error {
+func parseLsof(output string, data *u.DynamicData, v bool) error {
 	lddMap := make(map[string][]string)
 	for _, line := range strings.Split(output, "\n") {
 		if strings.Contains(line, ".so") {
@@ -216,12 +216,12 @@ func ParseLsof(output string, data *util_tools.DynamicData, v bool) error {
 			data.SharedLibs[words[len(words)-1]] = nil
 			if v {
 				// Execute ldd only if verbose mode is set
-				if out, err := util_tools.ExecutePipeCommand("ldd " + line +
+				if out, err := u.ExecutePipeCommand("ldd " + line +
 					" | awk '/ => / { print $1,$3 }'"); err != nil {
 					return err
 				} else {
 					data.SharedLibs[words[len(words)-1]] =
-						ParseLDD(out, data.SharedLibs, lddMap, v)
+						parseLDD(out, data.SharedLibs, lddMap, v)
 				}
 			}
 		}

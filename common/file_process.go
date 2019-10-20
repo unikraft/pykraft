@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package util_tools
+package common
 
 import (
 	"bufio"
@@ -13,7 +13,10 @@ import (
 	"os"
 )
 
-const PERM = 0755
+const (
+	OUT_FOLDER = "output/"
+	PERM       = 0755
+)
 
 // OpenTextFile opens a file named by filename.
 //

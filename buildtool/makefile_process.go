@@ -4,21 +4,21 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_build
+package buildtool
 
 import (
 	"path/filepath"
 	"strings"
 
-	u "github.com/unikraft/tools/utils"
+	u "tools/common"
 )
 
 // ----------------------------Generate Makefile--------------------------------
 
-// GenerateMakefile generates a 'Makefile' file for the Unikraft build system.
+// generateMakefile generates a 'Makefile' file for the Unikraft build system.
 //
 // It returns an error if any, otherwise it returns nil.
-func GenerateMakefile(filename, unikraftPath, appFolder string,
+func generateMakefile(filename, unikraftPath, appFolder string,
 	matchedLibs []string, externalLibs map[string]string) error {
 
 	var sb strings.Builder
@@ -80,11 +80,11 @@ func typeFile(filename string) string {
 	return flag
 }
 
-// GenerateMakefileUK generates a 'Makefile.uk' file for the Unikraft build
+// generateMakefileUK generates a 'Makefile.uk' file for the Unikraft build
 // system.
 //
 // It returns an error if any, otherwise it returns nil.
-func GenerateMakefileUK(filename, programName, filetype string,
+func generateMakefileUK(filename, programName, filetype string,
 	makefileLines *string, sourceFiles []string) error {
 
 	var sb strings.Builder

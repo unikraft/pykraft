@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package util_tools
+package common
 
 type Data struct {
 	StaticData  StaticData  `json:"static_data"`

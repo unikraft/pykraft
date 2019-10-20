@@ -4,14 +4,14 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_dependency
+package dependtool
 
 import (
 	"debug/elf"
 	"os"
 )
 
-// GetElf reads and decodes an ELF file.
+// getElf reads and decodes an ELF file.
 //
 // It returns a pointer to an ELF file and an error if any, otherwise it
 // returns nil.

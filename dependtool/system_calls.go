@@ -4,12 +4,12 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_dependency
+package dependtool
 
 // InitSystemCalls initialises all Linux system calls.
 //
 // It returns a map of all system calls.
-func InitSystemCalls() map[string]*string {
+func initSystemCalls() map[string]*string {
 	return map[string]*string{"_llseek": nil, "_newselect": nil, "_sysctl": nil,
 		"accept": nil, "accept4": nil, "access": nil, "acct": nil,
 		"add_key": nil, "adjtimex": nil, "alarm": nil, "alloc_hugepages": nil,

@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_build
+package buildtool
 
 import (
 	"bufio"
@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	u "github.com/unikraft/tools/utils"
+	u "tools/common"
 )
 
 const (
@@ -29,10 +29,10 @@ type KConfig struct {
 	Type   int
 }
 
-// WriteConfig writes a '.config' file for the Unikraft build system.
+// writeConfig writes a '.config' file for the Unikraft build system.
 //
 // It returns an error if any, otherwise it returns nil.
-func WriteConfig(filename string, items []*KConfig) error {
+func writeConfig(filename string, items []*KConfig) error {
 
 	f, err := os.Create(filename)
 	if err != nil {
@@ -63,10 +63,10 @@ func WriteConfig(filename string, items []*KConfig) error {
 	return nil
 }
 
-// ParseConfig parses a '.config' file used by the Unikraft build system.
+// parseConfig parses a '.config' file used by the Unikraft build system.
 //
 // It returns a list of KConfig and an error if any, otherwise it returns nil.
-func ParseConfig(filename string, kConfigMap map[string]*KConfig,
+func parseConfig(filename string, kConfigMap map[string]*KConfig,
 	items []*KConfig, matchedLibs []string) ([]*KConfig, error) {
 
 	f, err := os.Open(filename)
@@ -147,10 +147,10 @@ func addKConfig(line string, kConfigMap map[string]*KConfig,
 	return items
 }
 
-// UpdateConfig updates KConfig entries to particular values.
+// updateConfig updates KConfig entries to particular values.
 //
 // It returns a list of KConfig.
-func UpdateConfig(kConfigMap map[string]*KConfig, items []*KConfig) []*KConfig {
+func updateConfig(kConfigMap map[string]*KConfig, items []*KConfig) []*KConfig {
 	v := "y"
 	var configs = []*KConfig{
 		// CONFIG libs

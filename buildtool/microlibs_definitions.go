@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_build
+package buildtool
 
 const (
 	C_ARES            = "c-ares"

@@ -18,10 +18,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	u "github.com/unikraft/tools/utils"
-
-	"github.com/unikraft/tools/dependtool/utils_dependency"
+	u "tools/common"
 )
 
 type DynamicArgs struct {
@@ -44,10 +41,10 @@ func gatherDynamicData(command, programPath string, data *u.DynamicData) error {
 	} else {
 		if data.SystemCalls == nil {
 			data.SystemCalls = make(map[string]string)
-			utils_dependency.ParseTrace(output, data.SystemCalls)
+			parseTrace(output, data.SystemCalls)
 		} else {
 			data.Symbols = make(map[string]string)
-			utils_dependency.ParseTrace(output, data.Symbols)
+			parseTrace(output, data.Symbols)
 		}
 	}
 
@@ -64,10 +61,10 @@ func gatherDynamicDataBackground(command, programPath, programName string,
 
 	if data.SystemCalls == nil {
 		data.SystemCalls = make(map[string]string)
-		utils_dependency.ParseTrace(errStr, data.SystemCalls)
+		parseTrace(errStr, data.SystemCalls)
 	} else {
 		data.Symbols = make(map[string]string)
-		utils_dependency.ParseTrace(errStr, data.Symbols)
+		parseTrace(errStr, data.Symbols)
 	}
 }
 
@@ -87,7 +84,7 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 		return err
 	} else {
 		// Parse 'lsof' output
-		if err := utils_dependency.ParseLsof(output, data, v); err != nil {
+		if err := parseLsof(output, data, v); err != nil {
 			u.PrintErr(err)
 		}
 	}
@@ -99,7 +96,7 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 		return err
 	} else {
 		// Parse 'cat' output
-		if err := utils_dependency.ParseLsof(output, data, v); err != nil {
+		if err := parseLsof(output, data, v); err != nil {
 			u.PrintErr(err)
 		}
 	}
@@ -233,7 +230,7 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 // the dynamic dependency analysis
 //
 // It returns two strings which are respectively stdout and stderr.
-func getDArgs(args u.Arguments) DynamicArgs {
+func getDArgs(args *u.Arguments) DynamicArgs {
 	return DynamicArgs{*args.IntArg["waitTime"],
 		*args.BoolArg["verbose"], *args.BoolArg["display"],
 		*args.BoolArg["background"], *args.StringArg["options"],
@@ -245,7 +242,7 @@ func getDArgs(args u.Arguments) DynamicArgs {
 // RunDynamicAnalyser runs the dynamic analysis to get shared libraries,
 // system calls and library calls of a given application.
 //
-func RunDynamicAnalyser(args u.Arguments, data *u.Data, programPath,
+func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath,
 	outFolder string) {
 
 	// Get dynamic structure

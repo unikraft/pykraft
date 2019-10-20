@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package main
+package crawlertool
 
 import (
 	"os"
@@ -15,7 +15,7 @@ import (
 )
 
 // Individual tool (out of the UNICORE toolchain)
-func main() {
+func RunCrawler() {
 
 	mapLabel := make(map[string]string)
 	mapConfig := make(map[string][]string)

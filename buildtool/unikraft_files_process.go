@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_build
+package buildtool
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	u "github.com/unikraft/tools/utils"
+	u "tools/common"
 )
 
 // Folder
@@ -26,7 +26,7 @@ const (
 
 // ---------------------------Create Include Folder-----------------------------
 
-func CreateIncludeFolder(appFolder string) (*string, error) {
+func createIncludeFolder(appFolder string) (*string, error) {
 
 	includeFolder := appFolder + INCLUDE_FOLDER
 	if _, err := os.Stat(includeFolder); os.IsNotExist(err) {
@@ -61,7 +61,7 @@ func ContainsUnikraftFolders(files []os.FileInfo) bool {
 
 // ---------------------------UNIKRAFT APP FOLDER-------------------------------
 
-func CreateUnikraftApp(programName, unikraftPath string) string {
+func createUnikraftApp(programName, unikraftPath string) string {
 
 	var appFolder string
 	sep := string(os.PathSeparator)
@@ -169,7 +169,7 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 	return nil
 }
 
-func LanguageUsed() string {
+func languageUsed() string {
 
 	max := -1
 	var mostUsedFiles string

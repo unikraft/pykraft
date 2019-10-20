@@ -4,7 +4,7 @@
 //
 // Author: Gaulthier Gain <gaulthier.gain@uliege.be>
 
-package utils_build
+package buildtool
 
 import (
 	"io/ioutil"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	u "github.com/unikraft/tools/utils"
+	u "tools/common"
 )
 
 const (
@@ -125,12 +125,12 @@ func matchSymbols(matchedLibs []string, data map[string]string,
 	return matchedLibs
 }
 
-// MatchLibs performs the matching between Unikraft's micro-libs and
+// matchLibs performs the matching between Unikraft's micro-libs and
 // libraries used by a given application
 //
 // It returns a list of micro-libs that are required by the application and an
 // error if any, otherwise it returns nil.
-func MatchLibs(unikraftLibs string, data *u.Data,
+func matchLibs(unikraftLibs string, data *u.Data,
 	microLibs map[string][]string) ([]string, map[string]string, error) {
 
 	matchedLibs := make([]string, 0)
@@ -177,10 +177,10 @@ func cloneGitRepo(url, unikraftPathLibs string) error {
 	return nil
 }
 
-// CloneLibsFolders clones all the needed micro-libs that are needed by a
+// cloneLibsFolders clones all the needed micro-libs that are needed by a
 // given application
 //
-func CloneLibsFolders(unikraftPath string, matchedLibs []string,
+func cloneLibsFolders(unikraftPath string, matchedLibs []string,
 	externalLibs map[string]string) {
 
 	for _, lib := range matchedLibs {
