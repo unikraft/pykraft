@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	PROGRAM   = "program"
-	TEST_FILE = "testFile"
-	OPTIONS   = "options"
-	WAIT_TIME = "waitTime"
-	BACKGROUND = "background"
+	PROGRAM     = "program"
+	TEST_FILE   = "testFile"
+	OPTIONS     = "options"
+	WAIT_TIME   = "waitTime"
+	BACKGROUND  = "background"
 	SAVE_OUTPUT = "saveOutput"
-	FULL_DEPS = "fullDeps"
+	FULL_DEPS   = "fullDeps"
 )
 
 // parseLocalArguments parses arguments of the application.
@@ -48,5 +48,5 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 			Help: "Specify if the given process is a background process (" +
 				"web server, database)"})
 
-	_ = p.Parse(os.Args);
+	_ = p.Parse(os.Args)
 }
