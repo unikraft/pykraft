@@ -246,7 +246,7 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	// Get dynamic structure
 	dArgs := getDArgs(args)
-	programName := *args.StringArg["program"]
+	programName := *args.StringArg[PROGRAM]
 
 	// Kill process if it is already launched
 	u.PrintInfo("Kill '" + programName + "' if it is already launched")
