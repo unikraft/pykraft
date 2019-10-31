@@ -12,17 +12,17 @@ import (
 
 func RunAnalyserTool(homeDir string, data *u.Data) {
 
+	// Support only
 	if strings.ToLower(runtime.GOOS) != "linux" {
 		u.PrintErr("Only UNIX/Linux platforms are supported")
 	}
 
+	// Init and parse local arguments
 	args := new(u.Arguments)
 	p, err := args.InitArguments(args)
 	if err != nil {
 		u.PrintErr(err)
 	}
-
-	// Parse local arguments
 	parseLocalArguments(p, args)
 
 	// Get program Name
@@ -42,7 +42,6 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 			u.PrintErr(err)
 		}
 	}
-
 
 	// Display Minor Details
 	displayProgramDetails(programName, programPath, args)
