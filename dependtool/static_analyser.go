@@ -157,7 +157,7 @@ func executeDependAptCache(programName string, data *u.StaticData,
 //
 func staticAnalyser(args u.Arguments, data *u.Data, programPath string) {
 
-	programName := *args.StringArg["program"]
+	programName := *args.StringArg[PROGRAM]
 	fullDeps := *args.BoolArg[FULL_DEPS]
 
 	staticData := &data.StaticData
@@ -170,12 +170,12 @@ func staticAnalyser(args u.Arguments, data *u.Data, programPath string) {
 			u.PrintWarning(err)
 		}
 
-		u.PrintHeader2("(*) Gathering symbols & system calls rom ELF file")
+		u.PrintHeader2("(*) Gathering symbols & system calls from ELF file")
 		if err := gatherStaticSystemCalls(programPath, staticData); err != nil {
 			u.PrintWarning(err)
 		}
 
-		u.PrintHeader2("(*) Gathering shared libraries rom ELF file")
+		u.PrintHeader2("(*) Gathering shared libraries from ELF file")
 		if err := gatherStaticSharedLibs(programPath, staticData,
 			fullDeps); err != nil {
 			u.PrintWarning(err)
