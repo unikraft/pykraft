@@ -70,9 +70,7 @@ func (*Arguments) ParseArguments(p *Parser, args *Arguments) error {
 		&Options{Required: false, Default: false,
 			Help: "Execute only the performance tool"})
 
-	if err := p.Parse(os.Args); err != nil {
-		return err
-	}
+	_ = p.Parse(os.Args);
 
 	return nil
 }

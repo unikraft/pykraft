@@ -23,9 +23,7 @@ const (
 )
 
 // parseLocalArguments parses arguments of the application.
-//
-// It returns an error if any, otherwise it returns nil.
-func parseLocalArguments(p *Parser, args *u.Arguments) error {
+func parseLocalArguments(p *Parser, args *u.Arguments) {
 
 	args.InitArgParse(p, args, u.STRING, "p", PROGRAM,
 		&Options{Required: true, Help: "Program name"})
@@ -49,9 +47,5 @@ func parseLocalArguments(p *Parser, args *u.Arguments) error {
 			Help: "Specify if the given process is a background process (" +
 				"web server, database)"})
 
-	if err := p.Parse(os.Args); err != nil {
-		return err
-	}
-
-	return nil
+	_ = p.Parse(os.Args);
 }

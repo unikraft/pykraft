@@ -23,12 +23,16 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	}
 
 	// Parse local arguments
-	if err := parseLocalArguments(p, args); err != nil {
-		u.PrintErr(err)
-	}
+	parseLocalArguments(p, args)
 
 	// Get program Name
 	programName := *args.StringArg[PROGRAM]
+
+	// Get program path
+	programPath, err := u.GetProgramPath(&programName)
+	if err != nil {
+		u.PrintErr("Could not determine program path", err)
+	}
 
 	// Create the folder 'output' if it does not exist
 	outFolder := homeDir + string(os.PathSeparator) + programName +
@@ -39,11 +43,6 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 		}
 	}
 
-	// Get program path
-	programPath, err := u.GetProgramPath(&programName)
-	if err != nil {
-		u.PrintErr("Could not determine program path", err)
-	}
 
 	// Display Minor Details
 	displayProgramDetails(programName, programPath, args)
