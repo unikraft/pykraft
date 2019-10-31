@@ -113,7 +113,7 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	staticAnalyser(*args, data, programPath, outFolder+"static/")
 
 	// Save static Data into text file if display mode is set
-	if args.BoolArg[SAVE_OUTPUT] != nil {
+	if *args.BoolArg[SAVE_OUTPUT] {
 
 		fn := outFolder + "static/" + programName + ".txt"
 		headersStr := []string{"Dependencies (from apt-cache show) list:",
@@ -134,7 +134,7 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	dynamicAnalyser(args, data, programPath, outFolder+"dynamic/")
 
 	// Save dynamic Data into text file if display mode is set
-	if args.BoolArg[SAVE_OUTPUT] != nil {
+	if *args.BoolArg[SAVE_OUTPUT] {
 
 		fn := outFolder + "dynamic/" + programName + ".txt"
 		headersStr := []string{"Shared libraries list:", "System calls list:",
