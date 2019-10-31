@@ -116,7 +116,7 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	if *args.BoolArg[SAVE_OUTPUT] {
 
 		// Create the folder 'output/static' if it does not exist
-		outFolderStatic := outFolder+ "static" + string(os.PathSeparator)
+		outFolderStatic := outFolder + "static" + string(os.PathSeparator)
 		if _, err := os.Stat(outFolderStatic); os.IsNotExist(err) {
 			if err = os.Mkdir(outFolderStatic, os.ModePerm); err != nil {
 				u.PrintErr(err)
@@ -145,7 +145,7 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	if *args.BoolArg[SAVE_OUTPUT] {
 
 		// Create the folder 'output/dynamic' if it does not exist
-		outFolderDynamic := outFolder+ "dynamic" + string(os.PathSeparator)
+		outFolderDynamic := outFolder + "dynamic" + string(os.PathSeparator)
 		if _, err := os.Stat(outFolderDynamic); os.IsNotExist(err) {
 			if err = os.Mkdir(outFolderDynamic, os.ModePerm); err != nil {
 				u.PrintErr(err)
@@ -167,18 +167,19 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 // saveGraph saves dependency graphs of a given app into the output folder.
 func saveGraph(programName, outFolder string, data *u.Data) {
 
+	sep := string(os.PathSeparator)
 	if len(data.StaticData.SharedLibs) > 0 {
-		u.GenerateGraph(programName, outFolder+"static/"+
+		u.GenerateGraph(programName, outFolder+"static"+sep+
 			programName+"_shared_libs", data.StaticData.SharedLibs)
 	}
 
 	if len(data.StaticData.Dependencies) > 0 {
-		u.GenerateGraph(programName, outFolder+"static/"+
+		u.GenerateGraph(programName, outFolder+"static"+sep+
 			programName+"_dependencies", data.StaticData.Dependencies)
 	}
 
 	if len(data.StaticData.SharedLibs) > 0 {
-		u.GenerateGraph(programName, outFolder+"dynamic/"+
+		u.GenerateGraph(programName, outFolder+"dynamic"+sep+
 			programName+"_shared_libs", data.DynamicData.SharedLibs)
 	}
 }
