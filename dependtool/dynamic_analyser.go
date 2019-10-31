@@ -22,9 +22,9 @@ import (
 )
 
 type DynamicArgs struct {
-	waitTime                     int
-	verbose, display, background bool
-	options, testFile            string
+	waitTime                         int
+	fullDeps, saveOutput, background bool
+	options, testFile                string
 }
 
 // --------------------------------Gather Data----------------------------------
@@ -211,7 +211,7 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 	// Gather shared libs
 	u.PrintHeader2("(*) Gathering shared libs")
 	if err := gatherDynamicSharedLibs(programName, process.Pid, data,
-		dArgs.verbose); err != nil {
+		dArgs.fullDeps); err != nil {
 		u.PrintWarning(err)
 	}
 
@@ -231,10 +231,10 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 //
 // It returns two strings which are respectively stdout and stderr.
 func getDArgs(args *u.Arguments) DynamicArgs {
-	return DynamicArgs{*args.IntArg["waitTime"],
-		*args.BoolArg["verbose"], *args.BoolArg["display"],
-		*args.BoolArg["background"], *args.StringArg["options"],
-		*args.StringArg["testFile"]}
+	return DynamicArgs{*args.IntArg[WAIT_TIME],
+		*args.BoolArg[FULL_DEPS], *args.BoolArg[SAVE_OUTPUT],
+		*args.BoolArg[BACKGROUND], *args.StringArg[OPTIONS],
+		*args.StringArg[TEST_FILE]}
 }
 
 // -------------------------------------RUN-------------------------------------

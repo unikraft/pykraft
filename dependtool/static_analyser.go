@@ -131,7 +131,7 @@ func gatherDependencies(programName string, data *u.StaticData, v bool) error {
 //
 // It returns an error if any, otherwise it returns nil.
 func executeDependAptCache(programName string, data *u.StaticData,
-	verbose bool) error {
+	fullDeps bool) error {
 
 	//  Use 'apt-cache depends' to get dependencies
 	if output, err := u.ExecutePipeCommand("apt-cache depends " +
@@ -143,7 +143,7 @@ func executeDependAptCache(programName string, data *u.StaticData,
 		dependenciesMap := make(map[string][]string)
 		printDep := make(map[string][]string)
 		_ = parseDependencies(output, data.Dependencies, dependenciesMap,
-			printDep, verbose, 0)
+			printDep, fullDeps, 0)
 	}
 
 	fmt.Println("----------------------------------------------")
@@ -159,7 +159,7 @@ func staticAnalyser(args u.Arguments, data *u.Data, programPath,
 	outFolder string) {
 
 	programName := *args.StringArg["program"]
-	v := *args.BoolArg["verbose"]
+	fullDeps := *args.BoolArg[FULL_DEPS]
 
 	staticData := &data.StaticData
 
@@ -178,14 +178,14 @@ func staticAnalyser(args u.Arguments, data *u.Data, programPath,
 
 		u.PrintHeader2("(*) Gathering shared libraries rom ELF file")
 		if err := gatherStaticSharedLibs(programPath, staticData,
-			v); err != nil {
+			fullDeps); err != nil {
 			u.PrintWarning(err)
 		}
 	}
 
 	// Gather Data from apt-cache
 	u.PrintHeader2("(*) Gathering dependencies from apt-cache depends")
-	if err := gatherDependencies(programName, staticData, v); err != nil {
+	if err := gatherDependencies(programName, staticData, fullDeps); err != nil {
 		u.PrintWarning(err)
 	}
 

@@ -18,8 +18,8 @@ const (
 	OPTIONS   = "options"
 	WAIT_TIME = "waitTime"
 	BACKGROUND = "background"
-	DISPLAY = "display"
-	VERBOSE = "verbose"
+	SAVE_OUTPUT = "saveOutput"
+	FULL_DEPS = "fullDeps"
 )
 
 // parseLocalArguments parses arguments of the application.
@@ -37,11 +37,12 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 		&Options{Required: false, Default: 60, Help: "Time wait (" +
 			"sec) for external tests (default: 60 sec)"})
 
-	args.InitArgParse(p, args, u.BOOL, "d", DISPLAY,
+	args.InitArgParse(p, args, u.BOOL, "", SAVE_OUTPUT,
 		&Options{Required: false, Default: false,
 			Help: "Save results as TXT file and graphs as PNG file"})
-	args.InitArgParse(p, args, u.BOOL, "v", VERBOSE,
-		&Options{Required: false, Default: false, Help: "Verbose mode"})
+	args.InitArgParse(p, args, u.BOOL, "", FULL_DEPS,
+		&Options{Required: false, Default: false, Help: "Show dependencies of" +
+			"dependencies"})
 	args.InitArgParse(p, args, u.BOOL, "b", BACKGROUND,
 		&Options{Required: false, Default: true,
 			Help: "Specify if the given process is a background process (" +

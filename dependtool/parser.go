@@ -98,7 +98,7 @@ const LEVEL = 5
 // It returns a slice of strings which represents all the dependencies of
 // a particular package.
 func parseDependencies(output string, data, dependenciesMap,
-	printDep map[string][]string, verbose bool, level int) []string {
+	printDep map[string][]string, fullDeps bool, level int) []string {
 	listDep := make([]string, 0)
 	for _, line := range strings.Split(output, "\n") {
 		if len(line) > 0 && !strings.Contains(line, "<") {
@@ -108,7 +108,7 @@ func parseDependencies(output string, data, dependenciesMap,
 				printDep[line] = nil
 			}
 
-			if verbose && level < LEVEL {
+			if fullDeps && level < LEVEL {
 				rd := RecursiveData{
 					data:     data,
 					glMap:    dependenciesMap,
@@ -215,7 +215,7 @@ func parseLsof(output string, data *u.DynamicData, v bool) error {
 			words := strings.Split(line, "/")
 			data.SharedLibs[words[len(words)-1]] = nil
 			if v {
-				// Execute ldd only if verbose mode is set
+				// Execute ldd only if fullDeps mode is set
 				if out, err := u.ExecutePipeCommand("ldd " + line +
 					" | awk '/ => / { print $1,$3 }'"); err != nil {
 					return err

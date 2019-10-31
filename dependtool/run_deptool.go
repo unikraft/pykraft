@@ -66,8 +66,8 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 			".json")
 	}
 
-	// Save graph if verbose mode is set
-	if *args.BoolArg[VERBOSE] {
+	// Save graph if full dependencies option is set
+	if *args.BoolArg[FULL_DEPS] {
 		saveGraph(programName, outFolder, data)
 	}
 }
@@ -114,7 +114,7 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	staticAnalyser(*args, data, programPath, outFolder+"static/")
 
 	// Save static Data into text file if display mode is set
-	if args.BoolArg[DISPLAY] != nil {
+	if args.BoolArg[SAVE_OUTPUT] != nil {
 
 		fn := outFolder + "static/" + programName + ".txt"
 		headersStr := []string{"Dependencies (from apt-cache show) list:",
@@ -135,7 +135,7 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	dynamicAnalyser(args, data, programPath, outFolder+"dynamic/")
 
 	// Save dynamic Data into text file if display mode is set
-	if args.BoolArg[DISPLAY] != nil {
+	if args.BoolArg[SAVE_OUTPUT] != nil {
 
 		fn := outFolder + "dynamic/" + programName + ".txt"
 		headersStr := []string{"Shared libraries list:", "System calls list:",
