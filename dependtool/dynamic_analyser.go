@@ -242,8 +242,7 @@ func getDArgs(args *u.Arguments) DynamicArgs {
 // RunDynamicAnalyser runs the dynamic analysis to get shared libraries,
 // system calls and library calls of a given application.
 //
-func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath,
-	outFolder string) {
+func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	// Get dynamic structure
 	dArgs := getDArgs(args)
@@ -276,13 +275,6 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath,
 	} else {
 		if err := gatherDynamicData("ltrace", programPath,
 			dynamicData); err != nil {
-			u.PrintErr(err)
-		}
-	}
-
-	// Create the folder 'output/dynamic' if it does not exist
-	if _, err := os.Stat(outFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(outFolder, os.ModePerm); err != nil {
 			u.PrintErr(err)
 		}
 	}

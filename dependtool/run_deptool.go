@@ -12,7 +12,7 @@ import (
 
 func RunAnalyserTool(homeDir string, data *u.Data) {
 
-	// Support only
+	// Support only Unix
 	if strings.ToLower(runtime.GOOS) != "linux" {
 		u.PrintErr("Only UNIX/Linux platforms are supported")
 	}
@@ -110,12 +110,20 @@ func checkElf(programPath *string) {
 func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	outFolder string, data *u.Data) {
 
-	staticAnalyser(*args, data, programPath, outFolder+"static/")
+	staticAnalyser(*args, data, programPath)
 
 	// Save static Data into text file if display mode is set
 	if *args.BoolArg[SAVE_OUTPUT] {
 
-		fn := outFolder + "static/" + programName + ".txt"
+		// Create the folder 'output/static' if it does not exist
+		outFolderStatic := outFolder+ "static" + string(os.PathSeparator)
+		if _, err := os.Stat(outFolderStatic); os.IsNotExist(err) {
+			if err = os.Mkdir(outFolderStatic, os.ModePerm); err != nil {
+				u.PrintErr(err)
+			}
+		}
+
+		fn := outFolderStatic + programName + ".txt"
 		headersStr := []string{"Dependencies (from apt-cache show) list:",
 			"Shared libraries list:", "System calls list:", "Symbols list:"}
 
@@ -131,12 +139,20 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	outFolder string, data *u.Data) {
 
-	dynamicAnalyser(args, data, programPath, outFolder+"dynamic/")
+	dynamicAnalyser(args, data, programPath)
 
 	// Save dynamic Data into text file if display mode is set
 	if *args.BoolArg[SAVE_OUTPUT] {
 
-		fn := outFolder + "dynamic/" + programName + ".txt"
+		// Create the folder 'output/dynamic' if it does not exist
+		outFolderDynamic := outFolder+ "dynamic" + string(os.PathSeparator)
+		if _, err := os.Stat(outFolderDynamic); os.IsNotExist(err) {
+			if err = os.Mkdir(outFolderDynamic, os.ModePerm); err != nil {
+				u.PrintErr(err)
+			}
+		}
+
+		fn := outFolderDynamic + programName + ".txt"
 		headersStr := []string{"Shared libraries list:", "System calls list:",
 			"Symbols list:"}
 

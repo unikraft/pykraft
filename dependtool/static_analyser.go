@@ -155,8 +155,7 @@ func executeDependAptCache(programName string, data *u.StaticData,
 // staticAnalyser runs the static analysis to get shared libraries,
 // system calls and library calls of a given application.
 //
-func staticAnalyser(args u.Arguments, data *u.Data, programPath,
-	outFolder string) {
+func staticAnalyser(args u.Arguments, data *u.Data, programPath string) {
 
 	programName := *args.StringArg["program"]
 	fullDeps := *args.BoolArg[FULL_DEPS]
@@ -187,12 +186,5 @@ func staticAnalyser(args u.Arguments, data *u.Data, programPath,
 	u.PrintHeader2("(*) Gathering dependencies from apt-cache depends")
 	if err := gatherDependencies(programName, staticData, fullDeps); err != nil {
 		u.PrintWarning(err)
-	}
-
-	// Create the folder 'output/static' if it does not exist
-	if _, err := os.Stat(outFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(outFolder, os.ModePerm); err != nil {
-			u.PrintErr(err)
-		}
 	}
 }
