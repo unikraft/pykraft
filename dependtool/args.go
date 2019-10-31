@@ -17,7 +17,6 @@ const (
 	TEST_FILE   = "testFile"
 	OPTIONS     = "options"
 	WAIT_TIME   = "waitTime"
-	BACKGROUND  = "background"
 	SAVE_OUTPUT = "saveOutput"
 	FULL_DEPS   = "fullDeps"
 )
@@ -43,10 +42,6 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 	args.InitArgParse(p, args, u.BOOL, "", FULL_DEPS,
 		&Options{Required: false, Default: false, Help: "Show dependencies of" +
 			"dependencies"})
-	args.InitArgParse(p, args, u.BOOL, "b", BACKGROUND,
-		&Options{Required: false, Default: false,
-			Help: "Specify if the given process is a background process (" +
-				"web server, database)"})
 
 	_ = p.Parse(os.Args)
 }

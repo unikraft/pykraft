@@ -5,7 +5,6 @@ import (
 	"github.com/fatih/color"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	u "tools/common"
 )
@@ -76,13 +75,6 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 	fmt.Println("----------------------------------------------")
 	fmt.Println("Analyze Program: ", color.GreenString(programName))
 	fmt.Println("Full Path: ", color.GreenString(programPath))
-	if *args.BoolArg[BACKGROUND] {
-		fmt.Println("Background: ", color.GreenString(
-			strconv.FormatBool(*args.BoolArg[BACKGROUND])))
-	} else {
-		fmt.Println("Background: ", color.RedString(
-			strconv.FormatBool(*args.BoolArg[BACKGROUND])))
-	}
 	fmt.Println("Options: ", color.GreenString(*args.StringArg[OPTIONS]))
 	fmt.Println("----------------------------------------------")
 }

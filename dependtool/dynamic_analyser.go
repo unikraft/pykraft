@@ -22,34 +22,12 @@ import (
 )
 
 type DynamicArgs struct {
-	waitTime                         int
-	fullDeps, saveOutput, background bool
-	options, testFile                string
+	waitTime             int
+	fullDeps, saveOutput bool
+	options, testFile    string
 }
 
 // --------------------------------Gather Data----------------------------------
-
-// gatherDynamicData gathers symbols and system calls of a given application
-// which is NOT a background process.
-//
-// It returns an error if any, otherwise it returns nil.
-func gatherDynamicData(command, programPath string, data *u.DynamicData) error {
-
-	if output, err := u.ExecuteCommand(command, []string{"-f",
-		programPath}); err != nil {
-		return err
-	} else {
-		if data.SystemCalls == nil {
-			data.SystemCalls = make(map[string]string)
-			parseTrace(output, data.SystemCalls)
-		} else {
-			data.Symbols = make(map[string]string)
-			parseTrace(output, data.Symbols)
-		}
-	}
-
-	return nil
-}
 
 // gatherDynamicDataBackground gathers symbols and system calls of a given
 // application which is a background process.
@@ -233,8 +211,7 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 func getDArgs(args *u.Arguments) DynamicArgs {
 	return DynamicArgs{*args.IntArg[WAIT_TIME],
 		*args.BoolArg[FULL_DEPS], *args.BoolArg[SAVE_OUTPUT],
-		*args.BoolArg[BACKGROUND], *args.StringArg[OPTIONS],
-		*args.StringArg[TEST_FILE]}
+		*args.StringArg[OPTIONS], *args.StringArg[TEST_FILE]}
 }
 
 // -------------------------------------RUN-------------------------------------
@@ -258,24 +235,10 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	u.PrintHeader2("(*) Gathering system call from ELF file")
 	dynamicData.SharedLibs = make(map[string][]string)
-	if dArgs.background {
-		gatherDynamicDataBackground("strace", programPath, programName,
-			dynamicData, dArgs)
-	} else {
-		if err := gatherDynamicData("strace", programPath,
-			dynamicData); err != nil {
-			u.PrintErr(err)
-		}
-	}
+	gatherDynamicDataBackground("strace", programPath, programName,
+		dynamicData, dArgs)
 
 	u.PrintHeader2("(*) Gathering symbols from ELF file")
-	if dArgs.background {
-		gatherDynamicDataBackground("ltrace", programPath, programName,
-			dynamicData, dArgs)
-	} else {
-		if err := gatherDynamicData("ltrace", programPath,
-			dynamicData); err != nil {
-			u.PrintErr(err)
-		}
-	}
+	gatherDynamicDataBackground("ltrace", programPath, programName,
+		dynamicData, dArgs)
 }
