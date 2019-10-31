@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -126,29 +125,37 @@ func CaptureOutput(programPath, programName, command string,
 	cmd.Stderr = io.MultiWriter(bufErr) // Add os.Stdin to record on stderr
 	cmd.Stdin = os.Stdin
 
+	// Run the process (traced by strace/ltrace)
 	if err := cmd.Start(); err != nil {
-		log.Printf("Failed to start cmd: %v", err)
 		u.PrintErr(err)
 	}
-
-	u.PrintInfo("Run '" + programName + "' in background")
-	Tester(programName, cmd.Process, data, dArgs)
 
 	// Add timeout if program is not killed
 	var canceled = make(chan struct{})
 	timeoutKill := time.NewTimer(time.Second)
+
+	// Add timer for background process
+	timerBackground := time.NewTimer(3*time.Second)
 	go func() {
-		select {
-		case <-timeoutKill.C:
-			if err := u.PKill(programName, syscall.SIGINT); err != nil {
-				u.PrintErr(err)
+		<-timerBackground.C
+		// If background, run Testers
+		Tester(programName, cmd.Process, data, dArgs)
+		go func() {
+			select {
+			case <-timeoutKill.C:
+				if err := u.PKill(programName, syscall.SIGINT); err != nil {
+					u.PrintErr(err)
+				}
+			case <-canceled:
 			}
-		case <-canceled:
-		}
+		}()
 	}()
 
 	// Ignore the error because the program is killed (waitTime)
 	_ = cmd.Wait()
+
+	// Stop timer
+	timerBackground.Stop()
 
 	// Add timeout if program is not killed
 	select {

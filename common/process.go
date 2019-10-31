@@ -117,8 +117,11 @@ func PKill(programName string, sig syscall.Signal) error {
 		return nil
 	}
 
+	current :=  os.Getpid()
 	for _, pid := range pids {
-		_ = syscall.Kill(pid, sig)
+		if current != pid{
+			_ = syscall.Kill(pid, sig)
+		}
 	}
 
 	return nil
