@@ -44,7 +44,7 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 		&Options{Required: false, Default: false, Help: "Show dependencies of" +
 			"dependencies"})
 	args.InitArgParse(p, args, u.BOOL, "b", BACKGROUND,
-		&Options{Required: false, Default: true,
+		&Options{Required: false, Default: false,
 			Help: "Specify if the given process is a background process (" +
 				"web server, database)"})
 
