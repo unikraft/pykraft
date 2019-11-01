@@ -21,9 +21,9 @@ import (
 )
 
 type DynamicArgs struct {
-	waitTime             int
-	fullDeps, saveOutput bool
-	options, testFile    string
+	waitTime                      int
+	fullDeps, saveOutput          bool
+	options, testFile, configFile string
 }
 
 // --------------------------------Gather Data----------------------------------
@@ -135,7 +135,7 @@ func CaptureOutput(programPath, programName, command string,
 	timeoutKill := time.NewTimer(time.Second)
 
 	// Add timer for background process
-	timerBackground := time.NewTimer(3*time.Second)
+	timerBackground := time.NewTimer(3 * time.Second)
 	go func() {
 		<-timerBackground.C
 		// If background, run Testers
@@ -218,7 +218,8 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 func getDArgs(args *u.Arguments) DynamicArgs {
 	return DynamicArgs{*args.IntArg[WAIT_TIME],
 		*args.BoolArg[FULL_DEPS], *args.BoolArg[SAVE_OUTPUT],
-		*args.StringArg[OPTIONS], *args.StringArg[TEST_FILE]}
+		*args.StringArg[OPTIONS], *args.StringArg[TEST_FILE],
+		*args.StringArg[CONFIG_FILE]}
 }
 
 // -------------------------------------RUN-------------------------------------

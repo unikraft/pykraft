@@ -15,6 +15,7 @@ import (
 const (
 	PROGRAM     = "program"
 	TEST_FILE   = "testFile"
+	CONFIG_FILE = "configFile"
 	OPTIONS     = "options"
 	WAIT_TIME   = "waitTime"
 	SAVE_OUTPUT = "saveOutput"
@@ -28,6 +29,8 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 		&Options{Required: true, Help: "Program name"})
 	args.InitArgParse(p, args, u.STRING, "t", TEST_FILE,
 		&Options{Required: false, Help: "Path of the test file"})
+	args.InitArgParse(p, args, u.STRING, "c", CONFIG_FILE,
+		&Options{Required: false, Help: "Path of the config file"})
 	args.InitArgParse(p, args, u.STRING, "o", OPTIONS,
 		&Options{Required: false, Default: "", Help: "Extra options for " +
 			"launching program"})
