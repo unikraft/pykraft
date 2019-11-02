@@ -198,7 +198,7 @@ func parseRecursive(rD RecursiveData) {
 //
 func parseTrace(output string, data map[string]string) {
 
-	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\(.*\)`)
+	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\(.*`)
 	for _, match := range re.FindAllStringSubmatch(output, -1) {
 		// Add symbol to map
 		data[match[1]] = ""
@@ -209,6 +209,7 @@ func parseTrace(output string, data map[string]string) {
 //
 // It returns an error if any, otherwise it returns nil.
 func parseLsof(output string, data *u.DynamicData, v bool) error {
+
 	lddMap := make(map[string][]string)
 	for _, line := range strings.Split(output, "\n") {
 		if strings.Contains(line, ".so") {

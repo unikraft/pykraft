@@ -21,12 +21,29 @@ import (
 )
 
 type DynamicArgs struct {
-	waitTime                      int
-	fullDeps, saveOutput          bool
-	options, testFile, configFile string
+	waitTime             int
+	fullDeps, saveOutput bool
+	testFile             string
+	options              []string
 }
 
+const (
+	SYSTRACE = "strace"
+	LIBTRACE = "ltrace"
+)
+
 // --------------------------------Gather Data----------------------------------
+
+func gatherData(command, programPath, programName, option string,
+	data *u.DynamicData, dArgs DynamicArgs) {
+	_, errStr := CaptureOutput(programPath, programName, command, option, dArgs, data)
+
+	if command == SYSTRACE {
+		parseTrace(errStr, data.SystemCalls)
+	} else {
+		parseTrace(errStr, data.Symbols)
+	}
+}
 
 // gatherDynamicDataBackground gathers symbols and system calls of a given
 // application which is a background process.
@@ -34,14 +51,19 @@ type DynamicArgs struct {
 func gatherDynamicDataBackground(command, programPath, programName string,
 	data *u.DynamicData, dArgs DynamicArgs) {
 
-	_, errStr := CaptureOutput(programPath, programName, command, dArgs, data)
+	if len(dArgs.options) > 0 {
+		for _, option := range dArgs.options {
+			// Check if program name is used in config file
+			if strings.Contains(option, programName) {
+				// If yes, take only arguments
+				split := strings.Split(option, programName)
+				option = strings.TrimSuffix(split[1], "\n")
+			}
 
-	if data.SystemCalls == nil {
-		data.SystemCalls = make(map[string]string)
-		parseTrace(errStr, data.SystemCalls)
+			gatherData(command, programPath, programName, option, data, dArgs)
+		}
 	} else {
-		data.Symbols = make(map[string]string)
-		parseTrace(errStr, data.Symbols)
+		gatherData(command, programPath, programName, "", data, dArgs)
 	}
 }
 
@@ -113,10 +135,10 @@ func launchTests(args DynamicArgs) error {
 // also run the Tester to explore several execution paths of the given app.
 //
 // It returns to string which are respectively stdout and stderr.
-func CaptureOutput(programPath, programName, command string,
+func CaptureOutput(programPath, programName, command, option string,
 	dArgs DynamicArgs, data *u.DynamicData) (string, string) {
 
-	args := strings.Fields("-f " + programPath + " " + dArgs.options)
+	args := strings.Fields("-f " + programPath + " " + option)
 	cmd := exec.Command(command, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
@@ -215,22 +237,38 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 // the dynamic dependency analysis
 //
 // It returns two strings which are respectively stdout and stderr.
-func getDArgs(args *u.Arguments) DynamicArgs {
+func getDArgs(args *u.Arguments, options []string) DynamicArgs {
 	return DynamicArgs{*args.IntArg[WAIT_TIME],
 		*args.BoolArg[FULL_DEPS], *args.BoolArg[SAVE_OUTPUT],
-		*args.StringArg[OPTIONS], *args.StringArg[TEST_FILE],
-		*args.StringArg[CONFIG_FILE]}
+		*args.StringArg[TEST_FILE], options}
 }
 
 // -------------------------------------RUN-------------------------------------
+func printSlice(s []string) {
+	fmt.Printf("len=%d cap=%d %v\n", len(s), cap(s), s)
+}
 
 // RunDynamicAnalyser runs the dynamic analysis to get shared libraries,
 // system calls and library calls of a given application.
 //
 func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
+	// Check options
+	var configs []string
+	if len(*args.StringArg[CONFIG_FILE]) > 0 {
+		// Multi-lines options (config)
+		var err error
+		configs, err = u.ReadLinesFile(*args.StringArg[CONFIG_FILE])
+		if err != nil {
+			u.PrintWarning(err)
+		}
+	} else if len(*args.StringArg[OPTIONS]) > 0 {
+		// Single option (config)
+		configs = append(configs, *args.StringArg[OPTIONS])
+	}
+
 	// Get dynamic structure
-	dArgs := getDArgs(args)
+	dArgs := getDArgs(args, configs)
 	programName := *args.StringArg[PROGRAM]
 
 	// Kill process if it is already launched
@@ -239,14 +277,19 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 		u.PrintErr(err)
 	}
 
+	// Init dynamic data
 	dynamicData := &data.DynamicData
-
-	u.PrintHeader2("(*) Gathering system call from ELF file")
 	dynamicData.SharedLibs = make(map[string][]string)
-	gatherDynamicDataBackground("strace", programPath, programName,
+	dynamicData.SystemCalls = make(map[string]string)
+	dynamicData.Symbols = make(map[string]string)
+
+	// Run strace
+	u.PrintHeader2("(*) Gathering system call from ELF file")
+	gatherDynamicDataBackground(SYSTRACE, programPath, programName,
 		dynamicData, dArgs)
 
+	// Run ltrace
 	u.PrintHeader2("(*) Gathering symbols from ELF file")
-	gatherDynamicDataBackground("ltrace", programPath, programName,
+	gatherDynamicDataBackground(LIBTRACE, programPath, programName,
 		dynamicData, dArgs)
 }
