@@ -45,13 +45,14 @@ func gatherData(command, programPath, programName, option string,
 	}
 }
 
-// gatherDynamicDataBackground gathers symbols and system calls of a given
-// application which is a background process.
+// gatherDynamicData gathers symbols and system calls of a given application
+// which is a background process.
 //
-func gatherDynamicDataBackground(command, programPath, programName string,
+func gatherDynamicData(command, programPath, programName string,
 	data *u.DynamicData, dArgs DynamicArgs) {
 
 	if len(dArgs.options) > 0 {
+		// Iterate through configs present in config file
 		for _, option := range dArgs.options {
 			// Check if program name is used in config file
 			if strings.Contains(option, programName) {
@@ -66,6 +67,7 @@ func gatherDynamicDataBackground(command, programPath, programName string,
 			gatherData(command, programPath, programName, option, data, dArgs)
 		}
 	} else {
+		// Run without option
 		gatherData(command, programPath, programName, "", data, dArgs)
 	}
 }
@@ -288,11 +290,11 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	// Run strace
 	u.PrintHeader2("(*) Gathering system call from ELF file")
-	gatherDynamicDataBackground(SYSTRACE, programPath, programName,
+	gatherDynamicData(SYSTRACE, programPath, programName,
 		dynamicData, dArgs)
 
 	// Run ltrace
 	u.PrintHeader2("(*) Gathering symbols from ELF file")
-	gatherDynamicDataBackground(LIBTRACE, programPath, programName,
+	gatherDynamicData(LIBTRACE, programPath, programName,
 		dynamicData, dArgs)
 }
