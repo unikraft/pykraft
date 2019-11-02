@@ -57,9 +57,12 @@ func gatherDynamicDataBackground(command, programPath, programName string,
 			if strings.Contains(option, programName) {
 				// If yes, take only arguments
 				split := strings.Split(option, programName)
-				option = strings.TrimSuffix(split[1], "\n")
+				option = strings.TrimSuffix(strings.Replace(split[1],
+					" ", "", -1), "\n")
 			}
 
+			u.PrintInfo("Run " + programName + " with option: '" +
+				option + "'")
 			gatherData(command, programPath, programName, option, data, dArgs)
 		}
 	} else {
