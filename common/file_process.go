@@ -113,6 +113,10 @@ func ReadLinesFile(path string) ([]string, error) {
 	for {
 		line, err := rd.ReadString('\n')
 
+		if len(line) == 0{
+			break
+		}
+
 		// End of file, break the reading
 		if err == io.EOF {
 			lines = append(lines, line)
