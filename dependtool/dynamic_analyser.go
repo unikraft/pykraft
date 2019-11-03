@@ -34,7 +34,10 @@ const (
 
 // --------------------------------Gather Data----------------------------------
 
-func gatherData(command, programPath, programName, option string,
+// gatherDataAux gathers symbols and system calls of a given application (helper
+// function
+//
+func gatherDataAux(command, programPath, programName, option string,
 	data *u.DynamicData, dArgs DynamicArgs) {
 	_, errStr := CaptureOutput(programPath, programName, command, option, dArgs, data)
 
@@ -45,10 +48,9 @@ func gatherData(command, programPath, programName, option string,
 	}
 }
 
-// gatherDynamicData gathers symbols and system calls of a given application
-// which is a background process.
+// gatherData gathers symbols and system calls of a given application
 //
-func gatherDynamicData(command, programPath, programName string,
+func gatherData(command, programPath, programName string,
 	data *u.DynamicData, dArgs DynamicArgs) {
 
 	if len(dArgs.options) > 0 {
@@ -64,11 +66,11 @@ func gatherDynamicData(command, programPath, programName string,
 
 			u.PrintInfo("Run " + programName + " with option: '" +
 				option + "'")
-			gatherData(command, programPath, programName, option, data, dArgs)
+			gatherDataAux(command, programPath, programName, option, data, dArgs)
 		}
 	} else {
-		// Run without option
-		gatherData(command, programPath, programName, "", data, dArgs)
+		// Run without option/config
+		gatherDataAux(command, programPath, programName, "", data, dArgs)
 	}
 }
 
@@ -289,12 +291,10 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 	dynamicData.Symbols = make(map[string]string)
 
 	// Run strace
-	u.PrintHeader2("(*) Gathering system call from ELF file")
-	gatherDynamicData(SYSTRACE, programPath, programName,
-		dynamicData, dArgs)
+	u.PrintHeader2("(*) Gathering system calls from ELF file")
+	gatherData(SYSTRACE, programPath, programName, dynamicData, dArgs)
 
 	// Run ltrace
 	u.PrintHeader2("(*) Gathering symbols from ELF file")
-	gatherDynamicData(LIBTRACE, programPath, programName,
-		dynamicData, dArgs)
+	gatherData(LIBTRACE, programPath, programName, dynamicData, dArgs)
 }
