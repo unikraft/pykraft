@@ -134,7 +134,7 @@ func parseDependencies(output string, data, dependenciesMap,
 // It returns a slice of strings which represents all the shared libs of
 // a particular package.
 func parseLDD(output string, data map[string][]string, lddMap map[string][]string,
-	v bool) []string {
+	fullDeps bool) []string {
 
 	listLdd := make([]string, 0)
 	for _, line := range strings.Split(output, "\n") {
@@ -144,7 +144,8 @@ func parseLDD(output string, data map[string][]string, lddMap map[string][]strin
 
 			lib, path := words[0], words[1]
 
-			if v {
+			// Execute ldd only if fullDeps mode is set
+			if fullDeps {
 				rd := RecursiveData{
 					data:     data,
 					glMap:    lddMap,
@@ -208,21 +209,21 @@ func parseTrace(output string, data map[string]string) {
 // parseLsof parses the output of the 'lsof' command.
 //
 // It returns an error if any, otherwise it returns nil.
-func parseLsof(output string, data *u.DynamicData, v bool) error {
+func parseLsof(output string, data *u.DynamicData, fullDeps bool) error {
 
 	lddMap := make(map[string][]string)
 	for _, line := range strings.Split(output, "\n") {
 		if strings.Contains(line, ".so") {
 			words := strings.Split(line, "/")
 			data.SharedLibs[words[len(words)-1]] = nil
-			if v {
+			if fullDeps {
 				// Execute ldd only if fullDeps mode is set
 				if out, err := u.ExecutePipeCommand("ldd " + line +
 					" | awk '/ => / { print $1,$3 }'"); err != nil {
 					return err
 				} else {
 					data.SharedLibs[words[len(words)-1]] =
-						parseLDD(out, data.SharedLibs, lddMap, v)
+						parseLDD(out, data.SharedLibs, lddMap, fullDeps)
 				}
 			}
 		}

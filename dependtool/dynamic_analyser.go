@@ -78,7 +78,7 @@ func gatherData(command, programPath, programName string,
 //
 // It returns an error if any, otherwise it returns nil.
 func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
-	v bool) error {
+	fullDeps bool) error {
 
 	// Get the pid
 	pidStr := strconv.Itoa(pid)
@@ -90,7 +90,7 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 		return err
 	} else {
 		// Parse 'lsof' output
-		if err := parseLsof(output, data, v); err != nil {
+		if err := parseLsof(output, data, fullDeps); err != nil {
 			u.PrintErr(err)
 		}
 	}
@@ -102,7 +102,7 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 		return err
 	} else {
 		// Parse 'cat' output
-		if err := parseLsof(output, data, v); err != nil {
+		if err := parseLsof(output, data, fullDeps); err != nil {
 			u.PrintErr(err)
 		}
 	}
