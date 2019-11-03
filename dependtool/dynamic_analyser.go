@@ -146,8 +146,8 @@ func CaptureOutput(programPath, programName, command, option string,
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	bufOut, bufErr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd.Stdout = io.MultiWriter(bufOut) // Add os.Stdin to record on stdout
-	cmd.Stderr = io.MultiWriter(bufErr) // Add os.Stdin to record on stderr
+	cmd.Stdout = io.MultiWriter(bufOut) // Add os.Stdout to record on stdout
+	cmd.Stderr = io.MultiWriter(bufErr) // Add os.Stderr to record on stderr
 	cmd.Stdin = os.Stdin
 
 	// Run the process (traced by strace/ltrace)
