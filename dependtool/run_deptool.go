@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"os"
+	"runtime"
+	"strings"
 	u "tools/common"
 )
 
 func RunAnalyserTool(homeDir string, data *u.Data) {
 
 	// Support only Unix
-	/*if strings.ToLower(runtime.GOOS) != "linux" {
+	if strings.ToLower(runtime.GOOS) != "linux" {
 		u.PrintErr("Only UNIX/Linux platforms are supported")
-	}*/
+	}
 
 	// Init and parse local arguments
 	args := new(u.Arguments)
