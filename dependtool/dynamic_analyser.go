@@ -7,7 +7,6 @@
 package dependtool
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -114,28 +113,22 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 
 // launchTests runs external tests written in the 'test.txt' file.
 //
-// It returns an error if any, otherwise it returns nil.
-func launchTests(args DynamicArgs) error {
-	file, err := os.Open(args.testFile)
+func launchTests(args DynamicArgs) {
+
+	cmdTests, err := u.ReadLinesFile(args.testFile)
+
 	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		cmd := scanner.Text()
-		if len(cmd) > 0 {
-			// Execute each line as a command
-			if _, err := u.ExecutePipeCommand(cmd); err != nil {
-				u.PrintWarning("Impossible to execute test: " + cmd)
+		u.PrintWarning("Cannot launch test files" + err.Error())
+	} else {
+		for _, cmd := range cmdTests {
+			if len(cmd) > 0 {
+				// Execute each line as a command
+				if _, err := u.ExecutePipeCommand(cmd); err != nil {
+					u.PrintWarning("Impossible to execute test: " + cmd)
+				}
 			}
 		}
 	}
-
-	return nil
 }
 
 // CaptureOutput captures stdout and stderr of a the executed command. It will
@@ -208,9 +201,9 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 		// Wait until the program has started
 		time.Sleep(time.Second * 5)
 
-		if err := launchTests(dArgs); err != nil {
-			u.PrintWarning(err)
-		}
+		// Launch Tests
+		launchTests(dArgs)
+
 	} else {
 		u.PrintInfo("Waiting for external tests for " + strconv.Itoa(
 			dArgs.waitTime) + " sec")
