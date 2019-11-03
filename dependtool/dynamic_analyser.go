@@ -193,7 +193,7 @@ func CaptureOutput(programPath, programName, command, option string,
 }
 
 // Tester runs the executable file of a given application to perform tests to
-// get program dependencies
+// get program dependencies.
 //
 func Tester(programName string, process *os.Process, data *u.DynamicData,
 	dArgs DynamicArgs) {
@@ -237,9 +237,9 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 // ------------------------------------ARGS-------------------------------------
 
 // getDArgs returns a DynamicArgs struct which contains arguments specific to
-// the dynamic dependency analysis
+// the dynamic dependency analysis.
 //
-// It returns two strings which are respectively stdout and stderr.
+// It returns a DynamicArgs struct.
 func getDArgs(args *u.Arguments, options []string) DynamicArgs {
 	return DynamicArgs{*args.IntArg[WAIT_TIME],
 		*args.BoolArg[FULL_DEPS], *args.BoolArg[SAVE_OUTPUT],
