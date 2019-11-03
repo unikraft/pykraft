@@ -78,11 +78,11 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 	}
 
 	if len(*args.StringArg[CONFIG_FILE]) > 0 {
-		fmt.Println("Config file: ", color.GreenString(*args.StringArg[OPTIONS]))
+		fmt.Println("Config file: ", color.GreenString(*args.StringArg[CONFIG_FILE]))
 	}
 
 	if len(*args.StringArg[TEST_FILE]) > 0 {
-		fmt.Println("Test file: ", color.GreenString(*args.StringArg[OPTIONS]))
+		fmt.Println("Test file: ", color.GreenString(*args.StringArg[TEST_FILE]))
 	}
 
 	fmt.Println("----------------------------------------------")
