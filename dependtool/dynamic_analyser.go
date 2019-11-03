@@ -122,9 +122,12 @@ func launchTests(args DynamicArgs) {
 	} else {
 		for _, cmd := range cmdTests {
 			if len(cmd) > 0 {
+				cmd = strings.TrimSuffix(cmd, "\n")
 				// Execute each line as a command
 				if _, err := u.ExecutePipeCommand(cmd); err != nil {
 					u.PrintWarning("Impossible to execute test: " + cmd)
+				} else {
+					u.PrintInfo("Test executed: " + cmd)
 				}
 			}
 		}
