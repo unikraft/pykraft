@@ -29,6 +29,7 @@ type DynamicArgs struct {
 const (
 	SYSTRACE = "strace"
 	LIBTRACE = "ltrace"
+	START_TIME_APP = 3
 )
 
 // --------------------------------Gather Data----------------------------------
@@ -202,7 +203,7 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 		u.PrintInfo("Run internal tests from file " + dArgs.testFile)
 
 		// Wait until the program has started
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * START_TIME_APP)
 
 		// Launch Tests
 		launchTests(dArgs)
