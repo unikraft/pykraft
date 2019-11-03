@@ -161,7 +161,7 @@ func CaptureOutput(programPath, programName, command, option string,
 	timeoutKill := time.NewTimer(time.Second)
 
 	// Add timer for background process
-	timerBackground := time.NewTimer(3 * time.Second)
+	timerBackground := time.NewTimer(START_TIME_APP * time.Second)
 	go func() {
 		<-timerBackground.C
 		// If background, run Testers
