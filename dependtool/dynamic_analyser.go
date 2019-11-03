@@ -247,9 +247,6 @@ func getDArgs(args *u.Arguments, options []string) DynamicArgs {
 }
 
 // -------------------------------------RUN-------------------------------------
-func printSlice(s []string) {
-	fmt.Printf("len=%d cap=%d %v\n", len(s), cap(s), s)
-}
 
 // RunDynamicAnalyser runs the dynamic analysis to get shared libraries,
 // system calls and library calls of a given application.
