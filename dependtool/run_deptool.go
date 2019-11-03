@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"os"
-	"runtime"
-	"strings"
 	u "tools/common"
 )
 
 func RunAnalyserTool(homeDir string, data *u.Data) {
 
 	// Support only Unix
-	if strings.ToLower(runtime.GOOS) != "linux" {
+	/*if strings.ToLower(runtime.GOOS) != "linux" {
 		u.PrintErr("Only UNIX/Linux platforms are supported")
-	}
+	}*/
 
 	// Init and parse local arguments
 	args := new(u.Arguments)
@@ -75,7 +73,18 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 	fmt.Println("----------------------------------------------")
 	fmt.Println("Analyze Program: ", color.GreenString(programName))
 	fmt.Println("Full Path: ", color.GreenString(programPath))
-	fmt.Println("Options: ", color.GreenString(*args.StringArg[OPTIONS]))
+	if len(*args.StringArg[OPTIONS]) > 0 {
+		fmt.Println("Options: ", color.GreenString(*args.StringArg[OPTIONS]))
+	}
+
+	if len(*args.StringArg[CONFIG_FILE]) > 0 {
+		fmt.Println("Config file: ", color.GreenString(*args.StringArg[OPTIONS]))
+	}
+
+	if len(*args.StringArg[TEST_FILE]) > 0 {
+		fmt.Println("Test file: ", color.GreenString(*args.StringArg[OPTIONS]))
+	}
+
 	fmt.Println("----------------------------------------------")
 }
 
