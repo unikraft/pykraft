@@ -261,6 +261,8 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 				{"CONFIG_HAVE_LIBC", &v, CONFIG},
 				{"CONFIG_LIBNEWLIBC", &v, CONFIG},
 				{"CONFIG_LIBNEWLIBM", &v, CONFIG},
+				{"CONFIG_LIBNEWLIBC_WANT_IO_C99_FORMATS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LIBNEWLIBC_LINUX_ERRNO_EXTENSIONS", nil, COMMENTED_CONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
