@@ -133,7 +133,7 @@ func matchLibs(unikraftLibs string, data *u.Data) ([]string, map[string]string, 
 
 	matchedLibs := make([]string, 0)
 	if err := fetchSymbolsInternalLibs(unikraftLibs, mapSymbols); err != nil {
-		u.PrintErr(err)
+		return nil, nil, err
 	}
 
 	// Get list of libs from xenbits
