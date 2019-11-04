@@ -172,29 +172,32 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 	err := filepath.Walk(sourcesPath, func(path string, info os.FileInfo,
 		err error) error {
 
-		extension := filepath.Ext(info.Name())
-		if _, ok := srcLanguages[extension]; ok {
-			// Add source files to sourceFiles list
-			sourceFiles = append(sourceFiles, info.Name())
+		if !info.IsDir() {
+			extension := filepath.Ext(info.Name())
+			if _, ok := srcLanguages[extension]; ok {
+				// Add source files to sourceFiles list
+				sourceFiles = append(sourceFiles, info.Name())
 
-			// Count the number of extension
-			srcLanguages[extension] += 1
+				// Count the number of extension
+				srcLanguages[extension] += 1
 
-			// Copy source files to the appFolder
-			if err = u.CopyFileContents(path, appFolder+info.Name()); err != nil {
-				return err
+				// Copy source files to the appFolder
+				if err = u.CopyFileContents(path, appFolder+info.Name()); err != nil {
+					return err
+				}
+			} else if extension == ".h" {
+				// Add source files to includesFiles list
+				includesFiles = append(includesFiles, info.Name())
+
+				// Copy header files to the INCLUDE_FOLDER
+				if err = u.CopyFileContents(path, includeFolder+info.Name()); err != nil {
+					return err
+				}
+			} else {
+				u.PrintWarning("Unsupported extension for file: " + info.Name())
 			}
-		} else if extension == ".h" {
-			// Add source files to includesFiles list
-			includesFiles = append(includesFiles, info.Name())
-
-			// Copy header files to the INCLUDE_FOLDER
-			if err = u.CopyFileContents(path, includeFolder+info.Name()); err != nil {
-				return err
-			}
-		} else {
-			u.PrintWarning("Unsupported extension for file: " + info.Name())
 		}
+
 		return nil
 	})
 
