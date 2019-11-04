@@ -136,17 +136,18 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		unikraftPath = *args.StringArg[UNIKRAFT]
 	}
 
+	// Check if sources argument is set
 	if len(*args.StringArg[SOURCES]) == 0 {
 		u.PrintErr("sources argument '-s' must be set")
 	}
 
 	// Check if the unikraft folder contains the 3 required folders
-	f, err := ioutil.ReadDir(unikraftPath)
-	if err != nil {
+	if folder, err := ioutil.ReadDir(unikraftPath); err != nil {
 		u.PrintErr(err)
-	}
-	if !ContainsUnikraftFolders(f) {
-		u.PrintErr(errors.New("unikraft, apps and libs folders must exist"))
+	} else {
+		if !ContainsUnikraftFolders(folder) {
+			u.PrintErr(errors.New("unikraft, apps and libs folders must exist"))
+		}
 	}
 
 	// If data is not initialized, read output from dependency analysis tool
