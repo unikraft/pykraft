@@ -38,6 +38,7 @@ const (
 	OPENSSL           = "openssl"
 	PFS9              = "9pfs"
 	POSIX_LIBDL       = "posix-libdl"
+	POSIX_PROCESS     = "posix-process"
 	POSIX_USER        = "posix-user"
 	PTHREAD_EMBEDDED  = "pthread-embedded"
 	PTHREADPOOL       = "pthreadpool"
