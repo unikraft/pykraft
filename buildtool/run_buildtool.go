@@ -115,7 +115,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	if err != nil {
 		u.PrintErr(err)
 	}
-	_ = parseLocalArguments(p, args)
+	parseLocalArguments(p, args)
 
 	// Get program Name
 	programName := *args.StringArg[PROGRAM]
