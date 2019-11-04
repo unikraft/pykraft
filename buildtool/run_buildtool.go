@@ -188,13 +188,16 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Match internal dependencies between micro-libs
-	if err := searchInternalDependencies(unikraftPath, &matchedLibs, externalLibs); err != nil {
+	if err := searchInternalDependencies(unikraftPath, &matchedLibs,
+		externalLibs); err != nil {
 		u.PrintErr(err)
 	}
 
 	// Generate Makefiles
-	generateMake(programName, appFolder, unikraftPath, *args.StringArg[MAKEFILE],
-		matchedLibs, sourceFiles, externalLibs)
+	if err := generateMake(programName, appFolder, unikraftPath, *args.StringArg[MAKEFILE],
+		matchedLibs, sourceFiles, externalLibs); err != nil {
+		u.PrintErr(err)
+	}
 
 	// Clone the external git repositories
 	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
@@ -252,17 +255,17 @@ func searchInternalDependencies(unikraftPath string, matchedLibs *[]string,
 }
 
 func generateMake(programName, appFolder, unikraftPath, makefile string,
-	matchedLibs, sourceFiles []string, externalLibs map[string]string) {
+	matchedLibs, sourceFiles []string, externalLibs map[string]string) error {
 	// Generate Makefile
 	if err := generateMakefile(appFolder+"Makefile", unikraftPath,
 		appFolder, matchedLibs, externalLibs); err != nil {
-		u.PrintErr(err)
+		return err
 	}
 
 	// Generate Config.uk
 	if err := generateConfigUk(appFolder+"Config.uk",
 		strings.ToUpper(programName), matchedLibs); err != nil {
-		u.PrintErr(err)
+		return err
 	}
 
 	// Get the file type for UNIKRAFT flag
@@ -271,8 +274,10 @@ func generateMake(programName, appFolder, unikraftPath, makefile string,
 	// Generate Makefile.uk
 	if err := generateMakefileUK(appFolder+"Makefile.uk", programName,
 		fileType, makefile, sourceFiles); err != nil {
-		u.PrintErr(err)
+		return err
 	}
+
+	return nil
 }
 
 func deleteBuildFolder(appFolder string) {
