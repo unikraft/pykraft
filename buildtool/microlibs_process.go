@@ -8,7 +8,6 @@ package buildtool
 
 import (
 	"io/ioutil"
-	"os"
 	"strings"
 	"sync"
 	u "tools/common"
@@ -51,8 +50,7 @@ func fetchSymbolsInternalLibs(unikraftLibs string,
 	// Read Unikraft internal libs symbols (exportsyms.uk)
 	for _, f := range files {
 		if f.IsDir() {
-			export := unikraftLibs + f.Name() + string(os.PathSeparator) +
-				EXPORT_FILE
+			export := unikraftLibs + f.Name() + SEP + EXPORT_FILE
 			if exists, _ := u.Exists(export); exists {
 				u.PrintInfo("Retrieving symbols of internal lib: " + f.Name())
 				b, _ := u.OpenTextFile(export)
