@@ -211,6 +211,13 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
+	case "CONFIG_LIBUKTIME":
+		if u.Contains(matchedLibs, UKTIME) {
+			configs := []*KConfig{
+				{"CONFIG_LIBUKTIME", &v, CONFIG},
+			}
+			items = SetConfig(configs, kConfigMap, items)
+		}
 	case "CONFIG_UKSYSINFO":
 		if u.Contains(matchedLibs, UKSYSINFO) {
 			configs := []*KConfig{

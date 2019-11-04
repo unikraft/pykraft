@@ -60,6 +60,7 @@ const (
 	UKSYSINFO         = "uksysinfo"
 	UKSWRAND          = "ukswrand"
 	UKTIMECONV        = "uktimeconv"
+	UKTIME            = "uktime"
 	VFSCORE           = "vfscore"
 	ZLIB              = "zlib"
 )
