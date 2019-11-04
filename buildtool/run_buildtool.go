@@ -187,6 +187,11 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		u.PrintErr(err)
 	}
 
+	// Match internal dependencies between micro-libs
+	if err := searchInternalDependencies(unikraftPath, &matchedLibs, externalLibs); err != nil {
+		u.PrintErr(err)
+	}
+
 	// Generate Makefiles
 	generateMake(programName, appFolder, unikraftPath, *args.StringArg[MAKEFILE],
 		matchedLibs, sourceFiles, externalLibs)
@@ -202,6 +207,48 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	// Run make
 	runMake(programName, appFolder)
+}
+
+func searchInternalDependencies(unikraftPath string, matchedLibs *[]string,
+	externalLibs map[string]string) error {
+
+	for _, lib := range *matchedLibs {
+		// Consider only external libs
+		if _, ok := externalLibs[lib]; ok {
+
+			// Get and read Config.UK from external lib
+			configUk := unikraftPath + LIBS_FOLDER + lib + SEP + "Config.uk"
+			lines, err := u.ReadLinesFile(configUk)
+			if err != nil {
+				return err
+			}
+
+			// Process Config.UK file
+			mapConfig := make(map[string][]string)
+			u.ProcessConfigUK(lines, false, mapConfig, nil)
+
+			for config, _ := range mapConfig {
+
+				// Remove LIB prefix
+				if strings.Contains(config, "LIB") {
+					config = strings.TrimPrefix(config, "LIB")
+				}
+
+				// Replace underscore by dash
+				if strings.Contains(config, "_") {
+					config = strings.ReplaceAll(config, "_", "-")
+				}
+
+				// Check if matchedLibs already contains the lib
+				config = strings.ToLower(config)
+				if !u.Contains(*matchedLibs, config) {
+					*matchedLibs = append(*matchedLibs, config)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func generateMake(programName, appFolder, unikraftPath, makefile string,
