@@ -126,7 +126,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Create the folder 'output' if it does not exist
-	outFolder := homeDir + string(os.PathSeparator) + programName +
+	outFolder := homeDir + SEP + programName +
 		"_" + u.OUT_FOLDER
 	if _, err := os.Stat(outFolder); os.IsNotExist(err) {
 		if err = os.Mkdir(outFolder, os.ModePerm); err != nil {
@@ -136,7 +136,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	var unikraftPath string
 	if len(*args.StringArg[UNIKRAFT]) == 0 {
-		path, err := setUnikraftFolder(homeDir + string(os.PathSeparator))
+		path, err := setUnikraftFolder(homeDir + SEP)
 		if err != nil {
 			u.PrintErr(err)
 		}
@@ -188,10 +188,9 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Match micro-libs
-	s := string(os.PathSeparator)
 	microLibs := make(map[string][]string)
-	matchedLibs, externalLibs, err := matchLibs(unikraftPath+"unikraft"+s+
-		"lib"+s, data, microLibs)
+	matchedLibs, externalLibs, err := matchLibs(unikraftPath+"unikraft"+SEP+
+		"lib"+SEP, data, microLibs)
 	if err != nil {
 		u.PrintErr(err)
 	}
