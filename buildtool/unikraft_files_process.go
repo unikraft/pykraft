@@ -37,6 +37,41 @@ func createIncludeFolder(appFolder string) (*string, error) {
 	return &includeFolder, nil
 }
 
+// ----------------------------Set UNIKRAFT Folders-----------------------------
+func setUnikraftFolder(homeDir string) (*string, error) {
+
+	unikraftFolder := homeDir + UNIKRAFT_FOLDER
+	if _, err := os.Stat(unikraftFolder); os.IsNotExist(err) {
+		if err = os.Mkdir(unikraftFolder, u.PERM); err != nil {
+			return nil, err
+		}
+
+		// Create 'apps' and 'libs' subfolders
+		if _, err := os.Stat(unikraftFolder + APPS_FOLDER); os.IsNotExist(err) {
+			if err = os.Mkdir(unikraftFolder+APPS_FOLDER, u.PERM); err != nil {
+				return nil, err
+			}
+		}
+
+		if _, err := os.Stat(unikraftFolder + LIBS_FOLDER); os.IsNotExist(err) {
+			if err = os.Mkdir(unikraftFolder+LIBS_FOLDER, u.PERM); err != nil {
+				return nil, err
+			}
+		}
+
+		// Download git repo of unikraft
+		if _, _, err := u.GitCloneRepository("git://xenbits.xen.org/unikraft/unikraft.git",
+			unikraftFolder, true); err != nil {
+			return nil, err
+		}
+
+	} else {
+		return &unikraftFolder, nil
+	}
+
+	return &unikraftFolder, nil
+}
+
 // ---------------------------Check UNIKRAFT Folder-----------------------------
 
 func ContainsUnikraftFolders(files []os.FileInfo) bool {

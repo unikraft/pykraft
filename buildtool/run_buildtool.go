@@ -134,15 +134,20 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		}
 	}
 
+	var unikraftPath string
 	if len(*args.StringArg[UNIKRAFT]) == 0 {
-		u.PrintErr("unikraft argument '-u' must be set")
+		path, err := setUnikraftFolder(homeDir + string(os.PathSeparator))
+		if err != nil {
+			u.PrintErr(err)
+		}
+		unikraftPath = *path
+	} else {
+		unikraftPath = *args.StringArg[UNIKRAFT]
 	}
 
 	if len(*args.StringArg[SOURCES]) == 0 {
 		u.PrintErr("sources argument '-s' must be set")
 	}
-
-	unikraftPath := *args.StringArg[UNIKRAFT]
 
 	// Check if the unikraft folder contains the 3 required folders
 	f, err := ioutil.ReadDir(unikraftPath)
