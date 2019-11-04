@@ -47,6 +47,8 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 	}
 
 	if created {
+		u.PrintInfo("Create Unikraft folder with apps and libs subfolders")
+
 		// Create 'apps' and 'libs' subfolders
 		if _, err := u.CreateFolder(unikraftFolder, APPS_FOLDER); err != nil {
 			return nil, err
@@ -63,6 +65,7 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 		}
 
 	} else {
+		u.PrintInfo("Unikraft folder already exists")
 		return &unikraftFolder, nil
 	}
 
