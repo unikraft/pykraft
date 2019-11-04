@@ -125,7 +125,7 @@ func WriteMapToFile(file *os.File, headerName string, in interface{}) error {
 	case map[string]string:
 		for key, value := range v {
 
-			var str string;
+			var str string
 			if len(value) > 0 {
 				str = key + "@" + value
 			} else {
@@ -139,7 +139,7 @@ func WriteMapToFile(file *os.File, headerName string, in interface{}) error {
 	case map[string][]string:
 		for key, values := range v {
 
-			var str string;
+			var str string
 			if len(values) > 0 {
 				str = key + "->" + strings.Join(values, ",")
 			} else {
