@@ -241,11 +241,17 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 		}
 	case "CONFIG_LIBVFSCORE":
 		if u.Contains(matchedLibs, VFSCORE) {
+			n := "16"
 			configs := []*KConfig{
 				{"CONFIG_LIBVFSCORE", &v, CONFIG},
 				{"CONFIG_LIBRAMFS", nil, COMMENTED_CONFIG},
 				{"CONFIG_LIBDEVFS", &v, CONFIG},
 				{"CONFIG_LIBDEVFS_USE_RAMFS", nil, COMMENTED_CONFIG},
+				{"#", nil, SEPARATOR},
+				{"# vfscore configuration", nil, HEADER},
+				{"#", nil, SEPARATOR},
+				{"CONFIG_LIBVFSCORE_PIPE_SIZE_ORDER", &n, CONFIG},
+				{"CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS", nil, COMMENTED_CONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
