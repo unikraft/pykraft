@@ -85,7 +85,7 @@ func typeFile(filename string) string {
 //
 // It returns an error if any, otherwise it returns nil.
 func generateMakefileUK(filename, programName, filetype string,
-	makefileLines *string, sourceFiles []string) error {
+	makefileLines string, sourceFiles []string) error {
 
 	var sb strings.Builder
 
@@ -133,8 +133,8 @@ func generateMakefileUK(filename, programName, filetype string,
 		"# ADD the flags of your app HERE\n\n")
 
 	// Add additional lines
-	if makefileLines != nil {
-		b, _ := u.OpenTextFile(*makefileLines)
+	if len(makefileLines) > 0 {
+		b, _ := u.OpenTextFile(makefileLines)
 		for _, line := range strings.Split(string(b), "\n") {
 			if len(line) > 0 {
 				sb.WriteString("APP" + strings.ToUpper(programName) +

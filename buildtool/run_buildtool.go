@@ -188,6 +188,25 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		u.PrintErr(err)
 	}
 
+	// Generate Makefiles
+	generateMake(programName, appFolder, unikraftPath, *args.StringArg[MAKEFILE],
+		matchedLibs, sourceFiles, externalLibs)
+
+	// Clone the external git repositories
+	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
+
+	// Delete Build folder
+	deleteBuildFolder(appFolder)
+
+	// Initialize config files
+	initConfig(appFolder, matchedLibs)
+
+	// Run make
+	runMake(programName, appFolder)
+}
+
+func generateMake(programName, appFolder, unikraftPath, makefile string,
+	matchedLibs, sourceFiles []string, externalLibs map[string]string) {
 	// Generate Makefile
 	if err := generateMakefile(appFolder+"Makefile", unikraftPath,
 		appFolder, matchedLibs, externalLibs); err != nil {
@@ -205,13 +224,12 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	// Generate Makefile.uk
 	if err := generateMakefileUK(appFolder+"Makefile.uk", programName,
-		fileType, args.StringArg["makefile"], sourceFiles); err != nil {
+		fileType, makefile, sourceFiles); err != nil {
 		u.PrintErr(err)
 	}
+}
 
-	// Clone the external git repositories
-	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
-
+func deleteBuildFolder(appFolder string) {
 	// Delete build folder if already exists
 	if file, err := u.OSReadDir(appFolder); err != nil {
 		u.PrintWarning(err)
@@ -225,6 +243,9 @@ func RunBuildTool(homeDir string, data *u.Data) {
 			}
 		}
 	}
+}
+
+func initConfig(appFolder string, matchedLibs []string) {
 
 	// Run make allNoConfig to generate a .config file
 	if strOut, strErr, err := u.ExecuteWaitCommand(appFolder, "make",
@@ -240,7 +261,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	// Parse .config
 	kConfigMap := make(map[string]*KConfig)
 	items := make([]*KConfig, 0)
-	items, err = parseConfig(appFolder+".config", kConfigMap, items,
+	items, err := parseConfig(appFolder+".config", kConfigMap, items,
 		matchedLibs)
 	if err != nil {
 		u.PrintErr(err)
@@ -253,7 +274,9 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	if err := writeConfig(appFolder+".config", items); err != nil {
 		u.PrintErr(err)
 	}
+}
 
+func runMake(programName, appFolder string) {
 	// Run make
 	stdout, stderr, _ := u.ExecuteRunCmd("make", appFolder, true)
 
