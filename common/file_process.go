@@ -115,11 +115,10 @@ func CreateFolder(path, folderName string) (bool, error) {
 func ReadLinesFile(path string) ([]string, error) {
 
 	f, err := os.Open(path)
-	defer f.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	rd := bufio.NewReader(f)
 
