@@ -350,6 +350,7 @@ func addInternalConfig(conf string, kConfigMap map[string]*KConfig, items []*KCo
 			{"CONFIG_XEN_KERNEL_EMG_CONSOLE", nil, COMMENTED_CONFIG},
 			{"CONFIG_XEN_DEBUG_HV_CONSOLE", &v, CONFIG},
 			{"CONFIG_XEN_DEBUG_EMG_CONSOLE", nil, COMMENTED_CONFIG},
+			{"CONFIG_XEN_PV_BUILD_P2M", &v, CONFIG},
 			{"CONFIG_XEN_GNTTAB", &v, CONFIG},
 			{"CONFIG_XEN_XENBUS", nil, COMMENTED_CONFIG},
 		}
