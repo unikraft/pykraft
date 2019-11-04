@@ -11,7 +11,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-
 	u "tools/common"
 )
 
@@ -130,26 +129,27 @@ func matchSymbols(matchedLibs []string, data map[string]string,
 //
 // It returns a list of micro-libs that are required by the application and an
 // error if any, otherwise it returns nil.
-func matchLibs(unikraftLibs string, data *u.Data,
-	microLibs map[string][]string) ([]string, map[string]string, error) {
+func matchLibs(unikraftLibs string, data *u.Data) ([]string, map[string]string, error) {
+
+	mapSymbols := make(map[string][]string)
 
 	matchedLibs := make([]string, 0)
-	if err := fetchSymbolsInternalLibs(unikraftLibs, microLibs); err != nil {
+	if err := fetchSymbolsInternalLibs(unikraftLibs, mapSymbols); err != nil {
 		u.PrintErr(err)
 	}
 
 	// Get list of libs from xenbits
 	url := "http://xenbits.xen.org/gitweb/?pf=unikraft/libs"
-	externalLibs, err := fetchSymbolsExternalLibs(url, microLibs)
+	externalLibs, err := fetchSymbolsExternalLibs(url, mapSymbols)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Perform the matching symbols on static data
-	matchedLibs = matchSymbols(matchedLibs, data.StaticData.Symbols, microLibs)
+	matchedLibs = matchSymbols(matchedLibs, data.StaticData.Symbols, mapSymbols)
 
 	// Perform the matching symbols on dynamic data
-	matchedLibs = matchSymbols(matchedLibs, data.DynamicData.Symbols, microLibs)
+	matchedLibs = matchSymbols(matchedLibs, data.DynamicData.Symbols, mapSymbols)
 
 	return matchedLibs, externalLibs, nil
 }

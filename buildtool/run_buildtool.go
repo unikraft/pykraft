@@ -181,9 +181,8 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Match micro-libs
-	microLibs := make(map[string][]string)
 	matchedLibs, externalLibs, err := matchLibs(unikraftPath+"unikraft"+SEP+
-		"lib"+SEP, data, microLibs)
+		"lib"+SEP, data)
 	if err != nil {
 		u.PrintErr(err)
 	}
