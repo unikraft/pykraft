@@ -18,10 +18,11 @@ import (
 
 // Folder
 const (
-	APPS_FOLDER     = "apps/"
-	UNIKRAFT_FOLDER = "unikraft/"
-	LIBS_FOLDER     = "libs/"
-	INCLUDE_FOLDER  = "include/"
+	SEP             = string(os.PathSeparator)
+	APPS_FOLDER     = "apps" + SEP
+	UNIKRAFT_FOLDER = "unikraft" + SEP
+	LIBS_FOLDER     = "libs" + SEP
+	INCLUDE_FOLDER  = "include" + SEP
 )
 
 // ---------------------------Create Include Folder-----------------------------
@@ -91,7 +92,7 @@ func ContainsUnikraftFolders(files []os.FileInfo) bool {
 
 	var folderName string
 	for _, f := range files {
-		folderName = f.Name() + string(os.PathSeparator)
+		folderName = f.Name() + SEP
 		if _, ok := m[folderName]; ok {
 			m[folderName] = true
 		}
@@ -105,11 +106,10 @@ func ContainsUnikraftFolders(files []os.FileInfo) bool {
 func createUnikraftApp(programName, unikraftPath string) string {
 
 	var appFolder string
-	sep := string(os.PathSeparator)
 	if unikraftPath[len(unikraftPath)-1] != os.PathSeparator {
-		appFolder = unikraftPath + sep + APPS_FOLDER + programName + sep
+		appFolder = unikraftPath + SEP + APPS_FOLDER + programName + SEP
 	} else {
-		appFolder = unikraftPath + APPS_FOLDER + programName + sep
+		appFolder = unikraftPath + APPS_FOLDER + programName + SEP
 	}
 
 	// Create the folder 'appFolder' if it does not exist
