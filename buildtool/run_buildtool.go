@@ -125,15 +125,6 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		programName = filepath.Base(programName)
 	}
 
-	// Create the folder 'output' if it does not exist
-	outFolder := homeDir + SEP + programName +
-		"_" + u.OUT_FOLDER
-	if _, err := os.Stat(outFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(outFolder, os.ModePerm); err != nil {
-			u.PrintErr(err)
-		}
-	}
-
 	var unikraftPath string
 	if len(*args.StringArg[UNIKRAFT]) == 0 {
 		path, err := setUnikraftFolder(homeDir + SEP)
@@ -160,7 +151,8 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	// If data is not initialized, read output from dependency analysis tool
 	if data == nil {
-		println("Initialized data")
+		u.PrintInfo("Initialize data")
+		outFolder := homeDir + SEP + programName + "_" + u.OUT_FOLDER
 		if data, err = u.ReadDataJson(outFolder+programName, data); err != nil {
 			u.PrintErr(err)
 		}
