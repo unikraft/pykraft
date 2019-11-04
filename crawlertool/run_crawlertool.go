@@ -8,6 +8,7 @@ package crawlertool
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -87,4 +88,35 @@ func RunCrawler() {
 	u.PrintOk(".dot file is saved: " + outputPath)
 	u.PrintOk("Open the following website to display the graph:" +
 		" https://dreampuf.github.io/GraphvizOnline/")
+}
+
+// searchConfigUK performs a look-up to find "Config.uk" files.
+//
+// It returns an error if any, otherwise it returns nil.
+func searchConfigUK(path string, fullSelect bool,
+	mapConfig map[string][]string, mapLabel map[string]string) error {
+
+	err := filepath.Walk(path, func(path string, info os.FileInfo,
+		err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Consider only CONFIG_UK files
+		if !info.IsDir() && info.Name() == u.CONFIG_UK {
+			lines, err := u.ReadLinesFile(path)
+			if err != nil {
+				return err
+			}
+			u.ProcessConfigUK(lines, fullSelect, mapConfig, mapLabel)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
