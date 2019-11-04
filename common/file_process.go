@@ -94,6 +94,20 @@ func Exists(path string) (bool, error) {
 	return true, err
 }
 
+// CreateFolder creates a folder if it does not exist.
+//
+// It returns true if the folder is created and an error if any, otherwise it
+// returns nil.
+func CreateFolder(path, folderName string) (bool, error) {
+	if _, err := os.Stat(path + folderName); os.IsNotExist(err) {
+		if err = os.Mkdir(path+folderName, PERM); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
 // Reads a file line by line and saves its content into a slice.
 //
 // It returns a slice of string which represents each line of a file and an
@@ -113,7 +127,7 @@ func ReadLinesFile(path string) ([]string, error) {
 	for {
 		line, err := rd.ReadString('\n')
 
-		if len(line) == 0{
+		if len(line) == 0 {
 			break
 		}
 

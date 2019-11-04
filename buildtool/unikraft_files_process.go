@@ -28,12 +28,11 @@ const (
 
 func createIncludeFolder(appFolder string) (*string, error) {
 
-	includeFolder := appFolder + INCLUDE_FOLDER
-	if _, err := os.Stat(includeFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(includeFolder, u.PERM); err != nil {
-			return nil, err
-		}
+	if _, err := u.CreateFolder(appFolder, INCLUDE_FOLDER); err != nil {
+		return nil, err
 	}
+
+	includeFolder := appFolder + INCLUDE_FOLDER
 	return &includeFolder, nil
 }
 
@@ -41,22 +40,20 @@ func createIncludeFolder(appFolder string) (*string, error) {
 func setUnikraftFolder(homeDir string) (*string, error) {
 
 	unikraftFolder := homeDir + UNIKRAFT_FOLDER
-	if _, err := os.Stat(unikraftFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(unikraftFolder, u.PERM); err != nil {
+
+	created, err := u.CreateFolder(homeDir, UNIKRAFT_FOLDER)
+	if err != nil {
+		return nil, err
+	}
+
+	if created {
+		// Create 'apps' and 'libs' subfolders
+		if _, err := u.CreateFolder(unikraftFolder, APPS_FOLDER); err != nil {
 			return nil, err
 		}
 
-		// Create 'apps' and 'libs' subfolders
-		if _, err := os.Stat(unikraftFolder + APPS_FOLDER); os.IsNotExist(err) {
-			if err = os.Mkdir(unikraftFolder+APPS_FOLDER, u.PERM); err != nil {
-				return nil, err
-			}
-		}
-
-		if _, err := os.Stat(unikraftFolder + LIBS_FOLDER); os.IsNotExist(err) {
-			if err = os.Mkdir(unikraftFolder+LIBS_FOLDER, u.PERM); err != nil {
-				return nil, err
-			}
+		if _, err := u.CreateFolder(unikraftFolder, LIBS_FOLDER); err != nil {
+			return nil, err
 		}
 
 		// Download git repo of unikraft
