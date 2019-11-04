@@ -204,10 +204,10 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 
 	v := "y"
 	switch conf {
-	case "CONFIG_UKUNISTD":
-		if u.Contains(matchedLibs, UKUNISTD) {
+	case "CONFIG_LIBPOSIX_USER":
+		if u.Contains(matchedLibs, POSIX_USER) {
 			configs := []*KConfig{
-				{"CONFIG_UKUNISTD", &v, CONFIG},
+				{"CONFIG_LIBPOSIX_USER", &v, CONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}

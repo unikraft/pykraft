@@ -38,6 +38,7 @@ const (
 	OPENSSL           = "openssl"
 	PFS9              = "9pfs"
 	POSIX_LIBDL       = "posix-libdl"
+	POSIX_USER        = "posix-user"
 	PTHREAD_EMBEDDED  = "pthread-embedded"
 	PTHREADPOOL       = "pthreadpool"
 	PYTHON            = "python"
@@ -59,7 +60,6 @@ const (
 	UKSYSINFO         = "uksysinfo"
 	UKSWRAND          = "ukswrand"
 	UKTIMECONV        = "uktimeconv"
-	UKUNISTD          = "ukunistd"
 	VFSCORE           = "vfscore"
 	ZLIB              = "zlib"
 )
