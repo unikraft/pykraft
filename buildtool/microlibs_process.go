@@ -29,7 +29,7 @@ func processSymbols(microLib, output string, mapSymbols map[string][]string) {
 
 	lines := strings.Split(output, "\n")
 	for _, line := range lines {
-		if len(line) > 0 && !strings.Contains(line, "#") ||
+		if len(line) > 0 && !strings.Contains(line, "#") &&
 			strings.Compare(line, "none") != 0 {
 			mapSymbols[line] = append(mapSymbols[line], microLib)
 		}
