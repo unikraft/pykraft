@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -118,6 +119,11 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	// Get program Name
 	programName := *args.StringArg[PROGRAM]
+
+	// Take base path if absolute path is used
+	if filepath.IsAbs(programName) {
+		programName = filepath.Base(programName)
+	}
 
 	// Create the folder 'output' if it does not exist
 	outFolder := homeDir + string(os.PathSeparator) + programName +
