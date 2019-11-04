@@ -14,40 +14,36 @@ import (
 
 // PrintHeader1 prints a big header formatted string on stdout.
 func PrintHeader1(v ...interface{}) {
-	d := color.New(color.FgBlue, color.Bold, color.Underline)
-	_, _ = d.Println(v)
+	header := color.New(color.FgBlue, color.Bold, color.Underline).SprintFunc()
+	fmt.Printf("%v\n", header(v))
 }
 
 // PrintHeader2 prints a small header formatted string on stdout.
 func PrintHeader2(v ...interface{}) {
-	d := color.New(color.FgMagenta)
-	_, _ = d.Println(v)
+	magenta := color.New(color.FgMagenta).SprintFunc()
+	fmt.Printf("%v\n", magenta(v))
 }
 
 // PrintWarning prints a warning formatted string on stdout.
 func PrintWarning(v ...interface{}) {
-	d := color.New(color.FgYellow, color.Bold)
-	_, _ = d.Print("[WARNING] ")
-	fmt.Println(v)
+	yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
+	fmt.Printf("[%s] %v\n", yellow("WARNING"), v)
 }
 
 // PrintOk prints a success formatted string on stdout.
 func PrintOk(v ...interface{}) {
-	d := color.New(color.FgGreen, color.Bold)
-	_, _ = d.Print("[SUCCESS] ")
-	fmt.Println(v)
+	green := color.New(color.FgGreen, color.Bold).SprintFunc()
+	fmt.Printf("[%s] %v\n", green("SUCCESS"), v)
 }
 
 // PrintInfo prints an info formatted string on stdout.
 func PrintInfo(v ...interface{}) {
-	d := color.New(color.FgBlue, color.Bold)
-	_, _ = d.Print("[INFO] ")
-	fmt.Println(v)
+	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+	fmt.Printf("[%s] %v\n", blue("INFO"), v)
 }
 
 // PrintErr prints an error formatted string on stdout and exits the app.
 func PrintErr(v ...interface{}) {
-	d := color.New(color.FgRed, color.Bold)
-	_, _ = d.Print("[ERROR] ")
-	log.Fatal(v)
+	red := color.New(color.FgRed).SprintFunc()
+	log.Fatalf("[%s] %v\n", red("ERROR"), v)
 }
