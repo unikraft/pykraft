@@ -1,2 +1,4 @@
 .idea/
 tools
+*.patch
+*.diff
