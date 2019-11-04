@@ -64,6 +64,12 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 			return nil, err
 		}
 
+		// Use staging branch
+		if _, _, err := u.GitBranchStaging(unikraftFolder+"unikraft", true);
+			err != nil {
+			return nil, err
+		}
+
 	} else {
 		u.PrintInfo("Unikraft folder already exists")
 		return &unikraftFolder, nil
