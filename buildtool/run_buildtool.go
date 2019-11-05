@@ -230,7 +230,7 @@ func searchInternalDependencies(unikraftPath string, matchedLibs *[]string,
 			mapConfig := make(map[string][]string)
 			u.ProcessConfigUK(lines, false, mapConfig, nil)
 
-			for config, _ := range mapConfig {
+			for config := range mapConfig {
 
 				// Remove LIB prefix
 				if strings.Contains(config, "LIB") {
