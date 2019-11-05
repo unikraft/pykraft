@@ -27,9 +27,9 @@ type DynamicArgs struct {
 }
 
 const (
-	SYSTRACE = "strace"
-	LIBTRACE = "ltrace"
-	START_TIME_APP = 3
+	SYSTRACE       = "strace"
+	LIBTRACE       = "ltrace"
+	STARTUPTIMEAPP = 3
 )
 
 // --------------------------------Gather Data----------------------------------
@@ -161,7 +161,7 @@ func CaptureOutput(programPath, programName, command, option string,
 	timeoutKill := time.NewTimer(time.Second)
 
 	// Add timer for background process
-	timerBackground := time.NewTimer(START_TIME_APP * time.Second)
+	timerBackground := time.NewTimer(STARTUPTIMEAPP * time.Second)
 	go func() {
 		<-timerBackground.C
 		// If background, run Testers
@@ -203,7 +203,7 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 		u.PrintInfo("Run internal tests from file " + dArgs.testFile)
 
 		// Wait until the program has started
-		time.Sleep(time.Second * START_TIME_APP)
+		time.Sleep(time.Second * STARTUPTIMEAPP)
 
 		// Launch Tests
 		launchTests(dArgs)
@@ -242,9 +242,9 @@ func Tester(programName string, process *os.Process, data *u.DynamicData,
 //
 // It returns a DynamicArgs struct.
 func getDArgs(args *u.Arguments, options []string) DynamicArgs {
-	return DynamicArgs{*args.IntArg[WAIT_TIME],
-		*args.BoolArg[FULL_DEPS], *args.BoolArg[SAVE_OUTPUT],
-		*args.StringArg[TEST_FILE], options}
+	return DynamicArgs{*args.IntArg[WAITTIME],
+		*args.BoolArg[FULLDEPS], *args.BoolArg[SAVEOUTPUT],
+		*args.StringArg[TESTFILE], options}
 }
 
 // -------------------------------------RUN-------------------------------------
@@ -256,10 +256,10 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	// Check options
 	var configs []string
-	if len(*args.StringArg[CONFIG_FILE]) > 0 {
+	if len(*args.StringArg[CONFIGFILE]) > 0 {
 		// Multi-lines options (config)
 		var err error
-		configs, err = u.ReadLinesFile(*args.StringArg[CONFIG_FILE])
+		configs, err = u.ReadLinesFile(*args.StringArg[CONFIGFILE])
 		if err != nil {
 			u.PrintWarning(err)
 		}

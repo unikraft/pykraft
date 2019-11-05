@@ -13,7 +13,7 @@ import (
 	"github.com/awalterschulze/gographviz"
 )
 
-const letterBytes = "0123456789ABCDEF"
+const letters = "0123456789ABCDEF"
 
 // RandStringBytes generates random string of size n.
 //
@@ -22,7 +22,7 @@ func RandStringBytes(n int) string {
 
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
 }

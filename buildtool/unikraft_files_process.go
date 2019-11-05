@@ -18,31 +18,30 @@ import (
 
 // Folder
 const (
-	SEP             = string(os.PathSeparator)
-	APPS_FOLDER     = "apps" + SEP
-	UNIKRAFT_FOLDER = "unikraft" + SEP
-	LIBS_FOLDER     = "libs" + SEP
-	INCLUDE_FOLDER  = "include" + SEP
+	APPSFOLDER     = "apps" + u.SEP
+	UNIKRAFTFOLDER = "unikraft" + u.SEP
+	LIBSFOLDER     = "libs" + u.SEP
+	INCLUDEFOLDER  = "include" + u.SEP
 )
 
 // ---------------------------Create Include Folder-----------------------------
 
 func createIncludeFolder(appFolder string) (*string, error) {
 
-	if _, err := u.CreateFolder(appFolder, INCLUDE_FOLDER); err != nil {
+	if _, err := u.CreateFolder(appFolder, INCLUDEFOLDER); err != nil {
 		return nil, err
 	}
 
-	includeFolder := appFolder + INCLUDE_FOLDER
+	includeFolder := appFolder + INCLUDEFOLDER
 	return &includeFolder, nil
 }
 
 // ----------------------------Set UNIKRAFT Folders-----------------------------
 func setUnikraftFolder(homeDir string) (*string, error) {
 
-	unikraftFolder := homeDir + UNIKRAFT_FOLDER
+	unikraftFolder := homeDir + UNIKRAFTFOLDER
 
-	created, err := u.CreateFolder(homeDir, UNIKRAFT_FOLDER)
+	created, err := u.CreateFolder(homeDir, UNIKRAFTFOLDER)
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +50,11 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 		u.PrintInfo("Create Unikraft folder with apps and libs subfolders")
 
 		// Create 'apps' and 'libs' subfolders
-		if _, err := u.CreateFolder(unikraftFolder, APPS_FOLDER); err != nil {
+		if _, err := u.CreateFolder(unikraftFolder, APPSFOLDER); err != nil {
 			return nil, err
 		}
 
-		if _, err := u.CreateFolder(unikraftFolder, LIBS_FOLDER); err != nil {
+		if _, err := u.CreateFolder(unikraftFolder, LIBSFOLDER); err != nil {
 			return nil, err
 		}
 
@@ -88,17 +87,17 @@ func ContainsUnikraftFolders(files []os.FileInfo) bool {
 	}
 
 	m := make(map[string]bool)
-	m[APPS_FOLDER], m[LIBS_FOLDER], m[UNIKRAFT_FOLDER] = false, false, false
+	m[APPSFOLDER], m[LIBSFOLDER], m[UNIKRAFTFOLDER] = false, false, false
 
 	var folderName string
 	for _, f := range files {
-		folderName = f.Name() + SEP
+		folderName = f.Name() + u.SEP
 		if _, ok := m[folderName]; ok {
 			m[folderName] = true
 		}
 	}
 
-	return m[APPS_FOLDER] == true && m[LIBS_FOLDER] && m[UNIKRAFT_FOLDER]
+	return m[APPSFOLDER] == true && m[LIBSFOLDER] && m[UNIKRAFTFOLDER]
 }
 
 // ---------------------------UNIKRAFT APP FOLDER-------------------------------
@@ -107,9 +106,9 @@ func createUnikraftApp(programName, unikraftPath string) string {
 
 	var appFolder string
 	if unikraftPath[len(unikraftPath)-1] != os.PathSeparator {
-		appFolder = unikraftPath + SEP + APPS_FOLDER + programName + SEP
+		appFolder = unikraftPath + u.SEP + APPSFOLDER + programName + u.SEP
 	} else {
-		appFolder = unikraftPath + APPS_FOLDER + programName + SEP
+		appFolder = unikraftPath + APPSFOLDER + programName + u.SEP
 	}
 
 	// Create the folder 'appFolder' if it does not exist
@@ -189,7 +188,7 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 				// Add source files to includesFiles list
 				includesFiles = append(includesFiles, info.Name())
 
-				// Copy header files to the INCLUDE_FOLDER
+				// Copy header files to the INCLUDEFOLDER
 				if err = u.CopyFileContents(path, includeFolder+info.Name()); err != nil {
 					return err
 				}

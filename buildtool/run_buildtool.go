@@ -19,9 +19,9 @@ import (
 
 // STATES
 const (
-	COMPILER_ERROR = iota
-	LINKING_ERROR
-	SUCCESS
+	compilerError = iota
+	linkingError
+	sucess
 )
 
 // -----------------------------Generate Config---------------------------------
@@ -54,7 +54,7 @@ func generateConfigUk(filename, programName string, matchedLibs []string) error 
 func checkMakeOutput(appFolder string, stderr *string) int {
 
 	if stderr == nil {
-		return SUCCESS
+		return sucess
 	}
 
 	// Linking errors during make
@@ -67,16 +67,16 @@ func checkMakeOutput(appFolder string, stderr *string) int {
 			}
 		}
 
-		return LINKING_ERROR
+		return linkingError
 	}
 
 	// Compiler errors during make
 	if strings.Contains(*stderr, "error:") {
 
-		return COMPILER_ERROR
+		return compilerError
 	}
 
-	return SUCCESS
+	return sucess
 }
 
 // parseMakeOutput parses the output of the 'make' command.
@@ -127,7 +127,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	var unikraftPath string
 	if len(*args.StringArg[UNIKRAFT]) == 0 {
-		path, err := setUnikraftFolder(homeDir + SEP)
+		path, err := setUnikraftFolder(homeDir + u.SEP)
 		if err != nil {
 			u.PrintErr(err)
 		}
@@ -153,7 +153,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	// If data is not initialized, read output from dependency analysis tool
 	if data == nil {
 		u.PrintInfo("Initialize data")
-		outFolder := homeDir + SEP + programName + "_" + u.OUT_FOLDER
+		outFolder := homeDir + u.SEP + programName + "_" + u.OUTFOLDER
 		if data, err = u.ReadDataJson(outFolder+programName, data); err != nil {
 			u.PrintErr(err)
 		}
@@ -181,8 +181,8 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Match micro-libs
-	matchedLibs, externalLibs, err := matchLibs(unikraftPath+"unikraft"+SEP+
-		"lib"+SEP, data)
+	matchedLibs, externalLibs, err := matchLibs(unikraftPath+"unikraft"+u.SEP+
+		"lib"+u.SEP, data)
 	if err != nil {
 		u.PrintErr(err)
 	}
@@ -220,7 +220,7 @@ func searchInternalDependencies(unikraftPath string, matchedLibs *[]string,
 		if _, ok := externalLibs[lib]; ok {
 
 			// Get and read Config.UK from external lib
-			configUk := unikraftPath + LIBS_FOLDER + lib + SEP + "Config.uk"
+			configUk := unikraftPath + LIBSFOLDER + lib + u.SEP + "Config.uk"
 			lines, err := u.ReadLinesFile(configUk)
 			if err != nil {
 				return err
@@ -333,7 +333,7 @@ func runMake(programName, appFolder string) {
 
 	// Check the state of the make command
 	state := checkMakeOutput(appFolder, stderr)
-	if state == LINKING_ERROR {
+	if state == linkingError {
 
 		// Add new stub.c in Makefile.uk
 		d := "APP" + strings.ToUpper(programName) +
@@ -370,9 +370,9 @@ func runMake(programName, appFolder string) {
 		}
 	}
 
-	if state == COMPILER_ERROR {
+	if state == compilerError {
 		u.PrintErr("Fix compilation errors")
-	} else if state == SUCCESS {
+	} else if state == sucess {
 		u.PrintOk("Unikernel created in Folder: 'build/'")
 	}
 }

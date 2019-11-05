@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const BRANCH = "staging"
+const branch = "staging"
 
 // GitCloneRepository clones a git repository at the the given url.
 //
@@ -32,9 +32,9 @@ func GitBranchStaging(dir string, v bool) (*string, *string, error) {
 		return strOut, strErr, err
 	}
 
-	if strings.Contains(*strOut, BRANCH) || strings.Contains(*strErr, BRANCH) {
-		PrintInfo("Checkout to " + BRANCH)
-		return ExecuteRunCmd("git", dir, v, "checkout", BRANCH)
+	if strings.Contains(*strOut, branch) || strings.Contains(*strErr, branch) {
+		PrintInfo("Checkout to " + branch)
+		return ExecuteRunCmd("git", dir, v, "checkout", branch)
 	}
 
 	return strOut, strErr, err

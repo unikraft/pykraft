@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const CONFIG_UK = "Config.uk"
+const CONFIGUK = "Config.uk"
 const MENUCONFIG = "menuconfig"
 const CONFIG = "config"
 const SELECT = "select"

@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	CONFIG           = iota // Config <CONFIG_.*> = <value>
-	COMMENTED_CONFIG        // Commented config: # <CONFIG_.*> is not set
-	HEADER                  // Header: # <.*>
-	SEPARATOR               // Separator: #
-	LINE_FEED               // Line FEED: \n
+	CONFIG          = iota // Config <CONFIG_.*> = <value>
+	COMMENTEDCONFIG        // Commented config: # <CONFIG_.*> is not set
+	HEADER                 // Header: # <.*>
+	SEPARATOR              // Separator: #
+	LINEFEED               // Line FEED: \n
 )
 
 type KConfig struct {
@@ -46,13 +46,13 @@ func writeConfig(filename string, items []*KConfig) error {
 		switch kConfig.Type {
 		case CONFIG:
 			config = kConfig.Config + "=" + *kConfig.Value
-		case COMMENTED_CONFIG:
+		case COMMENTEDCONFIG:
 			config = "# " + kConfig.Config + " is not set"
 		case HEADER:
 			config = kConfig.Config
 		case SEPARATOR:
 			config = "#"
-		case LINE_FEED:
+		case LINEFEED:
 			config = "\n"
 		}
 		if _, err := f.Write([]byte(config + "\n")); err != nil {
@@ -108,7 +108,7 @@ func addKConfig(line string, kConfigMap map[string]*KConfig,
 		split := strings.Fields(line)
 		config = split[1]
 		value = nil
-		typeConfig = COMMENTED_CONFIG
+		typeConfig = COMMENTEDCONFIG
 	case strings.HasPrefix(line, "#") && len(line) > 2: // Separator: #
 		config = strings.TrimSuffix(line, "\n")
 		value = nil
@@ -124,7 +124,7 @@ func addKConfig(line string, kConfigMap map[string]*KConfig,
 		typeConfig = CONFIG
 	default: // Line FEED
 		config, value = "#", nil
-		typeConfig = LINE_FEED
+		typeConfig = LINEFEED
 	}
 
 	// Create KConfig
@@ -163,7 +163,7 @@ func updateConfig(kConfigMap map[string]*KConfig, items []*KConfig) []*KConfig {
 
 		// CONFIG build
 		{"CONFIG_OPTIMIZE_NONE", &v, CONFIG},
-		{"CONFIG_OPTIMIZE_PERF", nil, COMMENTED_CONFIG},
+		{"CONFIG_OPTIMIZE_PERF", nil, COMMENTEDCONFIG},
 	}
 
 	return SetConfig(configs, kConfigMap, items)
@@ -205,14 +205,14 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 	v := "y"
 	switch conf {
 	case "CONFIG_LIBPOSIX_PROCESS":
-		if u.Contains(matchedLibs, POSIX_PROCESS) {
+		if u.Contains(matchedLibs, POSIXPROCESS) {
 			configs := []*KConfig{
 				{"CONFIG_LIBPOSIX_PROCESS", &v, CONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
 	case "CONFIG_LIBPOSIX_USER":
-		if u.Contains(matchedLibs, POSIX_USER) {
+		if u.Contains(matchedLibs, POSIXUSER) {
 			configs := []*KConfig{
 				{"CONFIG_LIBPOSIX_USER", &v, CONFIG},
 			}
@@ -233,7 +233,7 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 			items = SetConfig(configs, kConfigMap, items)
 		}
 	case "CONFIG_POSIX_LIBDL":
-		if u.Contains(matchedLibs, POSIX_LIBDL) {
+		if u.Contains(matchedLibs, POSIXLIBDL) {
 			configs := []*KConfig{
 				{"CONFIG_POSIX_LIBDL", &v, CONFIG},
 			}
@@ -244,14 +244,14 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 			n := "16"
 			configs := []*KConfig{
 				{"CONFIG_LIBVFSCORE", &v, CONFIG},
-				{"CONFIG_LIBRAMFS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LIBRAMFS", nil, COMMENTEDCONFIG},
 				{"CONFIG_LIBDEVFS", &v, CONFIG},
-				{"CONFIG_LIBDEVFS_USE_RAMFS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LIBDEVFS_USE_RAMFS", nil, COMMENTEDCONFIG},
 				{"#", nil, SEPARATOR},
 				{"# vfscore configuration", nil, HEADER},
 				{"#", nil, SEPARATOR},
 				{"CONFIG_LIBVFSCORE_PIPE_SIZE_ORDER", &n, CONFIG},
-				{"CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS", nil, COMMENTEDCONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
@@ -261,19 +261,19 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 				{"CONFIG_HAVE_LIBC", &v, CONFIG},
 				{"CONFIG_LIBNEWLIBC", &v, CONFIG},
 				{"CONFIG_LIBNEWLIBM", &v, CONFIG},
-				{"CONFIG_LIBNEWLIBC_WANT_IO_C99_FORMATS", nil, COMMENTED_CONFIG},
-				{"CONFIG_LIBNEWLIBC_LINUX_ERRNO_EXTENSIONS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LIBNEWLIBC_WANT_IO_C99_FORMATS", nil, COMMENTEDCONFIG},
+				{"CONFIG_LIBNEWLIBC_LINUX_ERRNO_EXTENSIONS", nil, COMMENTEDCONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
 	case "CONFIG_LIBPTHREAD_EMBEDDED":
-		if u.Contains(matchedLibs, PTHREAD_EMBEDDED) {
+		if u.Contains(matchedLibs, PTHREADEMBEDDED) {
 			number := "32"
 			configs := []*KConfig{
 				{"CONFIG_LIBPTHREAD_EMBEDDED", &v, CONFIG},
 				{"CONFIG_LIBPTHREAD_EMBEDDED_MAX_SIMUL_THREADS", &number, CONFIG},
 				{"CONFIG_LIBPTHREAD_EMBEDDED_MAX_TLS", &number, CONFIG},
-				{"CONFIG_LIBPTHREAD_EMBEDDED_UTEST", nil, COMMENTED_CONFIG},
+				{"CONFIG_LIBPTHREAD_EMBEDDED_UTEST", nil, COMMENTEDCONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
@@ -301,28 +301,28 @@ func matchLibsKconfig(conf string, kConfigMap map[string]*KConfig,
 				{"#", nil, SEPARATOR},
 				{"CONFIG_LWIP_UKNETDEV", &v, CONFIG},
 				{"CONFIG_LWIP_AUTOIFACE", &v, CONFIG},
-				{"CONFIG_LWIP_NOTHREADS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LWIP_NOTHREADS", nil, COMMENTEDCONFIG},
 				{"CONFIG_LWIP_THREADS", &v, CONFIG},
 				{"CONFIG_LWIP_HEAP", &v, CONFIG},
 				{"CONFIG_LWIP_NETIF_EXT_STATUS_CALLBACK", &v, CONFIG},
 				{"CONFIG_LWIP_NETIF_STATUS_PRINT", &v, CONFIG},
 				{"CONFIG_LWIP_IPV4", &v, CONFIG},
-				{"CONFIG_LWIP_IPV6", nil, COMMENTED_CONFIG},
+				{"CONFIG_LWIP_IPV6", nil, COMMENTEDCONFIG},
 				{"CONFIG_LWIP_UDP", &v, CONFIG},
 				{"CONFIG_LWIP_TCP", &v, CONFIG},
 				{"CONFIG_LWIP_TCP_MSS", &mss, CONFIG},
 				{"CONFIG_LWIP_WND_SCALE", &v, CONFIG},
-				{"CONFIG_LWIP_TCP_KEEPALIVE", nil, COMMENTED_CONFIG},
-				{"CONFIG_LWIP_TCP_TIMESTAMPS", nil, COMMENTED_CONFIG},
+				{"CONFIG_LWIP_TCP_KEEPALIVE", nil, COMMENTEDCONFIG},
+				{"CONFIG_LWIP_TCP_TIMESTAMPS", nil, COMMENTEDCONFIG},
 				{"CONFIG_LWIP_ICMP", &v, CONFIG},
-				{"CONFIG_LWIP_IGMP", nil, COMMENTED_CONFIG},
-				{"CONFIG_LWIP_SNMP", nil, COMMENTED_CONFIG},
-				{"CONFIG_LWIP_DHCP", nil, COMMENTED_CONFIG},
+				{"CONFIG_LWIP_IGMP", nil, COMMENTEDCONFIG},
+				{"CONFIG_LWIP_SNMP", nil, COMMENTEDCONFIG},
+				{"CONFIG_LWIP_DHCP", nil, COMMENTEDCONFIG},
 				{"CONFIG_LWIP_DNS", &v, CONFIG},
 				{"CONFIG_LWIP_DNS_MAX_SERVERS", &dnsMaxServer, CONFIG},
 				{"CONFIG_LWIP_DNS_TABLE_SIZE", &dnsTableSize, CONFIG},
 				{"CONFIG_LWIP_SOCKET", &v, CONFIG},
-				{"CONFIG_LWIP_DEBUG", nil, COMMENTED_CONFIG},
+				{"CONFIG_LWIP_DEBUG", nil, COMMENTEDCONFIG},
 			}
 			items = SetConfig(configs, kConfigMap, items)
 		}
@@ -341,24 +341,24 @@ func addInternalConfig(conf string, kConfigMap map[string]*KConfig, items []*KCo
 	case "CONFIG_PLAT_XEN":
 		configs := []*KConfig{
 			{"CONFIG_PLAT_XEN", &v, CONFIG},
-			{"CONFIG_XEN_HVMLITE", nil, COMMENTED_CONFIG},
-			{"", nil, LINE_FEED},
+			{"CONFIG_XEN_HVMLITE", nil, COMMENTEDCONFIG},
+			{"", nil, LINEFEED},
 			{"#", nil, SEPARATOR},
 			{"# Console Options", nil, HEADER},
 			{"#", nil, SEPARATOR},
 			{"CONFIG_XEN_KERNEL_HV_CONSOLE", &v, CONFIG},
-			{"CONFIG_XEN_KERNEL_EMG_CONSOLE", nil, COMMENTED_CONFIG},
+			{"CONFIG_XEN_KERNEL_EMG_CONSOLE", nil, COMMENTEDCONFIG},
 			{"CONFIG_XEN_DEBUG_HV_CONSOLE", &v, CONFIG},
-			{"CONFIG_XEN_DEBUG_EMG_CONSOLE", nil, COMMENTED_CONFIG},
+			{"CONFIG_XEN_DEBUG_EMG_CONSOLE", nil, COMMENTEDCONFIG},
 			{"CONFIG_XEN_PV_BUILD_P2M", &v, CONFIG},
 			{"CONFIG_XEN_GNTTAB", &v, CONFIG},
-			{"CONFIG_XEN_XENBUS", nil, COMMENTED_CONFIG},
+			{"CONFIG_XEN_XENBUS", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_PLAT_KVM":
 		configs := []*KConfig{
 			{"CONFIG_PLAT_KVM", &v, CONFIG},
-			{"", nil, LINE_FEED},
+			{"", nil, LINEFEED},
 			{"#", nil, SEPARATOR},
 			{"# Console Options", nil, HEADER},
 			{"#", nil, SEPARATOR},
@@ -368,12 +368,12 @@ func addInternalConfig(conf string, kConfigMap map[string]*KConfig, items []*KCo
 			{"CONFIG_KVM_DEBUG_VGA_CONSOLE", &v, CONFIG},
 			{"CONFIG_KVM_PCI", &v, CONFIG},
 			{"CONFIG_VIRTIO_BUS", &v, CONFIG},
-			{"", nil, LINE_FEED},
+			{"", nil, LINEFEED},
 			{"#", nil, SEPARATOR},
 			{"# Virtio", nil, HEADER},
 			{"#", nil, SEPARATOR},
-			{"CONFIG_VIRTIO_PCI", nil, COMMENTED_CONFIG},
-			{"CONFIG_VIRTIO_NET", nil, COMMENTED_CONFIG},
+			{"CONFIG_VIRTIO_PCI", nil, COMMENTEDCONFIG},
+			{"CONFIG_VIRTIO_NET", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_PLAT_LINUXU":
@@ -394,30 +394,30 @@ func addInternalConfig(conf string, kConfigMap map[string]*KConfig, items []*KCo
 			{"CONFIG_LIBUKDEBUG_PRINTK", &v, CONFIG},
 			{"CONFIG_LIBUKDEBUG_PRINTK_INFO", &v, CONFIG},
 
-			{"CONFIG_LIBUKDEBUG_PRINTK_WARN", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_PRINTK_ERR", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_PRINTK_CRIT", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_PRINTD", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_NOREDIR", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_REDIR_PRINTD", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_REDIR_PRINTK", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_PRINT_TIME", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_PRINT_STACK", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_ENABLE_ASSERT", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKDEBUG_TRACEPOINTS", nil, COMMENTED_CONFIG},
+			{"CONFIG_LIBUKDEBUG_PRINTK_WARN", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_PRINTK_ERR", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_PRINTK_CRIT", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_PRINTD", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_NOREDIR", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_REDIR_PRINTD", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_REDIR_PRINTK", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_PRINT_TIME", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_PRINT_STACK", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_ENABLE_ASSERT", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKDEBUG_TRACEPOINTS", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_LIBNOLIBC":
 		configs := []*KConfig{
-			{"CONFIG_LIBNOLIBC", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBNOLIBC_UKDEBUG_ASSERT", nil, COMMENTED_CONFIG},
+			{"CONFIG_LIBNOLIBC", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBNOLIBC_UKDEBUG_ASSERT", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_LIBUKALLOC":
 		configs := []*KConfig{
 			{"CONFIG_LIBUKALLOC", &v, CONFIG},
 			{"CONFIG_LIBUKALLOC_IFPAGES", &v, CONFIG},
-			{"CONFIG_LIBUKALLOC_IFSTATS", nil, COMMENTED_CONFIG},
+			{"CONFIG_LIBUKALLOC_IFSTATS", nil, COMMENTEDCONFIG},
 			{"CONFIG_LIBUKALLOCBBUDDY", &v, CONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
@@ -429,21 +429,21 @@ func addInternalConfig(conf string, kConfigMap map[string]*KConfig, items []*KCo
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_LIBUKMPI":
 		configs := []*KConfig{
-			{"CONFIG_LIBUKMPI", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKMPI_MBOX", nil, COMMENTED_CONFIG},
+			{"CONFIG_LIBUKMPI", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKMPI_MBOX", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_LIBUKSWRAND":
 		configs := []*KConfig{
-			{"CONFIG_LIBUKSWRAND_MWC", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKSWRAND_INITIALSEED", nil, COMMENTED_CONFIG},
-			{"CONFIG_DEV_RANDOM", nil, COMMENTED_CONFIG},
+			{"CONFIG_LIBUKSWRAND_MWC", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKSWRAND_INITIALSEED", nil, COMMENTEDCONFIG},
+			{"CONFIG_DEV_RANDOM", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_LIBUKNETDEV":
 		configs := []*KConfig{
-			{"CONFIG_LIBUKNETDEV_MAXNBQUEUES", nil, COMMENTED_CONFIG},
-			{"CONFIG_LIBUKNETDEV_DISPATCHERTHREADS", nil, COMMENTED_CONFIG},
+			{"CONFIG_LIBUKNETDEV_MAXNBQUEUES", nil, COMMENTEDCONFIG},
+			{"CONFIG_LIBUKNETDEV_DISPATCHERTHREADS", nil, COMMENTEDCONFIG},
 		}
 		items = SetConfig(configs, kConfigMap, items)
 	case "CONFIG_LIBUKLOCK":

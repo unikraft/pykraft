@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	EXPORT_FILE = "exportsyms.uk"
-	PREFIX_URL  = "http://xenbits.xen.org/gitweb/?p=unikraft/libs/"
-	SUFFIX_URL  = ";a=blob_plain;f=exportsyms.uk;hb=refs/heads/staging"
+	exportFile = "exportsyms.uk"
+	prefixUrl  = "http://xenbits.xen.org/gitweb/?p=unikraft/libs/"
+	suffixUrl  = ";a=blob_plain;f=exportsyms.uk;hb=refs/heads/staging"
 )
 
 // -----------------------------Match micro-libs--------------------------------
@@ -50,7 +50,7 @@ func fetchSymbolsInternalLibs(unikraftLibs string,
 	// Read Unikraft internal libs symbols (exportsyms.uk)
 	for _, f := range files {
 		if f.IsDir() {
-			export := unikraftLibs + f.Name() + SEP + EXPORT_FILE
+			export := unikraftLibs + f.Name() + u.SEP + exportFile
 			if exists, _ := u.Exists(export); exists {
 				u.PrintInfo("Retrieving symbols of internal lib: " + f.Name())
 				b, _ := u.OpenTextFile(export)
@@ -82,7 +82,7 @@ func fetchSymbolsExternalLibs(url string,
 			go func(lib, git string, microLibs map[string][]string) {
 				defer wg.Done()
 				u.PrintInfo("Retrieving symbols of external lib: " + lib)
-				if symbols, err := u.DownloadFile(PREFIX_URL + git + SUFFIX_URL); err != nil {
+				if symbols, err := u.DownloadFile(prefixUrl + git + suffixUrl); err != nil {
 					u.PrintWarning(err)
 				} else {
 					processSymbols(lib, *symbols, microLibs)
@@ -183,16 +183,16 @@ func cloneLibsFolders(unikraftPath string, matchedLibs []string,
 
 	for _, lib := range matchedLibs {
 		if _, ok := externalLibs[lib]; ok {
-			exists, _ := u.Exists(unikraftPath + LIBS_FOLDER + lib)
+			exists, _ := u.Exists(unikraftPath + LIBSFOLDER + lib)
 			if !exists {
 				// If the micro-libs is not in the local host, clone it
 				if err := cloneGitRepo("git://xenbits.xen.org/unikraft/"+
-					"libs/"+lib+".git", unikraftPath+LIBS_FOLDER); err != nil {
+					"libs/"+lib+".git", unikraftPath+LIBSFOLDER); err != nil {
 					u.PrintWarning(err)
 				}
 			} else {
 				u.PrintInfo("Library " + lib + " already exists in folder" +
-					unikraftPath + LIBS_FOLDER)
+					unikraftPath + LIBSFOLDER)
 			}
 		}
 	}

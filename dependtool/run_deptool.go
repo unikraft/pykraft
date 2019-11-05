@@ -35,7 +35,7 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 
 	// Create the folder 'output' if it does not exist
 	outFolder := homeDir + string(os.PathSeparator) + programName +
-		"_" + u.OUT_FOLDER
+		"_" + u.OUTFOLDER
 	if _, err := os.Stat(outFolder); os.IsNotExist(err) {
 		if err = os.Mkdir(outFolder, os.ModePerm); err != nil {
 			u.PrintErr(err)
@@ -65,7 +65,7 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	}
 
 	// Save graph if full dependencies option is set
-	if *args.BoolArg[FULL_DEPS] {
+	if *args.BoolArg[FULLDEPS] {
 		saveGraph(programName, outFolder, data)
 	}
 }
@@ -79,12 +79,12 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 		fmt.Println("Options: ", color.GreenString(*args.StringArg[OPTIONS]))
 	}
 
-	if len(*args.StringArg[CONFIG_FILE]) > 0 {
-		fmt.Println("Config file: ", color.GreenString(*args.StringArg[CONFIG_FILE]))
+	if len(*args.StringArg[CONFIGFILE]) > 0 {
+		fmt.Println("Config file: ", color.GreenString(*args.StringArg[CONFIGFILE]))
 	}
 
-	if len(*args.StringArg[TEST_FILE]) > 0 {
-		fmt.Println("Test file: ", color.GreenString(*args.StringArg[TEST_FILE]))
+	if len(*args.StringArg[TESTFILE]) > 0 {
+		fmt.Println("Test file: ", color.GreenString(*args.StringArg[TESTFILE]))
 	}
 
 	fmt.Println("----------------------------------------------")
@@ -116,7 +116,7 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	staticAnalyser(*args, data, programPath)
 
 	// Save static Data into text file if display mode is set
-	if *args.BoolArg[SAVE_OUTPUT] {
+	if *args.BoolArg[SAVEOUTPUT] {
 
 		// Create the folder 'output/static' if it does not exist
 		outFolderStatic := outFolder + "static" + string(os.PathSeparator)
@@ -145,7 +145,7 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	dynamicAnalyser(args, data, programPath)
 
 	// Save dynamic Data into text file if display mode is set
-	if *args.BoolArg[SAVE_OUTPUT] {
+	if *args.BoolArg[SAVEOUTPUT] {
 
 		// Create the folder 'output/dynamic' if it does not exist
 		outFolderDynamic := outFolder + "dynamic" + string(os.PathSeparator)

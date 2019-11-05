@@ -102,8 +102,8 @@ func searchConfigUK(path string, fullSelect bool,
 			return err
 		}
 
-		// Consider only CONFIG_UK files
-		if !info.IsDir() && info.Name() == u.CONFIG_UK {
+		// Consider only CONFIGUK files
+		if !info.IsDir() && info.Name() == u.CONFIGUK {
 			lines, err := u.ReadLinesFile(path)
 			if err != nil {
 				return err

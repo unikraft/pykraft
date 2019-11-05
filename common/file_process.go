@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	OUT_FOLDER = "output/"
-	PERM       = 0755
+	SEP       = string(os.PathSeparator)
+	OUTFOLDER = "output" + SEP
+	PERM      = 0755
 )
 
 // OpenTextFile opens a file named by filename.
