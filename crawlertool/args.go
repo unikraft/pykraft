@@ -7,7 +7,6 @@
 package crawlertool
 
 import (
-	"errors"
 	. "github.com/akamensky/argparse"
 	"os"
 	u "tools/common"
@@ -23,15 +22,7 @@ const (
 // ParseArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
-func ParseArguments(args *u.Arguments) error {
-
-	if args == nil || args.IntArg == nil {
-		return errors.New("args structure should be initialized")
-	}
-
-	p := NewParser("Unikraft dependencies crawler",
-		"Unikraft dependencies crawler allows to create "+
-			"dependencies grap")
+func parseLocalArguments(p *Parser, args *u.Arguments) error {
 
 	args.InitArgParse(p, args, u.BOOL, "f", FULL,
 		&Options{Required: false, Default: false,
@@ -45,9 +36,5 @@ func ParseArguments(args *u.Arguments) error {
 	args.InitArgParse(p, args, u.STRING, "r", REPO,
 		&Options{Required: false, Help: "Path of the repository"})
 
-	if err := p.Parse(os.Args); err != nil {
-		return err
-	}
-
-	return nil
+	return u.ParserWrapper(p, os.Args)
 }

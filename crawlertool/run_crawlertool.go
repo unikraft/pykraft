@@ -22,11 +22,13 @@ func RunCrawler() {
 
 	// Init and parse local arguments
 	args := new(u.Arguments)
-	p, err := args.InitArguments(args)
+	p, err := args.InitArguments()
 	if err != nil {
 		u.PrintErr(err)
 	}
-	parseLocalArguments(p, args)
+	if err := parseLocalArguments(p, args); err != nil {
+		u.PrintErr(err)
+	}
 
 	// Used to select all libraries (even those below another Config fields)
 	fullSelect := *args.BoolArg[FULL]

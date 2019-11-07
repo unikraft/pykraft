@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"tools/buildtool"
 	u "tools/common"
+	"tools/crawlertool"
 	"tools/dependtool"
 )
 
@@ -17,13 +18,13 @@ func main() {
 
 	// Init global arguments
 	args := new(u.Arguments)
-	parser, err := args.InitArguments(args)
+	parser, err := args.InitArguments()
 	if err != nil {
 		u.PrintErr(err)
 	}
 
 	// Parse arguments
-	if err := args.ParseArguments(parser, args); err != nil {
+	if err := args.ParseMainArguments(parser, args); err != nil {
 		u.PrintErr(err)
 	}
 
@@ -41,6 +42,12 @@ func main() {
 	}
 
 	var data *u.Data
+
+	if *args.BoolArg[u.CRAWLER] {
+		u.PrintHeader1("(*) RUN CRAWLER UNIKRAFT ANALYSER")
+		crawlertool.RunCrawler()
+		return
+	}
 
 	if all || *args.BoolArg[u.DEP] {
 

@@ -23,7 +23,7 @@ const (
 )
 
 // parseLocalArguments parses arguments of the application.
-func parseLocalArguments(p *Parser, args *u.Arguments) {
+func parseLocalArguments(p *Parser, args *u.Arguments) error {
 
 	args.InitArgParse(p, args, u.STRING, "p", PROGRAM,
 		&Options{Required: true, Help: "Program name"})
@@ -46,5 +46,5 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 		&Options{Required: false, Default: false, Help: "Show dependencies of" +
 			"dependencies"})
 
-	_ = p.Parse(os.Args)
+	return u.ParserWrapper(p, os.Args)
 }

@@ -23,7 +23,7 @@ const (
 // ParseArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
-func parseLocalArguments(p *Parser, args *u.Arguments) {
+func parseLocalArguments(p *Parser, args *u.Arguments) error {
 
 	args.InitArgParse(p, args, u.STRING, "p", PROGRAM,
 		&Options{Required: true, Help: "Program name"})
@@ -35,5 +35,5 @@ func parseLocalArguments(p *Parser, args *u.Arguments) {
 	args.InitArgParse(p, args, u.STRING, "m", MAKEFILE,
 		&Options{Required: false, Help: "Add additional properties for Makefile"})
 
-	_ = p.Parse(os.Args)
+	return u.ParserWrapper(p, os.Args)
 }

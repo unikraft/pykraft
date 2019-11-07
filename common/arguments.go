@@ -10,6 +10,7 @@ import (
 	"errors"
 	. "github.com/akamensky/argparse"
 	"os"
+	"strings"
 )
 
 const (
@@ -26,13 +27,17 @@ const (
 	PERF    = "perf"
 )
 
+const (
+	unknownArgs = "unknown arguments"
+)
+
 type Arguments struct {
 	IntArg    map[string]*int
 	BoolArg   map[string]*bool
 	StringArg map[string]*string
 }
 
-func (*Arguments) InitArguments(args *Arguments) (*Parser, error) {
+func (args *Arguments) InitArguments() (*Parser, error) {
 
 	args.IntArg = make(map[string]*int)
 	args.BoolArg = make(map[string]*bool)
@@ -42,13 +47,21 @@ func (*Arguments) InitArguments(args *Arguments) (*Parser, error) {
 		"The UNICORE toolchain allows to build unikernels")
 
 	return p, nil
+}
 
+func ParserWrapper(p *Parser, args []string) error {
+	err := p.Parse(args)
+	if err != nil && strings.Contains(err.Error(), unknownArgs) {
+		return nil
+	}
+
+	return err
 }
 
 // ParseArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
-func (*Arguments) ParseArguments(p *Parser, args *Arguments) error {
+func (*Arguments) ParseMainArguments(p *Parser, args *Arguments) error {
 
 	if args == nil {
 		return errors.New("args structure should be initialized")
@@ -70,7 +83,10 @@ func (*Arguments) ParseArguments(p *Parser, args *Arguments) error {
 		&Options{Required: false, Default: false,
 			Help: "Execute only the performance tool"})
 
-	_ = p.Parse(os.Args)
+	// Parse only the two first arguments <program name, [tools]>
+	if len(os.Args) > 2 {
+		return ParserWrapper(p, os.Args[:2])
+	}
 
 	return nil
 }
