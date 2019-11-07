@@ -115,6 +115,7 @@ func createUnikraftApp(programName, unikraftPath string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+	appFolder += programName + u.SEP
 
 	if !created {
 		u.PrintWarning(appFolder + " already exists.")
@@ -171,6 +172,9 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 	err := filepath.Walk(sourcesPath, func(path string, info os.FileInfo,
 		err error) error {
 
+			println(sourcesPath)
+			println(includeFolder)
+
 		if !info.IsDir() {
 			extension := filepath.Ext(info.Name())
 			if _, ok := srcLanguages[extension]; ok {
@@ -179,6 +183,8 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 
 				// Count the number of extension
 				srcLanguages[extension] += 1
+
+				println(info.Name())
 
 				// Copy source files to the appFolder
 				if err = u.CopyFileContents(path, appFolder+info.Name()); err != nil {
