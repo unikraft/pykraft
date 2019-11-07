@@ -66,12 +66,12 @@ func RunCrawler() {
 
 	// Generate the out folder
 	outFolder := *args.StringArg[OUTPUT]
-	if outFolder[:len(outFolder)-1] != string(os.PathSeparator) {
+	if outFolder[len(outFolder)-1:] != string(os.PathSeparator) {
 		outFolder += string(os.PathSeparator)
 	}
 
 	outputPath := outFolder +
-		"output_" + time.Now().Format("20060102150405") + ".dot"
+		"output_" + time.Now().Format("20060102150405")
 
 	// Create the dependencies graph
 	u.GenerateGraph("Unikraft Crawler", outputPath, mapConfig,
