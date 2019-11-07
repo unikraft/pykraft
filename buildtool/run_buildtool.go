@@ -160,7 +160,11 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Create unikraft application path
-	appFolder := createUnikraftApp(programName, unikraftPath)
+	appFolderPtr, err := createUnikraftApp(programName, unikraftPath)
+	if err != nil {
+		u.PrintErr(err)
+	}
+	appFolder := *appFolderPtr
 
 	// Create the folder 'include' if it does not exist
 	includeFolder, err := createIncludeFolder(appFolder)

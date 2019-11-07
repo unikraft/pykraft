@@ -102,26 +102,26 @@ func ContainsUnikraftFolders(files []os.FileInfo) bool {
 
 // ---------------------------UNIKRAFT APP FOLDER-------------------------------
 
-func createUnikraftApp(programName, unikraftPath string) string {
+func createUnikraftApp(programName, unikraftPath string) (*string, error) {
 
 	var appFolder string
 	if unikraftPath[len(unikraftPath)-1] != os.PathSeparator {
-		appFolder = unikraftPath + u.SEP + APPSFOLDER + programName + u.SEP
+		appFolder = unikraftPath + u.SEP + APPSFOLDER
 	} else {
-		appFolder = unikraftPath + APPSFOLDER + programName + u.SEP
+		appFolder = unikraftPath + APPSFOLDER
 	}
 
-	// Create the folder 'appFolder' if it does not exist
-	if _, err := os.Stat(appFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(appFolder, u.PERM); err != nil {
-			u.PrintErr(err)
-		}
-	} else {
+	created, err := u.CreateFolder(appFolder, programName)
+	if err != nil {
+		return nil, err
+	}
+
+	if created {
 		u.PrintWarning(appFolder + " already exists.")
 		handleCreationApp(&appFolder)
 	}
 
-	return appFolder
+	return &appFolder, nil
 }
 
 // -----------------------------Create App folder-------------------------------
