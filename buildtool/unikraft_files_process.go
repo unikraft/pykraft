@@ -116,7 +116,7 @@ func createUnikraftApp(programName, unikraftPath string) (*string, error) {
 		return nil, err
 	}
 
-	if created {
+	if !created {
 		u.PrintWarning(appFolder + " already exists.")
 		handleCreationApp(&appFolder)
 	}
