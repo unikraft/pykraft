@@ -7,7 +7,7 @@
 package crawlertool
 
 import (
-	. "github.com/akamensky/argparse"
+	"github.com/akamensky/argparse"
 	"os"
 	u "tools/common"
 )
@@ -22,19 +22,20 @@ const (
 // ParseArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
-func parseLocalArguments(p *Parser, args *u.Arguments) error {
+func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 
 	args.InitArgParse(p, args, u.BOOL, "f", FULL,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Take all the selected libraries"})
 
 	args.InitArgParse(p, args, u.STRING, "o", OUTPUT,
-		&Options{Required: true, Help: "Output folder that will contain" +
-			"dependencies graph and images"})
+		&argparse.Options{Required: true, Help: "Output folder that will " +
+			"contain dependencies graph and images"})
 	args.InitArgParse(p, args, u.STRING, "l", LIBS,
-		&Options{Required: false, Help: "Path of the file that contains libs"})
+		&argparse.Options{Required: false, Help: "Path of the file that " +
+			"contains libs"})
 	args.InitArgParse(p, args, u.STRING, "r", REPO,
-		&Options{Required: false, Help: "Path of the repository"})
+		&argparse.Options{Required: false, Help: "Path of the repository"})
 
 	return u.ParserWrapper(p, os.Args)
 }

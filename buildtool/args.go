@@ -7,7 +7,7 @@
 package buildtool
 
 import (
-	. "github.com/akamensky/argparse"
+	"github.com/akamensky/argparse"
 	"os"
 	u "tools/common"
 )
@@ -23,17 +23,19 @@ const (
 // ParseArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
-func parseLocalArguments(p *Parser, args *u.Arguments) error {
+func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 
 	args.InitArgParse(p, args, u.STRING, "p", PROGRAM,
-		&Options{Required: true, Help: "Program name"})
+		&argparse.Options{Required: true, Help: "Program name"})
 
 	args.InitArgParse(p, args, u.STRING, "u", UNIKRAFT,
-		&Options{Required: false, Default: "", Help: "Unikraft Path"})
+		&argparse.Options{Required: false, Default: "", Help: "Unikraft Path"})
 	args.InitArgParse(p, args, u.STRING, "s", SOURCES,
-		&Options{Required: false, Default: "", Help: "App Sources Folder"})
+		&argparse.Options{Required: false, Default: "", Help: "App Sources " +
+			"Folder"})
 	args.InitArgParse(p, args, u.STRING, "m", MAKEFILE,
-		&Options{Required: false, Help: "Add additional properties for Makefile"})
+		&argparse.Options{Required: false, Help: "Add additional properties " +
+			"for Makefile"})
 
 	return u.ParserWrapper(p, os.Args)
 }

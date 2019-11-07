@@ -8,7 +8,7 @@ package common
 
 import (
 	"errors"
-	. "github.com/akamensky/argparse"
+	"github.com/akamensky/argparse"
 	"os"
 	"strings"
 )
@@ -37,19 +37,19 @@ type Arguments struct {
 	StringArg map[string]*string
 }
 
-func (args *Arguments) InitArguments() (*Parser, error) {
+func (args *Arguments) InitArguments() (*argparse.Parser, error) {
 
 	args.IntArg = make(map[string]*int)
 	args.BoolArg = make(map[string]*bool)
 	args.StringArg = make(map[string]*string)
 
-	p := NewParser("UNICORE toolchain",
+	p := argparse.NewParser("UNICORE toolchain",
 		"The UNICORE toolchain allows to build unikernels")
 
 	return p, nil
 }
 
-func ParserWrapper(p *Parser, args []string) error {
+func ParserWrapper(p *argparse.Parser, args []string) error {
 	err := p.Parse(args)
 	if err != nil && strings.Contains(err.Error(), unknownArgs) {
 		return nil
@@ -61,26 +61,26 @@ func ParserWrapper(p *Parser, args []string) error {
 // ParseArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
-func (*Arguments) ParseMainArguments(p *Parser, args *Arguments) error {
+func (*Arguments) ParseMainArguments(p *argparse.Parser, args *Arguments) error {
 
 	if args == nil {
 		return errors.New("args structure should be initialized")
 	}
 
 	args.InitArgParse(p, args, BOOL, "", CRAWLER,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Execute the crawler unikraft tool"})
 	args.InitArgParse(p, args, BOOL, "", DEP,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Execute only the dependency analysis tool"})
 	args.InitArgParse(p, args, BOOL, "", BUILD,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Execute only the automatic build tool"})
 	args.InitArgParse(p, args, BOOL, "", VERIF,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Execute only the verification tool"})
 	args.InitArgParse(p, args, BOOL, "", PERF,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Execute only the performance tool"})
 
 	// Parse only the two first arguments <program name, [tools]>
@@ -94,8 +94,8 @@ func (*Arguments) ParseMainArguments(p *Parser, args *Arguments) error {
 // InitArgParse initializes the Arguments structure depending the type of
 // the variable.
 //
-func (*Arguments) InitArgParse(p *Parser, args *Arguments, typeVar int, short,
-	long string, options *Options) {
+func (*Arguments) InitArgParse(p *argparse.Parser, args *Arguments, typeVar int,
+	short, long string, options *argparse.Options) {
 	switch typeVar {
 	case INT:
 		args.IntArg[long] = new(int)

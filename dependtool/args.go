@@ -7,7 +7,7 @@
 package dependtool
 
 import (
-	. "github.com/akamensky/argparse"
+	"github.com/akamensky/argparse"
 	"os"
 	u "tools/common"
 )
@@ -23,28 +23,28 @@ const (
 )
 
 // parseLocalArguments parses arguments of the application.
-func parseLocalArguments(p *Parser, args *u.Arguments) error {
+func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 
 	args.InitArgParse(p, args, u.STRING, "p", PROGRAM,
-		&Options{Required: true, Help: "Program name"})
+		&argparse.Options{Required: true, Help: "Program name"})
 	args.InitArgParse(p, args, u.STRING, "t", TESTFILE,
-		&Options{Required: false, Help: "Path of the test file"})
+		&argparse.Options{Required: false, Help: "Path of the test file"})
 	args.InitArgParse(p, args, u.STRING, "c", CONFIGFILE,
-		&Options{Required: false, Help: "Path of the config file"})
+		&argparse.Options{Required: false, Help: "Path of the config file"})
 	args.InitArgParse(p, args, u.STRING, "o", OPTIONS,
-		&Options{Required: false, Default: "", Help: "Extra options for " +
+		&argparse.Options{Required: false, Default: "", Help: "Extra options for " +
 			"launching program"})
 
 	args.InitArgParse(p, args, u.INT, "w", WAITTIME,
-		&Options{Required: false, Default: 60, Help: "Time wait (" +
+		&argparse.Options{Required: false, Default: 60, Help: "Time wait (" +
 			"sec) for external tests (default: 60 sec)"})
 
 	args.InitArgParse(p, args, u.BOOL, "", SAVEOUTPUT,
-		&Options{Required: false, Default: false,
+		&argparse.Options{Required: false, Default: false,
 			Help: "Save results as TXT file and graphs as PNG file"})
 	args.InitArgParse(p, args, u.BOOL, "", FULLDEPS,
-		&Options{Required: false, Default: false, Help: "Show dependencies of" +
-			"dependencies"})
+		&argparse.Options{Required: false, Default: false,
+			Help: "Show dependencies of dependencies"})
 
 	return u.ParserWrapper(p, os.Args)
 }
