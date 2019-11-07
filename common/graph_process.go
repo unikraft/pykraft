@@ -124,9 +124,10 @@ func SaveGraphToFile(filename string, graph *gographviz.Escape) error {
 // GenerateGraph generates a given graph to a '.dot' and '.png' files.
 //
 // It returns an error if any, otherwise it returns nil.
-func GenerateGraph(programName, fullPathName string, data map[string][]string) {
+func GenerateGraph(programName, fullPathName string, data map[string][]string,
+	mapLabel map[string]string) {
 	// Create graph
-	graph, err := CreateGraph(programName, data)
+	graph, err := CreateGraphLabel(programName, data, mapLabel)
 
 	// Save graph as '.dot' file
 	if err = SaveGraphToFile(fullPathName+".dot", graph); err != nil {
@@ -137,6 +138,8 @@ func GenerateGraph(programName, fullPathName string, data map[string][]string) {
 	if _, err := ExecuteCommand("dot", []string{"-Tpng",
 		fullPathName + ".dot", "-o", fullPathName + ".png"}); err != nil {
 		PrintWarning(err)
+		PrintWarning("Open the following website to display the graph:" +
+			" https://dreampuf.github.io/GraphvizOnline/")
 	} else {
 		PrintOk("Graph saved into " + fullPathName + ".png")
 	}

@@ -173,16 +173,16 @@ func saveGraph(programName, outFolder string, data *u.Data) {
 	sep := string(os.PathSeparator)
 	if len(data.StaticData.SharedLibs) > 0 {
 		u.GenerateGraph(programName, outFolder+"static"+sep+
-			programName+"_shared_libs", data.StaticData.SharedLibs)
+			programName+"_shared_libs", data.StaticData.SharedLibs, nil)
 	}
 
 	if len(data.StaticData.Dependencies) > 0 {
 		u.GenerateGraph(programName, outFolder+"static"+sep+
-			programName+"_dependencies", data.StaticData.Dependencies)
+			programName+"_dependencies", data.StaticData.Dependencies, nil)
 	}
 
 	if len(data.StaticData.SharedLibs) > 0 {
 		u.GenerateGraph(programName, outFolder+"dynamic"+sep+
-			programName+"_shared_libs", data.DynamicData.SharedLibs)
+			programName+"_shared_libs", data.DynamicData.SharedLibs, nil)
 	}
 }

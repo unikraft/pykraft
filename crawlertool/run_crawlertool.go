@@ -9,7 +9,6 @@ package crawlertool
 import (
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 	u "tools/common"
@@ -21,19 +20,19 @@ func RunCrawler() {
 	mapLabel := make(map[string]string)
 	mapConfig := make(map[string][]string)
 
+	// Init and parse local arguments
 	args := new(u.Arguments)
-	args.InitArguments(args)
-	err := ParseArguments(args)
+	p, err := args.InitArguments(args)
 	if err != nil {
 		u.PrintErr(err)
 	}
+	parseLocalArguments(p, args)
 
 	// Used to select all libraries (even those below another Config fields)
 	fullSelect := *args.BoolArg[FULL]
 
 	var path string
 	if len(*args.StringArg[REPO]) > 0 {
-
 		// Only one folder
 		path = *args.StringArg[REPO]
 		u.PrintInfo("Parse folder: " + path)
@@ -63,16 +62,7 @@ func RunCrawler() {
 		u.PrintErr("You must specify either -r (--repository) or -l (libs)")
 	}
 
-	// Create the dependencies graph
-	graph, err := u.CreateGraphLabel("Unikraft crawler", mapConfig, mapLabel)
-	if err != nil {
-		u.PrintErr(err)
-	}
-
-	u.PrintInfo("Number of nodes: " + strconv.Itoa(len(graph.Nodes.Nodes)))
-	u.PrintInfo("Number of edges: " + strconv.Itoa(len(graph.Edges.Edges)))
-
-	// Generate the folder
+	// Generate the out folder
 	outFolder := *args.StringArg[OUTPUT]
 	if outFolder[:len(outFolder)-1] != string(os.PathSeparator) {
 		outFolder += string(os.PathSeparator)
@@ -80,14 +70,12 @@ func RunCrawler() {
 
 	outputPath := outFolder +
 		"output_" + time.Now().Format("20060102150405") + ".dot"
-	err = u.SaveGraphToFile(outputPath, graph)
-	if err != nil {
-		u.PrintErr(err)
-	}
+
+	// Create the dependencies graph
+	u.GenerateGraph("Unikraft Crawler", outputPath, mapConfig,
+		mapLabel)
 
 	u.PrintOk(".dot file is saved: " + outputPath)
-	u.PrintOk("Open the following website to display the graph:" +
-		" https://dreampuf.github.io/GraphvizOnline/")
 }
 
 // searchConfigUK performs a look-up to find "Config.uk" files.
