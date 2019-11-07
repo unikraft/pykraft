@@ -34,14 +34,6 @@ func ColorGenerator() string {
 	return "#" + RandStringBytes(6)
 }
 
-// CreateGraph is a wrapper to CreateGraphLabel.
-//
-// It returns a graph which represents all the direct and no-direct dependencies
-// of a given application and an error if any, otherwise it returns nil.
-func CreateGraph(name string, data map[string][]string) (*gographviz.Escape, error) {
-	return CreateGraphLabel(name, data, nil)
-}
-
 // CreateGraphLabel creates a graph from a map.
 //
 // It returns a graph which represents all the direct and no-direct dependencies
