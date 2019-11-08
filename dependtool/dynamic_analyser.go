@@ -38,14 +38,16 @@ const (
 // function
 //
 func gatherDataAux(command, programPath, programName, option string,
-	data *u.DynamicData, dArgs DynamicArgs) {
+	data *u.DynamicData, dArgs DynamicArgs) bool {
 	_, errStr := CaptureOutput(programPath, programName, command, option, dArgs, data)
 
+	ret := false
 	if command == SYSTRACE {
-		parseTrace(errStr, data.SystemCalls)
+		ret = parseTrace(errStr, data.SystemCalls)
 	} else {
-		parseTrace(errStr, data.Symbols)
+		ret = parseTrace(errStr, data.Symbols)
 	}
+	return ret
 }
 
 // gatherData gathers symbols and system calls of a given application
@@ -66,11 +68,19 @@ func gatherData(command, programPath, programName string,
 
 			u.PrintInfo("Run " + programName + " with option: '" +
 				option + "'")
-			gatherDataAux(command, programPath, programName, option, data, dArgs)
+			if requireSudo := gatherDataAux(command, programPath, programName,
+				option, data, dArgs); requireSudo {
+				u.PrintErr(programName + " requires superuser " +
+					"privileges: Run command with sudo")
+			}
 		}
 	} else {
 		// Run without option/config
-		gatherDataAux(command, programPath, programName, "", data, dArgs)
+		if requireSudo := gatherDataAux(command, programPath, programName,
+			"", data, dArgs); requireSudo {
+			u.PrintErr(programName + " requires superuser " +
+				"privileges: Run command with sudo")
+		}
 	}
 }
 

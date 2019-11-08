@@ -195,15 +195,37 @@ func parseRecursive(rD RecursiveData) {
 
 // ------------------------------Dynamic Output --------------------------------
 
+// detectPermissionDenied detects if  "Permission denied" substring is
+// present within dynamic analysis output.
+//
+// It returns true if it "Permission denied" is present, otherwise false.
+func detectPermissionDenied(str string) bool {
+	if strings.Contains(str, "EACCESS (Permission denied)") ||
+		strings.Contains(str, "13: Permission denied") {
+		return true
+	}
+	return false
+}
+
 // parseTrace parses the output of the '(s)|(f)trace' command.
 //
-func parseTrace(output string, data map[string]string) {
+// It returns true if command must be run with sudo, otherwise false.
+func parseTrace(output string, data map[string]string) bool {
 
-	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\(.*`)
+	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\((.*)`)
 	for _, match := range re.FindAllStringSubmatch(output, -1) {
-		// Add symbol to map
-		data[match[1]] = ""
+		if len(match) > 1 {
+			// Detect if Permission denied is thrown
+			detected := detectPermissionDenied(match[2])
+			if detected {
+				// Command must be run with sudo
+				return true
+			}
+			// Add symbol to map
+			data[match[1]] = ""
+		}
 	}
+	return false
 }
 
 // parseLsof parses the output of the 'lsof' command.
