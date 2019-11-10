@@ -99,9 +99,9 @@ func Exists(path string) (bool, error) {
 //
 // It returns true if the folder is created and an error if any, otherwise it
 // returns nil.
-func CreateFolder(path, folderName string) (bool, error) {
-	if _, err := os.Stat(path + folderName); os.IsNotExist(err) {
-		if err = os.Mkdir(path+folderName, PERM); err != nil {
+func CreateFolder(path string) (bool, error) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err = os.Mkdir(path, PERM); err != nil {
 			return false, err
 		}
 		return true, nil

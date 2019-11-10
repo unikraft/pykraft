@@ -3,7 +3,6 @@ package dependtool
 import (
 	"fmt"
 	"github.com/fatih/color"
-	"os"
 	"runtime"
 	"strings"
 	u "tools/common"
@@ -36,12 +35,9 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	programName := *args.StringArg[PROGRAM]
 
 	// Create the folder 'output' if it does not exist
-	outFolder := homeDir + string(os.PathSeparator) + programName +
-		"_" + u.OUTFOLDER
-	if _, err := os.Stat(outFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(outFolder, os.ModePerm); err != nil {
-			u.PrintErr(err)
-		}
+	outFolder := homeDir + u.SEP + programName + "_" + u.OUTFOLDER
+	if _, err := u.CreateFolder(outFolder); err != nil {
+		u.PrintErr(err)
 	}
 
 	// Display Minor Details
@@ -121,11 +117,9 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	if *args.BoolArg[SAVEOUTPUT] {
 
 		// Create the folder 'output/static' if it does not exist
-		outFolderStatic := outFolder + "static" + string(os.PathSeparator)
-		if _, err := os.Stat(outFolderStatic); os.IsNotExist(err) {
-			if err = os.Mkdir(outFolderStatic, os.ModePerm); err != nil {
-				u.PrintErr(err)
-			}
+		outFolderStatic := outFolder + "static" + u.SEP
+		if _, err := u.CreateFolder(outFolderStatic); err != nil {
+			u.PrintErr(err)
 		}
 
 		fn := outFolderStatic + programName + ".txt"
@@ -150,11 +144,9 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	if *args.BoolArg[SAVEOUTPUT] {
 
 		// Create the folder 'output/dynamic' if it does not exist
-		outFolderDynamic := outFolder + "dynamic" + string(os.PathSeparator)
-		if _, err := os.Stat(outFolderDynamic); os.IsNotExist(err) {
-			if err = os.Mkdir(outFolderDynamic, os.ModePerm); err != nil {
-				u.PrintErr(err)
-			}
+		outFolderDynamic := outFolder + "dynamic" + u.SEP
+		if _, err := u.CreateFolder(outFolderDynamic); err != nil {
+			u.PrintErr(err)
 		}
 
 		fn := outFolderDynamic + programName + ".txt"
@@ -172,19 +164,18 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 // saveGraph saves dependency graphs of a given app into the output folder.
 func saveGraph(programName, outFolder string, data *u.Data) {
 
-	sep := string(os.PathSeparator)
 	if len(data.StaticData.SharedLibs) > 0 {
-		u.GenerateGraph(programName, outFolder+"static"+sep+
+		u.GenerateGraph(programName, outFolder+"static"+u.SEP+
 			programName+"_shared_libs", data.StaticData.SharedLibs, nil)
 	}
 
 	if len(data.StaticData.Dependencies) > 0 {
-		u.GenerateGraph(programName, outFolder+"static"+sep+
+		u.GenerateGraph(programName, outFolder+"static"+u.SEP+
 			programName+"_dependencies", data.StaticData.Dependencies, nil)
 	}
 
 	if len(data.StaticData.SharedLibs) > 0 {
-		u.GenerateGraph(programName, outFolder+"dynamic"+sep+
+		u.GenerateGraph(programName, outFolder+"dynamic"+u.SEP+
 			programName+"_shared_libs", data.DynamicData.SharedLibs, nil)
 	}
 }

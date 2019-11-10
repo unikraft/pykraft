@@ -28,11 +28,11 @@ const (
 
 func createIncludeFolder(appFolder string) (*string, error) {
 
-	if _, err := u.CreateFolder(appFolder, INCLUDEFOLDER); err != nil {
+	includeFolder := appFolder + INCLUDEFOLDER
+	if _, err := u.CreateFolder(includeFolder); err != nil {
 		return nil, err
 	}
 
-	includeFolder := appFolder + INCLUDEFOLDER
 	return &includeFolder, nil
 }
 
@@ -41,7 +41,7 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 
 	unikraftFolder := homeDir + UNIKRAFTFOLDER
 
-	created, err := u.CreateFolder(homeDir, UNIKRAFTFOLDER)
+	created, err := u.CreateFolder(unikraftFolder)
 	if err != nil {
 		return nil, err
 	}
@@ -50,11 +50,11 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 		u.PrintInfo("Create Unikraft folder with apps and libs subfolders")
 
 		// Create 'apps' and 'libs' subfolders
-		if _, err := u.CreateFolder(unikraftFolder, APPSFOLDER); err != nil {
+		if _, err := u.CreateFolder(unikraftFolder + APPSFOLDER); err != nil {
 			return nil, err
 		}
 
-		if _, err := u.CreateFolder(unikraftFolder, LIBSFOLDER); err != nil {
+		if _, err := u.CreateFolder(unikraftFolder + LIBSFOLDER); err != nil {
 			return nil, err
 		}
 
@@ -106,16 +106,15 @@ func createUnikraftApp(programName, unikraftPath string) (*string, error) {
 
 	var appFolder string
 	if unikraftPath[len(unikraftPath)-1] != os.PathSeparator {
-		appFolder = unikraftPath + u.SEP + APPSFOLDER
+		appFolder = unikraftPath + u.SEP + APPSFOLDER + programName + u.SEP
 	} else {
-		appFolder = unikraftPath + APPSFOLDER
+		appFolder = unikraftPath + APPSFOLDER + programName + u.SEP
 	}
 
-	created, err := u.CreateFolder(appFolder, programName)
+	created, err := u.CreateFolder(appFolder)
 	if err != nil {
 		return nil, err
 	}
-	appFolder += programName + u.SEP
 
 	if !created {
 		u.PrintWarning(appFolder + " already exists.")
@@ -172,9 +171,6 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 	err := filepath.Walk(sourcesPath, func(path string, info os.FileInfo,
 		err error) error {
 
-			println(sourcesPath)
-			println(includeFolder)
-
 		if !info.IsDir() {
 			extension := filepath.Ext(info.Name())
 			if _, ok := srcLanguages[extension]; ok {
@@ -183,8 +179,6 @@ func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
 
 				// Count the number of extension
 				srcLanguages[extension] += 1
-
-				println(info.Name())
 
 				// Copy source files to the appFolder
 				if err = u.CopyFileContents(path, appFolder+info.Name()); err != nil {
