@@ -29,9 +29,9 @@ func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 		&argparse.Options{Required: true, Help: "Program name"})
 
 	args.InitArgParse(p, args, u.STRING, "u", UNIKRAFT,
-		&argparse.Options{Required: false, Default: "", Help: "Unikraft Path"})
+		&argparse.Options{Required: false, Help: "Unikraft Path"})
 	args.InitArgParse(p, args, u.STRING, "s", SOURCES,
-		&argparse.Options{Required: false, Default: "", Help: "App Sources " +
+		&argparse.Options{Required: true, Help: "App Sources " +
 			"Folder"})
 	args.InitArgParse(p, args, u.STRING, "m", MAKEFILE,
 		&argparse.Options{Required: false, Help: "Add additional properties " +
