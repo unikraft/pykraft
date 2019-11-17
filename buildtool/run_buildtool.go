@@ -202,7 +202,11 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		u.PrintErr(err)
 	}
 
-	// Clone the external git repositories if changes
+	for _, lib := range matchedLibs {
+		u.PrintOk("Match lib: " + lib)
+	}
+
+	// Clone the external git repositories (if changed)
 	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
 
 	// Generate Makefiles

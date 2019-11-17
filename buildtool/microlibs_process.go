@@ -113,7 +113,6 @@ func matchSymbols(matchedLibs []string, data map[string]string,
 
 				if !u.Contains(matchedLibs, value) {
 					matchedLibs = append(matchedLibs, value)
-					u.PrintOk("Match lib: " + value)
 				}
 			}
 		}
