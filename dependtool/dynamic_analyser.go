@@ -7,15 +7,9 @@
 package dependtool
 
 import (
-	"bytes"
-	"fmt"
-	"io"
-	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 	u "tools/common"
 )
 
@@ -27,9 +21,8 @@ type DynamicArgs struct {
 }
 
 const (
-	SYSTRACE       = "strace"
-	LIBTRACE       = "ltrace"
-	STARTUPTIMEAPP = 3
+	systrace = "strace"
+	libtrace = "ltrace"
 )
 
 // --------------------------------Gather Data----------------------------------
@@ -39,10 +32,22 @@ const (
 //
 func gatherDataAux(command, programPath, programName, option string,
 	data *u.DynamicData, dArgs DynamicArgs) bool {
-	_, errStr := CaptureOutput(programPath, programName, command, option, dArgs, data)
+
+	var cmdTests []string
+	if len(dArgs.testFile) > 0 {
+
+		var err error
+		cmdTests, err = u.ReadLinesFile(dArgs.testFile)
+		if err != nil {
+			u.PrintWarning("Cannot find test files" + err.Error())
+		}
+
+	}
+	_, errStr := captureOutput(programPath, programName, command, option,
+		cmdTests, dArgs, data)
 
 	ret := false
-	if command == SYSTRACE {
+	if command == systrace {
 		ret = parseTrace(errStr, data.SystemCalls)
 	} else {
 		ret = parseTrace(errStr, data.Symbols)
@@ -120,131 +125,6 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 	return nil
 }
 
-// -----------------------------------TESTER------------------------------------
-
-// launchTests runs external tests written in the 'test.txt' file.
-//
-func launchTests(args DynamicArgs) {
-
-	cmdTests, err := u.ReadLinesFile(args.testFile)
-
-	if err != nil {
-		u.PrintWarning("Cannot launch test files" + err.Error())
-	} else {
-		for _, cmd := range cmdTests {
-			if len(cmd) > 0 {
-				cmd = strings.TrimSuffix(cmd, "\n")
-				// Execute each line as a command
-				if _, err := u.ExecutePipeCommand(cmd); err != nil {
-					u.PrintWarning("Impossible to execute test: " + cmd)
-				} else {
-					u.PrintInfo("Test executed: " + cmd)
-				}
-			}
-		}
-	}
-}
-
-// CaptureOutput captures stdout and stderr of a the executed command. It will
-// also run the Tester to explore several execution paths of the given app.
-//
-// It returns to string which are respectively stdout and stderr.
-func CaptureOutput(programPath, programName, command, option string,
-	dArgs DynamicArgs, data *u.DynamicData) (string, string) {
-
-	args := strings.Fields("-f " + programPath + " " + option)
-	cmd := exec.Command(command, args...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	bufOut, bufErr := &bytes.Buffer{}, &bytes.Buffer{}
-	cmd.Stdout = io.MultiWriter(bufOut) // Add os.Stdout to record on stdout
-	cmd.Stderr = io.MultiWriter(bufErr) // Add os.Stderr to record on stderr
-	cmd.Stdin = os.Stdin
-
-	// Run the process (traced by strace/ltrace)
-	if err := cmd.Start(); err != nil {
-		u.PrintErr(err)
-	}
-
-	// Add timeout if program is not killed
-	var canceled = make(chan struct{})
-	timeoutKill := time.NewTimer(time.Second)
-
-	// Add timer for background process
-	timerBackground := time.NewTimer(STARTUPTIMEAPP * time.Second)
-	go func() {
-		<-timerBackground.C
-		// If background, run Testers
-		Tester(programName, cmd.Process, data, dArgs)
-		go func() {
-			select {
-			case <-timeoutKill.C:
-				if err := u.PKill(programName, syscall.SIGINT); err != nil {
-					u.PrintErr(err)
-				}
-			case <-canceled:
-			}
-		}()
-	}()
-
-	// Ignore the error because the program is killed (waitTime)
-	_ = cmd.Wait()
-
-	// Stop timer
-	timerBackground.Stop()
-
-	// Add timeout if program is not killed
-	select {
-	case canceled <- struct{}{}:
-	default:
-	}
-	timeoutKill.Stop()
-
-	return bufOut.String(), bufErr.String()
-}
-
-// Tester runs the executable file of a given application to perform tests to
-// get program dependencies.
-//
-func Tester(programName string, process *os.Process, data *u.DynamicData,
-	dArgs DynamicArgs) {
-
-	if len(dArgs.testFile) > 0 {
-		u.PrintInfo("Run internal tests from file " + dArgs.testFile)
-
-		// Wait until the program has started
-		time.Sleep(time.Second * STARTUPTIMEAPP)
-
-		// Launch Tests
-		launchTests(dArgs)
-
-	} else {
-		u.PrintInfo("Waiting for external tests for " + strconv.Itoa(
-			dArgs.waitTime) + " sec")
-		ticker := time.Tick(time.Second)
-		for i := 1; i <= dArgs.waitTime; i++ {
-			<-ticker
-			fmt.Printf("-")
-		}
-		fmt.Printf("\n")
-	}
-
-	// Gather shared libs
-	u.PrintHeader2("(*) Gathering shared libs")
-	if err := gatherDynamicSharedLibs(programName, process.Pid, data,
-		dArgs.fullDeps); err != nil {
-		u.PrintWarning(err)
-	}
-
-	// Kill process after elapsed time
-	u.PrintInfo("Kill '" + programName + "'")
-	if err := process.Kill(); err != nil {
-		u.PrintErr(err)
-	} else {
-		u.PrintOk("'" + programName + "' Killed")
-	}
-}
-
 // ------------------------------------ARGS-------------------------------------
 
 // getDArgs returns a DynamicArgs struct which contains arguments specific to
@@ -296,9 +176,15 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	// Run strace
 	u.PrintHeader2("(*) Gathering system calls from ELF file")
-	gatherData(SYSTRACE, programPath, programName, dynamicData, dArgs)
+	gatherData(systrace, programPath, programName, dynamicData, dArgs)
+
+	// Kill process if it is already launched
+	u.PrintInfo("Kill '" + programName + "' if it is already launched")
+	if err := u.PKill(programName, syscall.SIGINT); err != nil {
+		u.PrintErr(err)
+	}
 
 	// Run ltrace
 	u.PrintHeader2("(*) Gathering symbols from ELF file")
-	gatherData(LIBTRACE, programPath, programName, dynamicData, dArgs)
+	gatherData(libtrace, programPath, programName, dynamicData, dArgs)
 }
