@@ -193,20 +193,23 @@ func RunBuildTool(homeDir string, data *u.Data) {
 		u.PrintErr(err)
 	}
 
+	// Clone the external git repositories
+	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
+
 	// Match internal dependencies between micro-libs
 	if err := searchInternalDependencies(unikraftPath, &matchedLibs,
 		externalLibs); err != nil {
 		u.PrintErr(err)
 	}
 
+	// Clone the external git repositories if changes
+	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
+
 	// Generate Makefiles
 	if err := generateMake(programName, appFolder, unikraftPath, *args.StringArg[MAKEFILE],
 		matchedLibs, sourceFiles, externalLibs); err != nil {
 		u.PrintErr(err)
 	}
-
-	// Clone the external git repositories
-	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
 
 	// Delete Build folder
 	deleteBuildFolder(appFolder)
