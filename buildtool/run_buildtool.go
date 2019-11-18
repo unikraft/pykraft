@@ -21,7 +21,7 @@ import (
 const (
 	compilerError = iota
 	linkingError
-	sucess
+	success
 )
 
 // -----------------------------Generate Config---------------------------------
@@ -54,7 +54,7 @@ func generateConfigUk(filename, programName string, matchedLibs []string) error 
 func checkMakeOutput(appFolder string, stderr *string) int {
 
 	if stderr == nil {
-		return sucess
+		return success
 	}
 
 	// Linking errors during make
@@ -76,7 +76,7 @@ func checkMakeOutput(appFolder string, stderr *string) int {
 		return compilerError
 	}
 
-	return sucess
+	return success
 }
 
 // parseMakeOutput parses the output of the 'make' command.
@@ -385,7 +385,7 @@ func runMake(programName, appFolder string) {
 
 	if state == compilerError {
 		u.PrintErr("Fix compilation errors")
-	} else if state == sucess {
+	} else if state == success {
 		u.PrintOk("Unikernel created in Folder: 'build/'")
 	}
 }
