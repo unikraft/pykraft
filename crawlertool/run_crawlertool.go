@@ -14,7 +14,8 @@ import (
 	u "tools/common"
 )
 
-// Individual tool (out of the UNICORE toolchain)
+// RunCrawler allows to run the crawler analyser tool (which is out of the
+// UNICORE toolchain).
 func RunCrawler() {
 
 	mapLabel := make(map[string]string)
