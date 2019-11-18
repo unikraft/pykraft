@@ -13,12 +13,14 @@ import (
 	"strings"
 )
 
+// Exported constants to determine arguments type.
 const (
 	INT = iota
 	BOOL
 	STRING
 )
 
+// Exported constants to determine which tool is used.
 const (
 	CRAWLER = "crawler"
 	DEP     = "dep"
@@ -31,12 +33,17 @@ const (
 	unknownArgs = "unknown arguments"
 )
 
+// Exported constants to represent different types of arguments.
 type Arguments struct {
 	IntArg    map[string]*int
 	BoolArg   map[string]*bool
 	StringArg map[string]*string
 }
 
+// InitArguments allows to initialize the parser in order to parse given
+// arguments.
+//
+// It returns a parser as well as an error if any, otherwise it returns nil.
 func (args *Arguments) InitArguments() (*argparse.Parser, error) {
 
 	args.IntArg = make(map[string]*int)
@@ -49,6 +56,10 @@ func (args *Arguments) InitArguments() (*argparse.Parser, error) {
 	return p, nil
 }
 
+// ParserWrapper parses arguments of the application and skips unknownArgs
+// error in order to use different levels of arguments parsing.
+//
+// It returns an error if any, otherwise it returns nil.
 func ParserWrapper(p *argparse.Parser, args []string) error {
 	err := p.Parse(args)
 	if err != nil && strings.Contains(err.Error(), unknownArgs) {
@@ -93,7 +104,6 @@ func (*Arguments) ParseMainArguments(p *argparse.Parser, args *Arguments) error 
 
 // InitArgParse initializes the Arguments structure depending the type of
 // the variable.
-//
 func (*Arguments) InitArgParse(p *argparse.Parser, args *Arguments, typeVar int,
 	short, long string, options *argparse.Options) {
 	switch typeVar {
