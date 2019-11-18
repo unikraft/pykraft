@@ -7,14 +7,14 @@
 package buildtool
 
 const (
-	CARES            = "c-ares"
-	COMPILERRT       = "compiler-rt"
+	CARES             = "c-ares"
+	COMPILERRT        = "compiler-rt"
 	DEVFS             = "devfs"
 	DPDK              = "dpdk"
 	EIGEN             = "eigen"
 	FP16              = "fp16"
 	FXDIV             = "fxdiv"
-	INTELINTRINSICS  = "intel-intrinsics"
+	INTELINTRINSICS   = "intel-intrinsics"
 	LIBAXTLS          = "libaxtls"
 	LIBBLOCK          = "libblock"
 	LIBCXX            = "libcxx"

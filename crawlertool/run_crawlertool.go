@@ -38,8 +38,7 @@ func RunCrawler() {
 		// Only one folder
 		path = *args.StringArg[REPO]
 		u.PrintInfo("Parse folder: " + path)
-		if err := searchConfigUK(path, fullSelect, mapConfig, mapLabel);
-			err != nil {
+		if err := searchConfigUK(path, fullSelect, mapConfig, mapLabel); err != nil {
 			u.PrintErr()
 		}
 
@@ -55,8 +54,7 @@ func RunCrawler() {
 		for _, line := range lines {
 			path = strings.TrimSuffix(line, "\n")
 			u.PrintInfo("Parse folder: " + path)
-			if err := searchConfigUK(path, fullSelect, mapConfig, mapLabel);
-				err != nil {
+			if err := searchConfigUK(path, fullSelect, mapConfig, mapLabel); err != nil {
 				u.PrintErr(err)
 			}
 		}

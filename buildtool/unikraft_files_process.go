@@ -65,8 +65,7 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 		}
 
 		// Use staging branch
-		if _, _, err := u.GitBranchStaging(unikraftFolder+"unikraft", true);
-			err != nil {
+		if _, _, err := u.GitBranchStaging(unikraftFolder+"unikraft", true); err != nil {
 			return nil, err
 		}
 
