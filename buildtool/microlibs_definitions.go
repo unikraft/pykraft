@@ -6,6 +6,7 @@
 
 package buildtool
 
+// Exported const representing micro-libs definitions.
 const (
 	CARES             = "c-ares"
 	COMPILERRT        = "compiler-rt"

@@ -16,7 +16,7 @@ import (
 	u "tools/common"
 )
 
-// Folder
+// Exported constants for folder management
 const (
 	APPSFOLDER     = "apps" + u.SEP
 	UNIKRAFTFOLDER = "unikraft" + u.SEP
@@ -79,7 +79,7 @@ func setUnikraftFolder(homeDir string) (*string, error) {
 
 // ---------------------------Check UNIKRAFT Folder-----------------------------
 
-func ContainsUnikraftFolders(files []os.FileInfo) bool {
+func containsUnikraftFolders(files []os.FileInfo) bool {
 
 	if len(files) == 0 {
 		return false
@@ -164,7 +164,7 @@ var srcLanguages = map[string]int{
 	".go":  0,
 }
 
-func ProcessSourceFiles(sourcesPath, appFolder, includeFolder string,
+func processSourceFiles(sourcesPath, appFolder, includeFolder string,
 	sourceFiles, includesFiles []string) error {
 
 	err := filepath.Walk(sourcesPath, func(path string, info os.FileInfo,

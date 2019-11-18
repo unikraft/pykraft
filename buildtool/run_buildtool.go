@@ -147,7 +147,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	if folder, err := ioutil.ReadDir(unikraftPath); err != nil {
 		u.PrintErr(err)
 	} else {
-		if !ContainsUnikraftFolders(folder) {
+		if !containsUnikraftFolders(folder) {
 			u.PrintErr(errors.New("unikraft, apps and libs folders must exist"))
 		}
 	}
@@ -181,7 +181,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	sourceFiles, includesFiles := make([]string, 0), make([]string, 0)
 
 	// Move source files to Unikraft folder
-	if err = ProcessSourceFiles(sourcesPath, appFolder, *includeFolder,
+	if err = processSourceFiles(sourcesPath, appFolder, *includeFolder,
 		sourceFiles, includesFiles); err != nil {
 		u.PrintErr(err)
 	}

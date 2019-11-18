@@ -13,6 +13,7 @@ import (
 	"os"
 )
 
+// Exported constants for folder management
 const (
 	SEP       = string(os.PathSeparator)
 	OUTFOLDER = "output" + SEP
@@ -109,7 +110,7 @@ func CreateFolder(path string) (bool, error) {
 	return false, nil
 }
 
-// Reads a file line by line and saves its content into a slice.
+// ReadLinesFile Reads a file line by line and saves its content into a slice.
 //
 // It returns a slice of string which represents each line of a file and an
 // error if any, otherwise it returns nil.
