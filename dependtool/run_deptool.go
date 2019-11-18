@@ -26,13 +26,13 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	}
 
 	// Get program path
-	programPath, err := u.GetProgramPath(&*args.StringArg[PROGRAM])
+	programPath, err := u.GetProgramPath(&*args.StringArg[programArg])
 	if err != nil {
 		u.PrintErr("Could not determine program path", err)
 	}
 
 	// Get program Name
-	programName := *args.StringArg[PROGRAM]
+	programName := *args.StringArg[programArg]
 
 	// Create the folder 'output' if it does not exist
 	outFolder := homeDir + u.SEP + programName + "_" + u.OUTFOLDER
@@ -63,7 +63,7 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	}
 
 	// Save graph if full dependencies option is set
-	if *args.BoolArg[FULLDEPS] {
+	if *args.BoolArg[fullDepsArg] {
 		saveGraph(programName, outFolder, data)
 	}
 }
@@ -73,16 +73,16 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 	fmt.Println("----------------------------------------------")
 	fmt.Println("Analyze Program: ", color.GreenString(programName))
 	fmt.Println("Full Path: ", color.GreenString(programPath))
-	if len(*args.StringArg[OPTIONS]) > 0 {
-		fmt.Println("Options: ", color.GreenString(*args.StringArg[OPTIONS]))
+	if len(*args.StringArg[optionsArg]) > 0 {
+		fmt.Println("Options: ", color.GreenString(*args.StringArg[optionsArg]))
 	}
 
-	if len(*args.StringArg[CONFIGFILE]) > 0 {
-		fmt.Println("Config file: ", color.GreenString(*args.StringArg[CONFIGFILE]))
+	if len(*args.StringArg[configFileArg]) > 0 {
+		fmt.Println("Config file: ", color.GreenString(*args.StringArg[configFileArg]))
 	}
 
-	if len(*args.StringArg[TESTFILE]) > 0 {
-		fmt.Println("Test file: ", color.GreenString(*args.StringArg[TESTFILE]))
+	if len(*args.StringArg[testFileArg]) > 0 {
+		fmt.Println("Test file: ", color.GreenString(*args.StringArg[testFileArg]))
 	}
 
 	fmt.Println("----------------------------------------------")
@@ -114,7 +114,7 @@ func runStaticAnalyser(args *u.Arguments, programName, programPath,
 	staticAnalyser(*args, data, programPath)
 
 	// Save static Data into text file if display mode is set
-	if *args.BoolArg[SAVEOUTPUT] {
+	if *args.BoolArg[saveOutputArg] {
 
 		// Create the folder 'output/static' if it does not exist
 		outFolderStatic := outFolder + "static" + u.SEP
@@ -141,7 +141,7 @@ func runDynamicAnalyser(args *u.Arguments, programName, programPath,
 	dynamicAnalyser(args, data, programPath)
 
 	// Save dynamic Data into text file if display mode is set
-	if *args.BoolArg[SAVEOUTPUT] {
+	if *args.BoolArg[saveOutputArg] {
 
 		// Create the folder 'output/dynamic' if it does not exist
 		outFolderDynamic := outFolder + "dynamic" + u.SEP

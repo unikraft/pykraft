@@ -132,9 +132,9 @@ func gatherDynamicSharedLibs(programName string, pid int, data *u.DynamicData,
 //
 // It returns a DynamicArgs struct.
 func getDArgs(args *u.Arguments, options []string) DynamicArgs {
-	return DynamicArgs{*args.IntArg[WAITTIME],
-		*args.BoolArg[FULLDEPS], *args.BoolArg[SAVEOUTPUT],
-		*args.StringArg[TESTFILE], options}
+	return DynamicArgs{*args.IntArg[waitTimeArg],
+		*args.BoolArg[fullDepsArg], *args.BoolArg[saveOutputArg],
+		*args.StringArg[testFileArg], options}
 }
 
 // -------------------------------------RUN-------------------------------------
@@ -146,21 +146,21 @@ func dynamicAnalyser(args *u.Arguments, data *u.Data, programPath string) {
 
 	// Check options
 	var configs []string
-	if len(*args.StringArg[CONFIGFILE]) > 0 {
+	if len(*args.StringArg[configFileArg]) > 0 {
 		// Multi-lines options (config)
 		var err error
-		configs, err = u.ReadLinesFile(*args.StringArg[CONFIGFILE])
+		configs, err = u.ReadLinesFile(*args.StringArg[configFileArg])
 		if err != nil {
 			u.PrintWarning(err)
 		}
-	} else if len(*args.StringArg[OPTIONS]) > 0 {
+	} else if len(*args.StringArg[optionsArg]) > 0 {
 		// Single option (config)
-		configs = append(configs, *args.StringArg[OPTIONS])
+		configs = append(configs, *args.StringArg[optionsArg])
 	}
 
 	// Get dynamic structure
 	dArgs := getDArgs(args, configs)
-	programName := *args.StringArg[PROGRAM]
+	programName := *args.StringArg[programArg]
 
 	// Kill process if it is already launched
 	u.PrintInfo("Kill '" + programName + "' if it is already launched")

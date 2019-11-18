@@ -157,8 +157,8 @@ func executeDependAptCache(programName string, data *u.StaticData,
 //
 func staticAnalyser(args u.Arguments, data *u.Data, programPath string) {
 
-	programName := *args.StringArg[PROGRAM]
-	fullDeps := *args.BoolArg[FULLDEPS]
+	programName := *args.StringArg[programArg]
+	fullDeps := *args.BoolArg[fullDepsArg]
 
 	staticData := &data.StaticData
 
