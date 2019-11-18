@@ -13,11 +13,10 @@ import (
 )
 
 const (
-	PROGRAM  = "program"
-	OUTPUT   = "output"
-	UNIKRAFT = "unikraft"
-	SOURCES  = "sources"
-	MAKEFILE = "makefile"
+	programArg  = "program"
+	unikraftArg = "unikraft"
+	sourcesArg  = "sources"
+	makefileArg = "makefile"
 )
 
 // ParseArguments parses arguments of the application.
@@ -25,15 +24,15 @@ const (
 // It returns an error if any, otherwise it returns nil.
 func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 
-	args.InitArgParse(p, args, u.STRING, "p", PROGRAM,
+	args.InitArgParse(p, args, u.STRING, "p", programArg,
 		&argparse.Options{Required: true, Help: "Program name"})
 
-	args.InitArgParse(p, args, u.STRING, "u", UNIKRAFT,
+	args.InitArgParse(p, args, u.STRING, "u", unikraftArg,
 		&argparse.Options{Required: false, Help: "Unikraft Path"})
-	args.InitArgParse(p, args, u.STRING, "s", SOURCES,
+	args.InitArgParse(p, args, u.STRING, "s", sourcesArg,
 		&argparse.Options{Required: true, Help: "App Sources " +
 			"Folder"})
-	args.InitArgParse(p, args, u.STRING, "m", MAKEFILE,
+	args.InitArgParse(p, args, u.STRING, "m", makefileArg,
 		&argparse.Options{Required: false, Help: "Add additional properties " +
 			"for Makefile"})
 

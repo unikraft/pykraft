@@ -120,7 +120,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Get program Name
-	programName := *args.StringArg[PROGRAM]
+	programName := *args.StringArg[programArg]
 
 	// Take base path if absolute path is used
 	if filepath.IsAbs(programName) {
@@ -128,18 +128,18 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	var unikraftPath string
-	if len(*args.StringArg[UNIKRAFT]) == 0 {
+	if len(*args.StringArg[unikraftArg]) == 0 {
 		path, err := setUnikraftFolder(homeDir + u.SEP)
 		if err != nil {
 			u.PrintErr(err)
 		}
 		unikraftPath = *path
 	} else {
-		unikraftPath = *args.StringArg[UNIKRAFT]
+		unikraftPath = *args.StringArg[unikraftArg]
 	}
 
 	// Check if sources argument is set
-	if len(*args.StringArg[SOURCES]) == 0 {
+	if len(*args.StringArg[sourcesArg]) == 0 {
 		u.PrintErr("sources argument '-s' must be set")
 	}
 
@@ -175,7 +175,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// Get sources files
-	sourcesPath := *args.StringArg[SOURCES]
+	sourcesPath := *args.StringArg[sourcesArg]
 
 	// Copy all .h into the include folder
 	sourceFiles, includesFiles := make([]string, 0), make([]string, 0)
@@ -210,7 +210,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	cloneLibsFolders(unikraftPath, matchedLibs, externalLibs)
 
 	// Generate Makefiles
-	if err := generateMake(programName, appFolder, unikraftPath, *args.StringArg[MAKEFILE],
+	if err := generateMake(programName, appFolder, unikraftPath, *args.StringArg[makefileArg],
 		matchedLibs, sourceFiles, externalLibs); err != nil {
 		u.PrintErr(err)
 	}
@@ -281,7 +281,7 @@ func generateMake(programName, appFolder, unikraftPath, makefile string,
 		return err
 	}
 
-	// Get the file type for UNIKRAFT flag
+	// Get the file type for Unikraft flag
 	fileType := languageUsed()
 
 	// Generate Makefile.uk
