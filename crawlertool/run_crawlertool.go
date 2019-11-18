@@ -31,21 +31,21 @@ func RunCrawler() {
 	}
 
 	// Used to select all libraries (even those below another Config fields)
-	fullSelect := *args.BoolArg[FULL]
+	fullSelect := *args.BoolArg[fullLibsArg]
 
 	var path string
-	if len(*args.StringArg[REPO]) > 0 {
+	if len(*args.StringArg[repoArg]) > 0 {
 		// Only one folder
-		path = *args.StringArg[REPO]
+		path = *args.StringArg[repoArg]
 		u.PrintInfo("Parse folder: " + path)
 		if err := searchConfigUK(path, fullSelect, mapConfig, mapLabel); err != nil {
 			u.PrintErr()
 		}
 
-	} else if len(*args.StringArg[LIBS]) > 0 {
+	} else if len(*args.StringArg[libsArg]) > 0 {
 
 		// Several folders within a list
-		lines, err := u.ReadLinesFile(*args.StringArg[LIBS])
+		lines, err := u.ReadLinesFile(*args.StringArg[libsArg])
 		if err != nil {
 			u.PrintErr(err)
 		}
@@ -63,7 +63,7 @@ func RunCrawler() {
 	}
 
 	// Generate the out folder
-	outFolder := *args.StringArg[OUTPUT]
+	outFolder := *args.StringArg[outputArg]
 	if outFolder[len(outFolder)-1:] != string(os.PathSeparator) {
 		outFolder += string(os.PathSeparator)
 	}
