@@ -1,6 +1,6 @@
 # UNICORE tools: 
 
-[![version](https://img.shields.io/badge/version-0.2.0-yellow.svg)](https://semver.org)
+[![version](https://img.shields.io/badge/version-0.2.1-yellow.svg)](https://semver.org)
 [![Go Report Card](https://goreportcard.com/badge/github.com/unikraft/tools)](https://goreportcard.com/report/github.com/unikraft/tools)
 
 ### What is UNICORE tools?
