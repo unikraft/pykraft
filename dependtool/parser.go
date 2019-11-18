@@ -14,7 +14,9 @@ import (
 	u "tools/common"
 )
 
-type RecursiveData struct {
+const levelDeps = 5
+
+type recursiveData struct {
 	data, glMap, printDep map[string][]string
 	cmd, line             string
 	listStr               []string
@@ -91,8 +93,6 @@ func parsePackagesName(output string) string {
 	return ""
 }
 
-const LEVEL = 5
-
 // parseDependencies parses the output of the 'apt-cache depends' command.
 //
 // It returns a slice of strings which represents all the dependencies of
@@ -108,8 +108,8 @@ func parseDependencies(output string, data, dependenciesMap,
 				printDep[line] = nil
 			}
 
-			if fullDeps && level < LEVEL {
-				rd := RecursiveData{
+			if fullDeps && level < levelDeps {
+				rd := recursiveData{
 					data:     data,
 					glMap:    dependenciesMap,
 					printDep: printDep,
@@ -146,7 +146,7 @@ func parseLDD(output string, data map[string][]string, lddMap map[string][]strin
 
 			// Execute ldd only if fullDeps mode is set
 			if fullDeps {
-				rd := RecursiveData{
+				rd := recursiveData{
 					data:     data,
 					glMap:    lddMap,
 					printDep: nil,
@@ -167,7 +167,7 @@ func parseLDD(output string, data map[string][]string, lddMap map[string][]strin
 
 // parseRecursive is used by parseDependencies and parseLDD to factorize code.
 //
-func parseRecursive(rD RecursiveData) {
+func parseRecursive(rD recursiveData) {
 
 	if _, in := rD.glMap[rD.line]; in {
 		// Use additional map to avoid executing again ldd

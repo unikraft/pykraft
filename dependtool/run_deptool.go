@@ -8,6 +8,7 @@ import (
 	u "tools/common"
 )
 
+// RunAnalyserTool allows to run the dependency analyser tool.
 func RunAnalyserTool(homeDir string, data *u.Data) {
 
 	// Support only Unix
@@ -90,7 +91,7 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 
 // checkElf checks if the program (from its path) is an ELF file
 func checkElf(programPath *string) {
-	elfFile, err := GetElf(*programPath)
+	elfFile, err := getElf(*programPath)
 	if err != nil {
 		u.PrintErr(err)
 	} else if elfFile == nil {

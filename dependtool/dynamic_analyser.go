@@ -13,6 +13,7 @@ import (
 	u "tools/common"
 )
 
+// Exported struct that represents the arguments for dynamic analysis.
 type DynamicArgs struct {
 	waitTime             int
 	fullDeps, saveOutput bool
@@ -28,8 +29,9 @@ const (
 // --------------------------------Gather Data----------------------------------
 
 // gatherDataAux gathers symbols and system calls of a given application (helper
-// function
+// function.
 //
+// It returns true if a command must be run with sudo.
 func gatherDataAux(command, programPath, programName, option string,
 	data *u.DynamicData, dArgs DynamicArgs) bool {
 
@@ -55,7 +57,7 @@ func gatherDataAux(command, programPath, programName, option string,
 	return ret
 }
 
-// gatherData gathers symbols and system calls of a given application
+// gatherData gathers symbols and system calls of a given application.
 //
 func gatherData(command, programPath, programName string,
 	data *u.DynamicData, dArgs DynamicArgs) {

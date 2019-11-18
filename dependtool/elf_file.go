@@ -15,7 +15,7 @@ import (
 //
 // It returns a pointer to an ELF file and an error if any, otherwise it
 // returns nil.
-func GetElf(filename string) (*elf.File, error) {
+func getElf(filename string) (*elf.File, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
