@@ -8,6 +8,7 @@ The core script “Kraft” has following three parts –
 
 
 # Configuration
+Install `Python3.7 or above`
 Add `modules` directory path to `PYTHONPATH` environmental variable.
 
 **If you are on Linux**  
