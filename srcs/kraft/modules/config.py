@@ -6,7 +6,7 @@ USER_NAME='unikraft'
 UK_URL=BASE_URL + 'users/'+ USER_NAME + '/repos'
 APPS_REPO_PREFIX='app-'
 PLATS_REPO_PREFIX='plat-'
-CMD_DIR='commands'
+CMD_DIR='srcs/kraft/commands'
 
 # Unikraft Source Code Directory Structure
 UK_BASE_SRC='uk_src'
