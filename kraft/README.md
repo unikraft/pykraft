@@ -33,16 +33,6 @@ Add `modules` directory path to `PYTHONPATH` environmental variable.
 `echo $PYTHONPATH`  
 - It should show your `modules` path
 
-**If you are on Windows**
-- Got to the Windows menu, right-click on “Computer” and select “Properties”
-- From the computer properties dialog, select `Advanced system settings` on the left.
-- From the advanced system settings dialog, choose the `Environment variables` button.
-- In the Environment variables dialog, click the `New` button in the top half of the dialog, to make a new user variable.
-- Give the variable name as `PYTHONPATH` and the value is the path to the `modules` directory. Choose OK and OK again to save this variable.
-- Now open a `cmd` Window (Windows key, then type cmd and press Return). Type: `
-echo %PYTHONPATH%`
-to confirm the environment variable is correctly set.
-
 # Usage
 
 ```
