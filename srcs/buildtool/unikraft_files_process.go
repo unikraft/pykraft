@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // Exported constants for folder management

@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"sync"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 const (

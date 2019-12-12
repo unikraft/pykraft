@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // Exported struct that represents the arguments for dynamic analysis.

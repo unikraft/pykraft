@@ -7,8 +7,8 @@ import sys
 import os
 
 # Custom imports
-import config
-import utils
+import srcs.kraft.modules.config
+import srcs.kraft.modules.utils
 
 class Kraft(object):
 

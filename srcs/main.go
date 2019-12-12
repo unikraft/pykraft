@@ -8,10 +8,10 @@ package main
 
 import (
 	"os/user"
-	"tools/buildtool"
-	u "tools/common"
-	"tools/crawlertool"
-	"tools/dependtool"
+	"tools/srcs/buildtool"
+	u "tools/srcs/common"
+	"tools/srcs/crawlertool"
+	"tools/srcs/dependtool"
 )
 
 func main() {
