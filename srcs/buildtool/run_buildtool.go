@@ -14,7 +14,7 @@ import (
 	"regexp"
 	"strings"
 
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // STATES

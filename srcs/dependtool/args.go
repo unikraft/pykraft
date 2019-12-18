@@ -9,7 +9,7 @@ package dependtool
 import (
 	"github.com/akamensky/argparse"
 	"os"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 const (

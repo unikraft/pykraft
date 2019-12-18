@@ -5,7 +5,7 @@ import (
 	"github.com/fatih/color"
 	"runtime"
 	"strings"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // RunAnalyserTool allows to run the dependency analyser tool.

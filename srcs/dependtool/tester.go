@@ -15,7 +15,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 const (

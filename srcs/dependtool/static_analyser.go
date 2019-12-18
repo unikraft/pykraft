@@ -10,7 +10,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // ---------------------------------Gather Data---------------------------------

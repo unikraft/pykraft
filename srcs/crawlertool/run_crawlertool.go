@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // RunCrawler allows to run the crawler analyser tool (which is out of the

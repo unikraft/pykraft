@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	u "tools/common"
+	u "tools/srcs/common"
 )
 
 // ----------------------------Generate Makefile--------------------------------
