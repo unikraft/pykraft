@@ -1,16 +1,20 @@
-# Unikraft tools: 
+Unikraft Tools
+==============================
 
-[![version](https://img.shields.io/badge/version-0.2.1-yellow.svg)](https://semver.org)
-[![Go Report Card](https://goreportcard.com/badge/github.com/unikraft/tools)](https://goreportcard.com/report/github.com/unikraft/tools)
+Unikraft is an automated system for building specialized OSes and
+unikernels tailored to the needs of specific applications. It is based
+around the concept of small, modular libraries, each providing a part
+of the functionality commonly found in an operating system (e.g.,
+memory allocation, scheduling, filesystem support, network stack,
+etc.).
 
-### What is Unikraft tools?
+This repo contains all tools related to Unikraft, and in particular
+the kraft.py script which acts as a single point of entry for all
+Unikraft operations, including the downloading, building and running
+of Unikraft applications. You can run it without parameters to see its
+help menu.
 
-The Unikraft tools/toolchain provides a set of tools to automatically build images of operating systems targeting applications. In a general way, the toolchain will build unikernels by extracting OS primitives and selecting micro-libs and third party libraries.
-
-### Installation and documentation
-
-For installation and documentation, a wiki is available on this [address](https://github.com/unikraft/tools/wiki).
-
-### Contribute
-
-Unikraft tools is an open source project (under BSD license) and is currently hosted at https://github.com/unikraft/tools. You are encouraged to download the code, examine it, modify it, and submit bug reports, bug fixes, feature requests, new features and other issues and pull requests.
+Note that the kraft.py, as well as this repo in general, is currently
+under heavy development and should not yet be used unless you know
+what you are doing. As things stabilize, we will update this file to
+reflect this.
