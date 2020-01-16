@@ -1,6 +1,6 @@
-FROM unikraft/staging:linuxu-alpine3.10-newlib           AS newlib
-FROM unikraft/staging:linuxu-alpine3.10-lwip             AS lwip
-FROM unikraft/staging:linuxu-alpine3.10                  AS unikraft
+FROM unikraft/staging:linuxu-alpine3.10-newlib-amd64 AS newlib
+FROM unikraft/staging:linuxu-alpine3.10-lwip-amd64   AS lwip
+FROM unikraft/staging:linuxu-alpine3.10-amd64        AS unikraft
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 

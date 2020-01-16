@@ -1,6 +1,6 @@
 # Program arguments
 UK_VER ?= staging
-DIST   ?= alpine
+DIST   ?= alpine3.10
 DISTS  ?= alpine           \
           centos           \
 		  ubuntu

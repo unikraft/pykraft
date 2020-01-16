@@ -1,10 +1,10 @@
-FROM unikraft/staging:linuxu-alpine3.10-pthread-embedded AS pthread
-FROM unikraft/staging:linuxu-alpine3.10-openssl          AS openssl
-FROM unikraft/staging:linuxu-alpine3.10-libuuid          AS libuuid
-FROM unikraft/staging:linuxu-alpine3.10-newlib           AS newlib
-FROM unikraft/staging:linuxu-alpine3.10-lwip             AS lwip
-FROM unikraft/staging:linuxu-alpine3.10-zlib             AS zlib
-FROM unikraft/staging:linuxu-alpine3.10                  AS unikraft
+FROM unikraft/staging:linuxu-alpine3.10-pthread-embedded-amd64 AS pthread
+FROM unikraft/staging:linuxu-alpine3.10-openssl-amd64          AS openssl
+FROM unikraft/staging:linuxu-alpine3.10-libuuid-amd64          AS libuuid
+FROM unikraft/staging:linuxu-alpine3.10-newlib-amd64           AS newlib
+FROM unikraft/staging:linuxu-alpine3.10-lwip-amd64             AS lwip
+FROM unikraft/staging:linuxu-alpine3.10-zlib-amd64             AS zlib
+FROM unikraft/staging:linuxu-alpine3.10-amd64                  AS unikraft
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
