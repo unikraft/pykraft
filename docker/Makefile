@@ -12,6 +12,7 @@ DISTS           ?= alpine           \
                    centos           \
                    ubuntu
 LIB             ?= 
+LIB_VER         ?= staging
 LIBS            ?= libuuid          \
                    lwip             \
                    newlib           \
@@ -38,7 +39,7 @@ DOCKER_BUILD    ?= $(DOCKER) build \
 	--build-arg UK_LIB=$(3) \
 	--build-arg UK_ARCH=$(4) \
 	-f $(CURDIR)/$(1)/$(2)/$(3)/Dockerfile \
-	-t $(IMAGE)/$(UK_VER):$(subst $(_SPACE),$(_DASH),$(strip $(1) $(2) $(3) $(4))) \
+	-t $(IMAGE)/$(if $(3),lib-$(3):$(LIB_VER),unikraft:$(UK_VER))-$(subst $(_SPACE),$(_DASH),$(strip $(1) $(2) $(4))) \
 	$(CURDIR)/$(1)/$(2)/$(3)
 
 # Format: unikraft/$(UK_VER):$(PLAT)-$(DIST_VER)-$(LIB)-$(ARCH)
