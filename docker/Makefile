@@ -35,9 +35,9 @@ DOCKER_BUILD ?= $(DOCKER) build \
 	--build-arg UK_DIST=$(2) \
 	--build-arg UK_LIB=$(3) \
 	--build-arg UK_ARCH=$(4) \
-	-f $(CURDIR)/$(UK_VER)/$(1)/$(2)/$(3)/Dockerfile \
+	-f $(CURDIR)/$(1)/$(2)/$(3)/Dockerfile \
 	-t $(IMAGE)/$(UK_VER):$(subst $(_SPACE),$(_DASH),$(strip $(1) $(2) $(3) $(4))) \
-	$(CURDIR)/$(UK_VER)/$(1)/$(2)/$(3)
+	$(CURDIR)/$(1)/$(2)/$(3)
 
 # Format: unikraft/$(VER):$(PLAT)-$(DIST)-$(LIB)-$(ARCH)
 
