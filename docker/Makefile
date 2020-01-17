@@ -69,6 +69,7 @@ $(1)$(2):
 endef
 
 $(eval $(call distro,alpine,3.10))
+$(eval $(call distro,ubuntu,19.10))
 
 # .PHONY: platforms
 # platforms: xen
