@@ -11,6 +11,7 @@ ENV UK_UID=1001
 ENV UK_GID=1001
 
 WORKDIR ${UK_APP}
+ENV PWD=${UK_APP}
 
 RUN adduser -u ${UK_UID} -g ${UK_GID} -D unikraft \  
  && apk --no-cache add \
