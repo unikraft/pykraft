@@ -55,7 +55,7 @@ $(LIBS):
 	$(call DOCKER_BUILD,$(PLAT),$(DIST_VER),$@,$(ARCH))
 
 .PHONY: distros
-distros: alpine
+distros: $(DISTS)
 
 # Populate targets with known distributions and their versions
 define distro
@@ -70,6 +70,7 @@ endef
 
 $(eval $(call distro,alpine,3.10))
 $(eval $(call distro,ubuntu,19.10))
+$(eval $(call distro,centos,8))
 
 # .PHONY: platforms
 # platforms: xen
