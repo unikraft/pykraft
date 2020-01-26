@@ -18,3 +18,6 @@ Note that the kraft.py, as well as this repo in general, is currently
 under heavy development and should not yet be used unless you know
 what you are doing. As things stabilize, we will update this file to
 reflect this.
+
+Read the wiki [address](https://github.com/unikraft/tools/wiki) for
+further information.
