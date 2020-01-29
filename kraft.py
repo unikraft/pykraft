@@ -68,31 +68,74 @@ Available kraft list <sub-command> are:
         description='Clones the given app repository, all of its dependencies, creates proper directory structure',
         usage='''kraft fetch <sub-command>
 
-Available kraft <sub-command> are:
+Available kraft fetch <sub-command> are:
    <app>     :Application name
    <plats>   :Target platform
    ''')
         # Add sub commands supported by the "fetch" command
         parser.add_argument('sub_cmd', help='Lists available repositories of given type (apps | plats) ')
         args = parser.parse_args(sys.argv[2:])
-        # Invoke another script which has the actual implementation of 'list' command
+        # Invoke another script which has the actual implementation of 'fetch' command
         utils.invoke_sub_cmd(sys.argv[1], args.sub_cmd)
 
     # 'configure' command handler
     def configure(self):
         print("Configuring unikraft build...")
 
-    # 'configure' command handler
+    # 'build' command handler
     def build(self):
         print("Building unikernel...")
 
-    # 'configure' command handler
+    # 'run' command handler
+    def run(self):
+        print("Updating unikarft source code...")
+        parser = argparse.ArgumentParser(
+        description='Runs the Unikernel on given platform',
+        usage='''kraft run <sub-command(s)>
+
+Available kraft run <sub-command(s)> are:
+   <app>     :Application name
+   <plats>   :Target platform
+   ''')
+        # Add sub commands supported by the "run" command
+        parser.add_argument('sub_cmd', help='The command to run the unikernel')
+        parser.add_argument('appname', help='Give Application name')
+        parser.add_argument('platform', choices=['kvm', 'xen', 'solo5'], help='Give Platform name')
+        args = parser.parse_args()
+        # Invoke another script which has the actual implementation of 'list' command
+        utils.invoke_sub_cmd(sys.argv[1], args.sub_cmd+' '+args.appname+' '+args.platform )
+
+    # 'update' command handler
     def update(self):
         print("Updating unikarft source code...")
+        parser = argparse.ArgumentParser(
+        description='Updates the given app repository, all of its dependencies, creates proper directory structure',
+        usage='''kraft update <git-tag>
 
-    # 'configure' command handler
-    def create(self):
-        print("Creating repo skeleton...")
+   ''')
+        # Add sub commands supported by the "update" command
+        parser.add_argument('-t',default='head',help='Git Tag')
+        #parser.add_argument('sub_cmd', help='Updates all the repositories')
+        args = parser.parse_args(sys.argv[2:])
+        # Invoke another script which has the actual implementation of 'update' command
+        utils.invoke_sub_cmd(sys.argv[1], args.t)
+
+    # 'createfs' command handler
+    def createfs(self):
+        print("Creating filesystem...")
+        parser = argparse.ArgumentParser(
+        description='Creates given filesystem',
+        usage='''kraft createfs <sub-command>
+
+Available kraft <sub-command> are:
+   <app>     :Application name
+   <plats>   :Target platform
+   ''')
+        # Add sub commands supported by the "configure" command
+        parser.add_argument('sub_cmd', help='This helps recognise apps for which fs is needed.')
+        args = parser.parse_args(sys.argv[2:])
+        # Invoke another script which has the actual implementation of 'list' command
+        utils.invoke_sub_cmd(sys.argv[1], args.sub_cmd)
 
 
 
