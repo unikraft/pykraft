@@ -8,12 +8,12 @@ import utils
 
 ########### Globals #############
 # Get the sub-command from the user
-sub_cmd = sys.argv[1]
+app_name = sys.argv[1]
 
 ########### Functions ###########
 
-
-
+os.chdir(UK_BASE_SRC+'/'+UK_APPS_DIR+"/"+app_name)
+os.system('make defconfig')
 
 
 

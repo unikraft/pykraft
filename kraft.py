@@ -44,7 +44,7 @@ Available kraft <command> are:
 
 
 #####################   Command implementations  #######################
-    # 'list' command handler
+##### 'list' command handler############################################
     def list(self):
         #print('Process "list" command...'+ self.script_name +"\n")
         parser = argparse.ArgumentParser(
@@ -61,7 +61,7 @@ Available kraft list <sub-command> are:
         # Invoke another script which has the actual implementation of 'list' command
         utils.invoke_sub_cmd(sys.argv[1], args.sub_cmd)
 
-    # 'fetch' command handler
+##### 'fetch' command handler #############################################
     def fetch(self):
         print("Fetching unikraft source code...")
         parser = argparse.ArgumentParser(
@@ -78,15 +78,29 @@ Available kraft fetch <sub-command> are:
         # Invoke another script which has the actual implementation of 'fetch' command
         utils.invoke_sub_cmd(sys.argv[1], args.sub_cmd)
 
-    # 'configure' command handler
+##### 'configure' command handler #########################################
     def configure(self):
         print("Configuring unikraft build...")
+        parser = argparse.ArgumentParser(
+        description='Configures the given app src for build process',
+        usage='''kraft configure <sub-command>
 
-    # 'build' command handler
+Available kraft fetch <sub-command> are:
+   <app>     : Application Name
+   ''')
+        # Add sub commands supported by the "configure" command
+        parser.add_argument('app', help='Application to configure')
+        args = parser.parse_args(sys.argv[2:])
+        # Invoke another script which has the actual implementation of 'configure' command
+        utils.invoke_sub_cmd(sys.argv[1], args.app)
+
+##### 'build' command handler ############################################
     def build(self):
         print("Building unikernel...")
 
-    # 'run' command handler
+
+
+##### 'run' command handler ##############################################
     def run(self):
         print("Updating unikarft source code...")
         parser = argparse.ArgumentParser(
@@ -105,7 +119,7 @@ Available kraft run <sub-command(s)> are:
         # Invoke another script which has the actual implementation of 'list' command
         utils.invoke_sub_cmd(sys.argv[1], args.sub_cmd+' '+args.appname+' '+args.platform )
 
-    # 'update' command handler
+##### 'configure' command handler ########################################
     def update(self):
         print("Updating unikarft source code...")
         parser = argparse.ArgumentParser(
@@ -120,7 +134,7 @@ Available kraft run <sub-command(s)> are:
         # Invoke another script which has the actual implementation of 'update' command
         utils.invoke_sub_cmd(sys.argv[1], args.t)
 
-    # 'createfs' command handler
+##### 'createfs' command handler #########################################
     def createfs(self):
         print("Creating filesystem...")
         parser = argparse.ArgumentParser(
