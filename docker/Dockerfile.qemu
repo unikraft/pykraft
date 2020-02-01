@@ -1,0 +1,68 @@
+FROM debian:stretch-20191224 AS qemu-build
+
+LABEL MAINTAINER="Alexander Jung <a.jung@lancs.ac.uk>"
+
+ARG QEMU_VERSION=4.2.0
+WORKDIR /out
+
+RUN set -ex; \
+    apt-get -y update; \
+    apt-get -y upgrade; \
+    apt-get install -y \
+        build-essential \
+        curl \
+        libaio-dev \
+        libcap-dev \
+        libcap-ng-dev \
+        libglib2.0-dev \
+        liblzo2-dev \
+        libpixman-1-dev \
+        pkg-config \
+        python \
+        texinfo \
+        vde2 \
+        zlib1g-dev \
+        xz-utils; \
+    curl -O https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz; \
+    tar xvf qemu-${QEMU_VERSION}.tar.xz; \
+    apt-get install -y; \
+    cd qemu-${QEMU_VERSION}; \
+    ./configure \
+        --prefix=/ \
+        --static \
+        --python=/usr/bin/python2 \
+        --audio-drv-list="" \
+        --disable-docs \
+        --disable-debug-info \
+        --disable-opengl \
+        --disable-virglrenderer \
+        --disable-vte \
+        --disable-gtk \
+        --disable-sdl \
+        --disable-bluez \
+        --disable-spice \
+        --disable-vnc \
+        --disable-curses \
+        --disable-smartcard \
+        --disable-libnfs \
+        --disable-libusb \
+        --disable-glusterfs \
+        --disable-werror \
+        --target-list="x86_64-softmmu,i386-softmmu,aarch64-softmmu,arm-softmmu"; \
+    make; \
+    make install
+
+FROM scratch AS qemu
+
+COPY --from=qemu-build /bin/qemu-ga /bin/
+COPY --from=qemu-build /bin/qemu-img /bin/
+COPY --from=qemu-build /bin/qemu-io /bin/
+COPY --from=qemu-build /bin/qemu-nbd /bin/
+COPY --from=qemu-build /bin/qemu-pr-helper /bin/
+COPY --from=qemu-build /bin/qemu-system-aarch64 /bin/
+COPY --from=qemu-build /bin/qemu-system-arm /bin/
+COPY --from=qemu-build /bin/qemu-system-i386 /bin/
+COPY --from=qemu-build /bin/qemu-system-x86_64 /bin/
+COPY --from=qemu-build /share/qemu/ /share/qemu/
+COPY --from=qemu-build /lib/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
+

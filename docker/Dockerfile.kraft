@@ -1,0 +1,33 @@
+ARG UK_ARCH=x86_64
+ARG GCC_VERSION=9.2.0
+
+FROM unikraft/tools:gcc${GCC_VERSION}-${UK_ARCH} AS gcc
+FROM python:3.6-slim
+
+COPY --from=gcc /bin/ /bin/
+COPY --from=gcc /lib/ /lib/
+COPY --from=gcc /include/ /include/
+COPY --from=gcc /libexec/ /libexec/
+
+COPY / /usr/src/kraft
+
+WORKDIR /usr/src/unikraft/apps/app
+
+RUN set -xe; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
+		build-essential \
+		libncurses-dev \
+		flex \
+		git \
+		wget \
+		bison \
+		unzip; \
+	rm -Rf /var/cache/apt/*; \
+	mkdir -p /usr/src/unikraft/unikraft; \
+	mkdir -p /usr/src/unikraft/libs; \
+	mkdir -p /usr/src/unikraft/apps/app; \
+	cd /usr/src/kraft; \
+	python setup.py install
+
+ENTRYPOINT [ "kraft" ]
