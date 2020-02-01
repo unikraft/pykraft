@@ -10,23 +10,23 @@ unikernel applications.
 
 ## Quick start
 
-`kraft` can be installed by directly cloning its source from [GitHub](<https://github.com/unikraft/tools.git):
+`kraft` can be installed by directly cloning its source from [GitHub](https://github.com/unikraft/tools.git):
 
 ```bash
 git clone https://github.com/unikraft/tools.git
 cd tools && python setup.py install
 ```
 
-  Additional dependencies include `git`, `make`, ncurses, `flex`, `wget`,
-  `unzip`, `tar`, `python3` and `gcc`.  Details on how to configure how
-  `kraft` interacts with gcc and the Unikraft build system in addition on how
-  to use `kraft` with Docker is covered in :ref:`advanced_usage`.
+Additional dependencies include `git`, `make`, ncurses, `flex`, `wget`,
+`unzip`, `tar`, `python3` and `gcc`.  Details on how to configure how
+`kraft` interacts with gcc and the Unikraft build system in addition on how
+to use `kraft` with Docker is covered in [Advanced Usage](#advanced-usage).
 
 Once `kraft` it installed you can begin by initializing a new unikernel
 repository using `kraft init`.  As an example, you can build a Python 3
-unikernel application by running the following: ::
+unikernel application by running the following:
 
-  kraft init -a python3 ./my-first-unikernel
+    kraft init -a python3 ./my-first-unikernel
 
 If this is the first time you are running `kraft`, you will be prompted to run
 an update which will download Unikraft core and additional library pool sources.
@@ -45,7 +45,7 @@ application's use case.
 The unikernel application must now be configured against the Unikraft build
 system so that you and it can resolve any additional requirements: ::
 
-  kraft configure ./my-first-unikernel
+    kraft configure ./my-first-unikernel
 
 This step can be made more interactive by launching into Unikraft's Kconfig
 configuration system.  Launch an ncurses window in your terminal with
@@ -66,86 +66,86 @@ your application directory with new files and folders, including:
     Unikraft.
 
 When your unikernel has been configured to your needs, you can build the
-the unikernel to all relevant architectures and platforms using: ::
+the unikernel to all relevant architectures and platforms using:
 
-  kraft build ./my-first-unikernel
+    kraft build ./my-first-unikernel
 
 This step will begin the build process.  All artifacts created during this step
 will be located under `./my-first-unikernel/build`.
 
 ## Overview of commands
 
-  Usage: kraft [OPTIONS] COMMAND [ARGS]...
+    Usage: kraft [OPTIONS] COMMAND [ARGS]...
 
-  Options:
-    -v, --verbose  Enables verbose mode.
-    -V, --version  Print the version and exit.
-    --help         Show this message and exit.
+    Options:
+      -v, --verbose  Enables verbose mode.
+      -V, --version  Print the version and exit.
+      --help         Show this message and exit.
 
-  Commands:
-    build      Build the unikraft appliance.
-    configure  Sets the default configuration for an appliance.
-    createfs   Generate a static filesystem for the unikraft appliance.
-    init       Initialize a new unikraft project.
-    list       List supported unikraft architectures, platforms, libraries or
-               applications via remote repositories.
-    run        Run the unikraft appliance.
-    update     List supported unikraft architectures, platforms, libraries or
-               applications via remote repositories.
+    Commands:
+      build      Build the unikraft appliance.
+      configure  Sets the default configuration for an appliance.
+      createfs   Generate a static filesystem for the unikraft appliance.
+      init       Initialize a new unikraft project.
+      list       List supported unikraft architectures, platforms, libraries or
+                applications via remote repositories.
+      run        Run the unikraft appliance.
+      update     List supported unikraft architectures, platforms, libraries or
+                applications via remote repositories.
 
 ### Updating Unikraft library pools
 
-  Usage: kraft update [OPTIONS]
+    Usage: kraft update [OPTIONS]
 
-    This subcommand retrieves lists of available architectures, platforms,
-    libraries and applications supported by unikraft.
+      This subcommand retrieves lists of available architectures, platforms,
+      libraries and applications supported by unikraft.
 
-  Options:
-    -s, --staging  Use staging branch (here be dragons).
-    --help         Show this message and exit.
+    Options:
+      -s, --staging  Use staging branch (here be dragons).
+      --help         Show this message and exit.
 
 
 ### Initializing a Unikraft project
 
-  Usage: kraft init [OPTIONS] [PATH] [NAME]
+    Usage: kraft init [OPTIONS] [PATH] [NAME]
 
-    This subcommand initializes a new unikraft application at a selected path.
+      This subcommand initializes a new unikraft application at a selected path.
 
-    Start here if this is your first time using (uni)kraft.
+      Start here if this is your first time using (uni)kraft.
 
-  Options:
-    -m, --arch TEXT  Target architecture  [default: (dynamic)]
-    -p, --plat TEXT  Target platform  [default: linuxu]
-    -l, --lib TEXT   Target platform
-    -a, --app TEXT   Target application
-    -F, --force      Overwrite any existing files.
-    --help           Show this message and exit.
+    Options:
+      -m, --arch TEXT  Target architecture  [default: (dynamic)]
+      -p, --plat TEXT  Target platform  [default: linuxu]
+      -l, --lib TEXT   Target platform
+      -a, --app TEXT   Target application
+      -F, --force      Overwrite any existing files.
+      --help           Show this message and exit.
 
 
 ### Configuring a Unikraft application
 
-  Usage: kraft configure [OPTIONS] [PATH]
+    Usage: kraft configure [OPTIONS] [PATH]
 
-    This subcommand populates the local .config for the unikraft appliance
-    with with the default values found for the target application.
+      This subcommand populates the local .config for the unikraft appliance
+      with with the default values found for the target application.
 
-  Options:
-    -n, --menuconfig     Use Unikraft's ncurses Kconfig editor.
-    -d, --dump-makefile  Write a Makefile compatible Unikraft's build system.
-    -u, --dump-unikraft  Copy Unikraft and source libraries into the path.
-    --help               Show this message and exit.
+    Options:
+      -n, --menuconfig     Use Unikraft's ncurses Kconfig editor.
+      -d, --dump-makefile  Write a Makefile compatible Unikraft's build system.
+      -u, --dump-unikraft  Copy Unikraft and source libraries into the path.
+      --help               Show this message and exit.
 
 
 ### Building a Unikraft application
 
-  Usage: kraft build [OPTIONS] [PATH]
+    Usage: kraft build [OPTIONS] [PATH]
 
-    This builds the unikraft appliance for the target architecture, platform
-    and with all additional libraries and configurations.
+      This builds the unikraft appliance for the target architecture, platform
+      and with all additional libraries and configurations.
 
-  Options:
-    -j, --fast  Use all CPU cores to build the application.
-    --help      Show this message and exit.
+    Options:
+      -j, --fast  Use all CPU cores to build the application.
+      --help      Show this message and exit.
 
 ## Advanced Usage
 
