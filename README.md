@@ -24,9 +24,9 @@ to use `kraft` with Docker is covered in :ref:`advanced_usage`.
 
 Once `kraft` it installed you can begin by initializing a new unikernel
 repository using `kraft init`.  As an example, you can build a Python 3
-unikernel application by running the following: ::
+unikernel application by running the following:
 
-  kraft init -a python3 ./my-first-unikernel
+    kraft init -a python3 ./my-first-unikernel
 
 If this is the first time you are running `kraft`, you will be prompted to run
 an update which will download Unikraft core and additional library pool sources.
@@ -66,9 +66,9 @@ your application directory with new files and folders, including:
     Unikraft.
 
 When your unikernel has been configured to your needs, you can build the
-the unikernel to all relevant architectures and platforms using: ::
+the unikernel to all relevant architectures and platforms using:
 
-  kraft build ./my-first-unikernel
+    kraft build ./my-first-unikernel
 
 This step will begin the build process.  All artifacts created during this step
 will be located under `./my-first-unikernel/build`.
