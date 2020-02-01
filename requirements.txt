@@ -1,0 +1,10 @@
+# Required modules
+click==7.0
+kconfiglib==13.7.1
+PyGithub==1.45
+fcache==0.4.7
+docker==4.1.0
+memorize.py==1.2
+click-log==0.3.2
+GitPython==3.0.5
+kconfiglib==13.7.1
