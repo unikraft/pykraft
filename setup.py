@@ -19,6 +19,10 @@ setup(
         [console_scripts]
         {program} = kraft.kraft:cli
         """.format(program = __program__),
+    scripts = [
+        'run/qemu-guest',
+        'run/xen-guest'
+    ],
     keywords = [],
     tests_require = ['pytest', 'coveralls'],
     zip_safe = False,

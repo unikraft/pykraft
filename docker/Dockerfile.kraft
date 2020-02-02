@@ -21,8 +21,10 @@ RUN set -xe; \
 		flex \
 		git \
 		wget \
+		socat \
 		bison \
-		unzip; \
+		unzip \
+		uuid-runtime; \
 	rm -Rf /var/cache/apt/*; \
 	mkdir -p /usr/src/unikraft/unikraft; \
 	mkdir -p /usr/src/unikraft/libs; \
