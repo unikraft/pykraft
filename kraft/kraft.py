@@ -36,7 +36,8 @@ import sys
 import click
 import logging
 from .logger import logger
-from .env import pass_environment
+from .config import config
+from .context import pass_context
 from kraft import __version__, __description__, __program__
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='UK')
@@ -62,9 +63,9 @@ class KraftCLI(click.MultiCommand):
         try:
             if sys.version_info[0] == 2:
                 name = name.encode('ascii', 'replace')
-            mod = __import__('kraft.cmds.cmd_' + name,
-                             None, None, ['cli'])
-        except ImportError:
+            mod = __import__('kraft.cmds.cmd_' + name, None, None, ['cli'])
+        except ImportError as e:
+            logger.fatal("Could not load command: %s: %s" % (name, e))
             return
 
         return mod.cli
@@ -92,14 +93,29 @@ def print_version(ctx, param, value):
     expose_value=False,
     is_eager=True
 )
-@pass_environment
-def cli(ctx, verbose):
+@click.option(
+    '-w', '--workdir',
+    type=click.Path(resolve_path=True),
+    help='Use kraft on this working directory.',
+)
+@click.option(
+    '--env-file',
+    type=click.Path(resolve_path=True),
+    help='Use an environmental variables file.',
+)
+@pass_context
+def cli(ctx, verbose, workdir, env_file):
     """
     {description}
     """.format(description = __description__)
 
     ctx.verbose = verbose
 
+    if workdir is None:
+        workdir = os.getcwd()
+
+    ctx.workdir = workdir
+    
     if ctx.verbose:
         logger.setLevel(logging.DEBUG)
     else:

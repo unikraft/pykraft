@@ -28,19 +28,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
 import os
 import click
 from .cache import Cache
+from .environment import Environment
 from .logger import logger
 
-class Environment(object):
+class Context(object):
     def __init__(self):
         self.sanity_check()
         self.verbose = False
         self.workdir = os.getcwd()
+        logger.info("11111")
+        self.init_env()
         self.init_caching()
 
     def sanity_check(self):
@@ -50,18 +51,25 @@ class Environment(object):
 
         if 'UK_WORKDIR' not in os.environ:
             os.environ['UK_WORKDIR'] = os.environ['HOME'] + '/.unikraft'
+        
         if os.path.isdir(os.environ['UK_WORKDIR']) is False:
             os.mkdir(os.environ['UK_WORKDIR'])
+        
         if 'UK_ROOT' not in os.environ:
             os.environ['UK_ROOT'] = os.environ['UK_WORKDIR'] + '/unikraft'
+        
         if os.path.isdir(os.environ['UK_ROOT']) is False:
             os.mkdir(os.environ['UK_ROOT'])
+        
         if 'UK_LIBS' not in os.environ:
             os.environ['UK_LIBS'] = os.environ['UK_WORKDIR'] + '/libs'
+        
         if os.path.isdir(os.environ['UK_LIBS']) is False:
             os.mkdir(os.environ['UK_LIBS'])
+        
         if 'UK_APPS' not in os.environ:
             os.environ['UK_APPS'] = os.environ['UK_WORKDIR'] + '/apps'
+        
         if os.path.isdir(os.environ['UK_APPS']) is False:
             os.mkdir(os.environ['UK_APPS'])
 
@@ -79,5 +87,8 @@ class Environment(object):
         create a new one if no cache is found. The 's' means that the cache is
         opened in sync mode. All changes are immediately written to disk."""
         self.cache = Cache()
+    
+    def init_env(self, env_file=None):
+        self.env = Environment.from_env_file(self.workdir, env_file)
 
-pass_environment = click.make_pass_decorator(Environment, ensure=True)
+pass_context = click.make_pass_decorator(Context, ensure=True)

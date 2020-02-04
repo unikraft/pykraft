@@ -8,3 +8,9 @@ memorize.py==1.2
 click-log==0.3.2
 GitPython==3.0.5
 kconfiglib==13.7.1
+validators==0.14.2
+cached_property==1.5.1
+python-dotenv==0.10.5
+PyYAML==5.3
+jsonschema==3.2.0
+six==1.12.0
