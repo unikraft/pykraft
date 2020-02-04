@@ -434,6 +434,7 @@ usage()
 	echo "  -t [TYPE]                  Set guest type: x86pc, x86q35, arm64v"
 	echo "  -G [NAME]                  Set name of guest to NAME"
 	echo "  -g [PORT]                  Run a GDB server for the guest at port PORT (e.g., 1234)"
+	echo "                             Note: QEMU process stays alive on guest shutdown/reset"
 	echo "  -T [LOGFILE]               Enable tracing of CPU events (fine-grained results with -W)"
 	echo "  -s [NUMBER]                NUMBER of guest CPU sockets (default ${ARG_SOCKETS})"
 	echo "  -c [NUMBER]                NUMBER of guest CPU cores per socket (default ${ARG_CORES})"
@@ -715,9 +716,6 @@ case "$ARG_MACHINETYPE" in
 			QEMU_BASE_ARGS+=("qemu64,-vmx,-svm")
 		fi
 
-		QEMU_BASE_ARGS+=("-device")
-		QEMU_BASE_ARGS+=("isa-debug-exit")
-
 		# BIOS also on serial
 		QEMU_ARGS+=("-device")
 		QEMU_ARGS+=("sga")
@@ -738,9 +736,6 @@ case "$ARG_MACHINETYPE" in
 			QEMU_BASE_ARGS+=("-cpu")
 			QEMU_BASE_ARGS+=("qemu64,-vmx,-svm")
 		fi
-
-		QEMU_BASE_ARGS+=("-device")
-		QEMU_BASE_ARGS+=("isa-debug-exit")
 
 		# BIOS also on serial
 		QEMU_ARGS+=("-device")
@@ -852,7 +847,7 @@ QEMU_ARGS+=("-serial")
 QEMU_ARGS+=("unix:${SOCK_SERIAL},server,nowait")
 
 # reboot behaviour
-if [ ${OPT_BACKGROUND} -ne 0 ]; then
+if [ ${OPT_BACKGROUND} -ne 0 -o ${OPT_GDBPORT} -eq 0 ]; then
 	QEMU_ARGS+=("-no-reboot")
 fi
 
@@ -901,6 +896,7 @@ QEMU_BASE_ARGS+=("none")
 if [ ${OPT_GDBPORT} -eq 0 ]; then
 	QEMU_BASE_ARGS+=("-gdb")
 	QEMU_BASE_ARGS+=("tcp::${ARG_GDBPORT}")
+	QEMU_BASE_ARGS+=("-no-shutdown")
 fi
 if [ $OPT_DRYRUN -eq 0 ]; then
 	echo $( which "${QEMU_BIN}" ) \
