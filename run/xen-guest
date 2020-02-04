@@ -257,6 +257,7 @@ usage()
 	echo "  -P                         Create the guest in paused state"
 	echo "  -G [NAME]                  Set name of guest to NAME"
 	echo "  -g [PORT]                  Run a GDB server for the guest at port PORT"
+	echo "                             Note: guest is not destroyed on shutdown/reset"
 	echo "  -c [NUMBER]                NUMBER of guest CPU cores (default ${ARG_CORES})"
 	echo "  -p [CPULIST]               Pin vCPUs to CPULIST (default off)"
 	echo "                             CPULIST can also be a string inidicating an automatic pinning:"
@@ -460,13 +461,19 @@ if [ ${OPT_VCPUPIN} -eq 0 ]; then
 fi
 DOM_CFG+="memory        = '${ARG_MEM}'${NL}"
 DOM_CFG+="on_start      = 'pause'${NL}"
-if [ ${OPT_BACKGROUND} -eq 0 ]; then
-	DOM_CFG+="on_crash      = 'restart'${NL}"
+if [ ${OPT_GDBPORT} -eq 0 ]; then
+	DOM_CFG+="on_crash      = 'preserve'${NL}"
+	DOM_CFG+="on_poweroff   = 'preserve'${NL}"
+	DOM_CFG+="on_reboot     = 'preserve'${NL}"
 else
-	DOM_CFG+="on_crash      = 'destroy'${NL}"
+	if [ ${OPT_BACKGROUND} -eq 0 ]; then
+		DOM_CFG+="on_crash      = 'restart'${NL}"
+	else
+		DOM_CFG+="on_crash      = 'destroy'${NL}"
+	fi
+	DOM_CFG+="on_poweroff   = 'destroy'${NL}"
+	DOM_CFG+="on_reboot     = 'restart'${NL}"
 fi
-DOM_CFG+="on_poweroff   = 'destroy'${NL}"
-DOM_CFG+="on_reboot     = 'restart'${NL}"
 
 DOM_CFG+="kernel        = '${ARG_KERNEL}'${NL}"
 if [ ${OPT_INITRD} -eq 0 ]; then
