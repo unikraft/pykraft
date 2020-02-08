@@ -31,4 +31,5 @@
 
 from .build import build
 from .clean import clean
+from .update import update
 from .configure import configure
