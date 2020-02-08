@@ -21,8 +21,7 @@ UK_VER              ?= staging
 UK_PLAT             ?= linuxu # Default to userspace apps
 UK_PLAT_VER_LATEST  ?= $(shell cat $(CURDIR)/$(1))
 UK_PLAT_VER         ?= $(call PLAT_VER_LATEST,$(PLAT))
-UK_PLATS            ?= linuxu \
-                       xen4.11
+UK_PLATS            ?= linuxu
 UK_LIB              ?= # Specify a specific library build
 UK_LIB_VER          ?= staging
 UK_LIBS             ?= libuuid \
