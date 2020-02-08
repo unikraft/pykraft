@@ -41,6 +41,7 @@ from kraft.config import config
 UNIKRAFT_WORKDIR = ".unikraft"
 UNIKRAFT_COREDIR = "unikraft"
 UNIKRAFT_LIBSDIR = "libs"
+UNIKRAFT_APPSDIR = "libs"
 
 class Context(object):
     """Context manager acts as a decorator and helps initialize and persist and 
@@ -68,10 +69,10 @@ class Context(object):
             os.environ['UK_LIBS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_LIBSDIR)
         if os.path.isdir(os.environ['UK_LIBS']) is False:
             os.mkdir(os.environ['UK_LIBS'])
-        # if 'UK_APPS' not in os.environ:
-        #     os.environ['UK_APPS'] = os.environ['UK_WORKDIR'] + '/apps'
-        # if os.path.isdir(os.environ['UK_APPS']) is False:
-        #     os.mkdir(os.environ['UK_APPS'])
+        if 'UK_APPS' not in os.environ:
+            os.environ['UK_APPS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_APPSDIR)
+        if os.path.isdir(os.environ['UK_APPS']) is False:
+            os.mkdir(os.environ['UK_APPS'])
 
         # Check if we have a build-time engine set
         if 'UK_BUILD_ENGINE' not in os.environ:
