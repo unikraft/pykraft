@@ -29,9 +29,48 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from distutils.version import LooseVersion
+import os
+import re
+import sys
 
-class SpecificationVersion(LooseVersion):
-    """ A hashable version object """
-    def __hash__(self):
-        return hash(self.vstring)
+from kraft.component import Component
+from kraft.components.repository import Repository
+from kraft.components.repository import RepositoryManager
+
+UK_CONFIG_FILE='%s/Config.uk'
+UK_CORE_ARCH_DIR='%s/arch'
+CONFIG_UK_ARCH=re.compile(r'source "\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"$')
+
+class Architecture(Repository):
+    @classmethod
+    def from_config(cls, core=None, arch=None, config=None):
+        if not core.is_downloaded:
+            core.update()
+
+        with open(UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)) as f:
+            for line in f:
+                match = CONFIG_UK_ARCH.findall(line)
+                if len(match) > 0:
+                    path, found_arch = match[0]
+                    if found_arch == arch:
+                        # TODO: os.path.join(core.localdir, path) isn't working for me?
+                        return cls(
+                            name = arch,
+                            source = core.source,
+                            version = core.version,
+                            localdir = core.localdir + path,
+                            component_type=Component.ARCH
+                        )
+
+        return None
+
+    @classmethod
+    def from_source_string(cls, name, source=None):
+        return super(Architecture, cls).from_source_string(
+            name = name,
+            source = source, 
+            component_type = Component.ARCH
+        )
+
+class Architectures(RepositoryManager):
+    pass

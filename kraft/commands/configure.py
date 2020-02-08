@@ -29,9 +29,42 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from distutils.version import LooseVersion
+import os
+import sys
+import click
 
-class SpecificationVersion(LooseVersion):
-    """ A hashable version object """
-    def __hash__(self):
-        return hash(self.vstring)
+from kraft.config import config
+from kraft.logger import logger
+from kraft.project import Project
+from kraft.errors import KraftError
+from kraft.kraft import kraft_context
+
+@click.command('configure', short_help='Configure the application against Unikraft.')
+@click.option('--menuconfig', '-m', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
+@kraft_context
+def configure(ctx, menuconfig):
+    """
+    This subcommand populates the local .config for the unikraft appliance with
+    with the default values found for the target application.
+    """
+
+    logger.debug("Configuring %s..." % ctx.workdir)
+
+    try:
+        project = Project.from_config(
+            ctx.workdir,
+            config.load(
+                config.find(ctx.workdir, None, ctx.env)
+            )
+        )
+
+    except KraftError as e:
+        logger.error(str(e))
+        sys.exit(1)
+    
+    if menuconfig:
+        project.menuconfig()
+
+    else:
+        project.configure()
+        

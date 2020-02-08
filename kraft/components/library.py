@@ -29,9 +29,36 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from distutils.version import LooseVersion
+from kraft.component import Component
+from kraft.components.repository import Repository
+from kraft.components.repository import RepositoryManager
 
-class SpecificationVersion(LooseVersion):
-    """ A hashable version object """
-    def __hash__(self):
-        return hash(self.vstring)
+class Library(Repository):
+    @classmethod
+    def from_config(cls, name, config=None):
+        source = None
+        version = None
+
+        if 'source' in config:
+            source = config['source']
+
+        if 'version' in config:
+            version = config['version']
+
+        return super(Library, cls).from_source_string(
+            name = name,
+            source = source,
+            version = version,
+            component_type = Component.LIB
+        )
+
+    @classmethod
+    def from_source_string(cls, name, source):
+        return super(Library, cls).from_source_string(
+            name = name,
+            source = source,
+            component_type = Component.LIB
+        )
+
+class Libraries(RepositoryManager):
+    pass

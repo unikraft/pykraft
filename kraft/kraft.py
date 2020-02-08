@@ -28,95 +28,46 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
 import os
 import sys
 import click
 import logging
-from .logger import logger
-from .config import config
-from .context import pass_context
+
 from kraft import __version__, __description__, __program__
 
-CONTEXT_SETTINGS = dict(auto_envvar_prefix='UK')
+from kraft.logger import logger
+from kraft.config import config
+from kraft.context import kraft_context
 
-cmd_folder = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), 'cmds')
+from kraft.commands.utils import CONTEXT_SETTINGS
+from kraft.commands import (
+    build,
+    configure,
+    clean
 )
 
-class KraftCLI(click.MultiCommand):
-    def list_commands(self, ctx):
-        rv = []
-
-        for filename in os.listdir(cmd_folder):
-            if filename.endswith('.py') and \
-               filename.startswith('cmd_'):
-                rv.append(filename[4:-3])
-
-        rv.sort()
-
-        return rv
-
-    def get_command(self, ctx, name):
-        try:
-            if sys.version_info[0] == 2:
-                name = name.encode('ascii', 'replace')
-            mod = __import__('kraft.cmds.cmd_' + name, None, None, ['cli'])
-        except ImportError as e:
-            logger.fatal("Could not load command: %s: %s" % (name, e))
-            return
-
-        return mod.cli
-
-def print_version(ctx, param, value):
-    if not value or ctx.resilient_parsing:
-        return
-    click.echo('kraft %s' % __version__)
-    ctx.exit()
-
-@click.command(
-    cls=KraftCLI,
-    context_settings=CONTEXT_SETTINGS
-)
 @click.option(
     '-v', '--verbose',
     is_flag=True,
     help='Enables verbose mode.'
 )
 @click.option(
-    '-V', '--version',
-    is_flag=True,
-    help='Print the version and exit.',
-    callback=print_version,
-    expose_value=False,
-    is_eager=True
-)
-@click.option(
     '-w', '--workdir',
     type=click.Path(resolve_path=True),
     help='Use kraft on this working directory.',
 )
-@click.option(
-    '--env-file',
-    type=click.Path(resolve_path=True),
-    help='Use an environmental variables file.',
-)
-@pass_context
-def cli(ctx, verbose, workdir, env_file):
-    """
-    {description}
-    """.format(description = __description__)
-
+@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
+@click.version_option()
+@kraft_context
+def kraft(ctx, verbose, workdir):
     ctx.verbose = verbose
 
-    if workdir is None:
-        workdir = os.getcwd()
-
-    ctx.workdir = workdir
+    if workdir:
+        ctx.workdir = workdir
     
-    if ctx.verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    ctx.cache.sync()
+
+kraft.add_command(configure)
+kraft.add_command(build)
+kraft.add_command(clean)

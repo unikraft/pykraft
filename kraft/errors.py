@@ -35,6 +35,7 @@ SPECIFICATION_EXPLANATION = (
 )
 
 class KraftError(Exception):
+    msg = None
     def __init__(self, msg):
         self.msg = msg
 
@@ -47,7 +48,7 @@ class KconfigFileNotFound(KraftError):
 class EnvFileNotFound(KraftError):
     pass
 
-class MisconfiguredUnikraftApp(KraftError):
+class MisconfiguredUnikraftProject(KraftError):
     """Parameterization of the UnikraftApp was incorrect."""
     pass
 
@@ -62,16 +63,42 @@ Supported filenames: %s
 
 
 class IncompatibleKconfig(KraftError):
-    """The provided KConfiguration was not compatible."""
-    pass
+    def __init__(self):
+        super(IncompatibleKconfig, self).__init__(
+            "The provided KConfiguration was not compatible."
+        )
 
 class NonExistentLibrary(KraftError):
-    """The referred library does not exist."""
-    pass
+    def __init__(self):
+        super(NonExistentLibrary, self).__init__("The referred library does not exist.")
 
 class CannotReadDepsJson(KraftError):
-    """The provided file does not exist or is corrupt."""
-    pass
+    def __init__(self):
+        super(CannotReadDepsJson, self).__init__("The provided file does not exist or is corrupt.")
 
 class InvalidInterpolation(KraftError):
     pass
+
+class InvalidRepositoryFormat(KraftError):
+    def __init__(self, repository):
+        super(InvalidRepositoryFormat, self).__init__("The provided repository was not retrievable: %s" % repository)
+
+class NoSuchReferenceInRepo(KraftError):
+    def __init__(self):
+        super(NoSuchReferenceInRepo, self).__init__("The provided repository does not have the specified branch.")
+
+class NoTypeAndNameRepo(KraftError):
+    def __init__(self):
+        super(NoTypeAndNameRepo, self).__init__("No type and name has been provided for this repository.")
+
+class MismatchOriginRepo(KraftError):
+    def __init__(self):
+        super(MismatchOriginRepo, self).__init__("A repository with a different origin has been provided")
+
+class MismatchVersionRepo(KraftError):
+    def __init__(self):
+        super(MismatchVersionRepo, self).__init__("A repository with a different version has been provided")
+
+class InvalidRepositorySource(KraftError):
+    def __init__(self, source):
+        super(InvalidRepositorySource, self).__init__("The source repository is invalid: %s" % source)

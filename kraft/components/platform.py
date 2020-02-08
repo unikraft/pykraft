@@ -24,14 +24,43 @@
 # LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 # SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITYs, WHETHER IN
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from distutils.version import LooseVersion
+import os
 
-class SpecificationVersion(LooseVersion):
-    """ A hashable version object """
-    def __hash__(self):
-        return hash(self.vstring)
+from kraft.component import Component
+from kraft.components.repository import Repository
+from kraft.components.repository import RepositoryManager
+
+UK_CORE_PLAT_DIR='%s/plat'
+
+class Platform(Repository):
+    @classmethod
+    def from_config(cls, core=None, plat=None, config=None):
+        if not core.is_downloaded:
+            core.update()
+        
+        if 'source' in config:
+            return super(Platform, cls).from_source_string(config['source'], Component.PLAT)
+        
+        else:
+            return cls(
+                name = plat,
+                source = core.source,
+                version = core.version,
+                component_type = Component.CORE
+            )
+
+    @classmethod
+    def from_source_string(cls, name, source=None):
+        return super(Platform, cls).from_source_string(
+            name = name,
+            source = source,
+            component_type = Component.PLAT
+        )
+
+class Platforms(RepositoryManager):
+    pass

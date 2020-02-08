@@ -29,9 +29,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from distutils.version import LooseVersion
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-class SpecificationVersion(LooseVersion):
-    """ A hashable version object """
-    def __hash__(self):
-        return hash(self.vstring)
+from .core import Core
+from .volume import Volume
+from .volume import Volumes
+from .library import Library
+from .library import Libraries
+from .platform import Platform
+from .platform import Platforms
+from .repository import Repository
+from .repository import RepositoryManager
+from .architecture import Architecture
+from .architecture import Architectures

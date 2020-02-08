@@ -28,38 +28,12 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
-import os
-import click
-import subprocess
-from kraft.logger import logger
-from kraft.kraft import pass_environment
-from kraft.app import UnikraftApp, MisconfiguredUnikraftApp
-
-@click.command('build', short_help='Build the unikraft appliance.')
-@click.argument('path', required=False, type=click.Path(resolve_path=True))
-@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
-@pass_environment
-def cli(ctx, path, fast):
-    """
-    This builds the unikraft appliance for the target architecture, platform
-    and with all additional libraries and configurations.
-    """
-
-    if path is None:
-        path = os.getcwd()
-    
-    try:
-        app = UnikraftApp(ctx=ctx, path=path)
-    except MisconfiguredUnikraftApp as e:
-        click.echo("Unsupported configuration: %s" % str(e))
-        sys.exit(1)
-    
-    n_proc = None
-    if fast:
-        # This simply set the `-j` flag which signals to make to use all cores.
-        n_proc = ""
-
-    app.build(n_proc=n_proc)
+CONTEXT_SETTINGS = dict(
+    auto_envvar_prefix='UK',
+    help_option_names=['-h', '--help'],
+)
+UNKNOWN_OPTIONS = {
+    'ignore_unknown_options': True,
+    **CONTEXT_SETTINGS
+}

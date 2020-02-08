@@ -28,27 +28,44 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
+import os
+import sys
 import click
-from enum import Enum
-import kraft.kraft as kraft
-from datetime import datetime
-from kraft.env import pass_environment
-from kraft.component import KraftComponent
 
-@click.command('list', short_help='List supported unikraft architectures, platforms, libraries or applications via remote repositories.')
-@click.option('--staging', '-s', is_flag=True, help='Use staging branch (here be dragons).')
-@pass_environment
-def cli(ctx, staging):
+from kraft.config import config
+from kraft.logger import logger
+from kraft.project import Project
+from kraft.errors import KraftError
+from kraft.kraft import kraft_context
+
+@click.command('build', short_help='Build the Unikraft appliance.')
+@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
+@kraft_context
+def build(ctx, fast):
     """
-    This subcommand retrieves lists of available architectures, platforms,
-    libraries and applications supported by unikraft.
-
+    This builds the unikraft appliance for the target architecture, platform
+    and with all additional libraries and configurations.
     """
 
-    if staging:
-        ctx.cache.update(use_branch='staging')
-    else:
-        ctx.cache.update()
+    logger.debug("Building %s..." % ctx.workdir)
+
+    try:
+        project = Project.from_config(
+            ctx.workdir,
+            config.load(
+                config.find(ctx.workdir, None, ctx.env)
+            )
+        )
+
+    except KraftError as e:
+        logger.error(str(e))
+        sys.exit(1)
+    
+    n_proc = None
+    if fast:
+        # This simply set the `-j` flag which signals to make to use all cores.
+        n_proc = ""
+        
+    project.build(n_proc=n_proc)
+    

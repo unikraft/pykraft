@@ -28,45 +28,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
-import os
-import click
-from kraft.logger import logger
-from kraft.kraft import pass_environment
-from kraft.app import UnikraftApp, MisconfiguredUnikraftApp, DOT_CONFIG
-
-@click.command('configure', short_help='Sets the default configuration for an appliance.')
-@click.argument('path', required=False, type=click.Path(resolve_path=True))
-@click.option('--menuconfig', '-n', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
-@click.option('--dump-makefile', '-d', is_flag=True, help='Write a Makefile compatible Unikraft\'s build system.')
-@click.option('--dump-unikraft', '-u', is_flag=True, help='Copy Unikraft and source libraries into the path.')
-@pass_environment
-def cli(ctx, path, menuconfig, dump_makefile, dump_unikraft):
-    """
-    This subcommand populates the local .config for the unikraft appliance with
-    with the default values found for the target application.
-    """
-
-    if path is None:
-        path = os.getcwd()
-    
-    try:
-        app = UnikraftApp(ctx=ctx, path=path)
-    except MisconfiguredUnikraftApp as e:
-        click.echo("Unsupported configuration: %s" % str(e))
-        sys.exit(1)
-
-    if menuconfig:
-        app.menuconfig()
-    
-    elif dump_makefile:
-        app.generate_makefile()
-    
-    elif dump_unikraft:
-        app.dump_sources()
-
-    else:
-        app.configure()
-        
+from .build import build
+from .clean import clean
+from .configure import configure
