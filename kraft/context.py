@@ -41,7 +41,7 @@ from kraft.config import config
 UNIKRAFT_WORKDIR = ".unikraft"
 UNIKRAFT_COREDIR = "unikraft"
 UNIKRAFT_LIBSDIR = "libs"
-UNIKRAFT_APPSDIR = "libs"
+UNIKRAFT_APPSDIR = "apps"
 
 class Context(object):
     """Context manager acts as a decorator and helps initialize and persist and 
