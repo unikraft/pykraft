@@ -46,6 +46,7 @@ from kraft.commands import (
     list,
     build,
     configure,
+    run,
     clean
 )
 
@@ -75,3 +76,4 @@ kraft.add_command(list)
 kraft.add_command(configure)
 kraft.add_command(build)
 kraft.add_command(clean)
+kraft.add_command(run)

@@ -34,3 +34,4 @@ from .list import list
 from .build import build
 from .clean import clean
 from .configure import configure
+from .run import run
