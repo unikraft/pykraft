@@ -69,6 +69,9 @@ def update(ctx):
 
         try:
             logger.info("Found %s..." % repo.clone_url)
-            Repository.from_source_string(source=repo.clone_url)
+            Repository.from_source_string(
+                source=repo.clone_url,
+                force_update=True 
+            )
         except KraftError as e:
             logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))

@@ -179,12 +179,13 @@ class Repository(object):
         return super(Repository, cls).__new__(cls)
         
     @classmethod
-    def from_source_string(cls, name=None, source=None, version=None, component_type=None):
+    def from_source_string(cls, name=None, source=None, version=None, component_type=None, force_update=False):
         return cls(
             name=name,
             source=source,
             version=version,
             component_type=component_type,
+            force_update=force_update,
         )
 
     def list_remote_references(self, source=None):
