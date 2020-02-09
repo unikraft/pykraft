@@ -316,19 +316,6 @@ class Repository(object):
 
             try:
                 repo = GitRepo(self.localdir)
-                commit_hash = None
-
-                try:
-                    commit_hash = str(repo.head.commit)
-                except ValueError:
-                    pass
-
-                if commit_hash and commit_hash.startswith(version):
-                    pass
-                    # logger.debug("%s already at %s..." % (self.name, version))
-                else:
-                    logger.debug("Checking-out %s@%s..." % (self.name, version))
-                    repo.git.checkout(version)
             
             except NoSuchPathError:
                 logger.warning("Attempting to checkout %s before update!" % self)
@@ -336,6 +323,18 @@ class Repository(object):
                 # Allow a retry
                 if retry is False:
                     self.update()
+        
+            try:
+                commit_hash = str(repo.head.commit)
+                
+                if commit_hash.startswith(version) \
+                or version in self.known_versions and self.known_versions[version] == commit_hash:
+                    logger.debug("%s already at %s..." % (self.name, version))         
+                else:
+                    logger.debug("Checking-out %s@%s..." % (self.name, version))
+                    repo.git.checkout(version)
+            except ValueError:
+                logger.error("Could not checkout %s@%s!" % (self.name, version))
     
     @property
     def shortname(self):
@@ -346,9 +345,32 @@ class Repository(object):
         return '%s@%s' % (self.name, self.version)
 
     @property
-    def release(self):
-        return self.git_commit[:8]
+    def latest_release(self):
+        """Attempt retrieving the latest version number of a repository by 
+        removing the staging and master branches.  If no version number is
+        available, return 'master' since this is usually the latest stable
+        version."""
+        versions = list(self.known_versions.keys())
+
+        if BRANCH_MASTER in versions:
+            versions.remove(BRANCH_MASTER)
+        if BRANCH_STAGING in versions:
+            versions.remove(BRANCH_STAGING)
+        
+        if len(versions) > 0:
+            return versions[-1]
+        
+        if BRANCH_MASTER in self.known_versions:
+            return BRANCH_MASTER
+        if BRANCH_STAGING in self.known_versions:
+            return BRANCH_STAGING
+        
+        return self.version
     
+    @property
+    def type(self):
+        return self.component_type
+
     @property
     def is_downloaded(self):
         try:
