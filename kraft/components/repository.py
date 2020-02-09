@@ -303,8 +303,8 @@ class Repository(object):
             logger.debug("Updated %s %s to %s" % (self.source, fetch_info.ref, fetch_info.commit))
 
         self.last_checked = datetime.now()
-        self.checkout(self.version)
-        self.last_updated = datetime.fromtimestamp(repo.head.commit.committed_date)
+        # self.checkout(self.version)
+        # self.last_updated = datetime.fromtimestamp(repo.head.commit.committed_date)
 
     def checkout(self, version=None, retry=False):
         """Checkout a version of the repository."""
@@ -317,14 +317,18 @@ class Repository(object):
             try:
                 repo = GitRepo(self.localdir)
             
-            except NoSuchPathError:
+            except (NoSuchPathError, InvalidGitRepositoryError):
                 logger.warning("Attempting to checkout %s before update!" % self)
 
-                # Allow a retry
+                # Allow one retry
                 if retry is False:
                     self.update()
+                    self.checkout(version, True)
+                    return
         
             try:
+                # If this throws an exception, it means we have never checked
+                # out the repository before.
                 commit_hash = str(repo.head.commit)
                 
                 if commit_hash.startswith(version) \
@@ -332,9 +336,10 @@ class Repository(object):
                     logger.debug("%s already at %s..." % (self.name, version))         
                 else:
                     logger.debug("Checking-out %s@%s..." % (self.name, version))
-                    repo.git.checkout(version)
-            except ValueError:
-                logger.error("Could not checkout %s@%s!" % (self.name, version))
+            except ValueError as e:
+                pass
+            
+            repo.git.checkout(version)
     
     @property
     def shortname(self):

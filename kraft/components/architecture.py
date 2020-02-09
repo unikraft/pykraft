@@ -44,10 +44,11 @@ CONFIG_UK_ARCH=re.compile(r'source "\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config
 class Architecture(Repository):
     @classmethod
     def from_config(cls, core=None, arch=None, config=None):
-        if not core.is_downloaded:
-            core.update()
+        arch_dir = UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)
+        if not os.path.isfile(arch_dir):
+            core.checkout()
 
-        with open(UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)) as f:
+        with open(arch_dir) as f:
             for line in f:
                 match = CONFIG_UK_ARCH.findall(line)
                 if len(match) > 0:
