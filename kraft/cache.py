@@ -73,6 +73,9 @@ class Cache(object):
             return self._cache[source]
         
         return None
+    
+    def all(self):
+        return self._cache
 
     def set(self, source, repository):
         if isinstance(source, six.string_types):
