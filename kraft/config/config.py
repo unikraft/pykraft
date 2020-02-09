@@ -120,13 +120,7 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     def get_libraries(self):
         return self.config.get('libraries', {})
 
-    def get_volumes(self):
-        return self.config.get('volumes', {})
-
-    def get_networks(self):
-        return self.config.get('networks', {})
-
-class Config(namedtuple('_Config', 'specification name unikraft architectures platforms libraries volumes')):
+class Config(namedtuple('_Config', 'specification name unikraft architectures platforms libraries')):
     """
     :param specification: configuration version
     :type  specification: int
@@ -145,9 +139,6 @@ class Config(namedtuple('_Config', 'specification name unikraft architectures pl
 
     :param libraries: Dictionary mapping library names to description dictionaries
     :type  libraries: :class:`dict`
-
-    :param volumes: Dictionary mapping file system names to description dictionaries
-    :type  volumes: :class:`dict`
     """
 
 def get_project_name(workdir, project_name=None, environment=None):
@@ -254,14 +245,6 @@ def process_config_file(config_file, environment, service_name=None, interpolate
         environment,
         interpolate,
     )
-    processed_config['volumes'] = process_config_section(
-        config_file,
-        config_file.get_volumes(),
-        'volumes',
-        environment,
-        interpolate,
-    )
-
     config_file = config_file._replace(config=processed_config)
     validate_against_config_schema(config_file)
 
@@ -418,14 +401,7 @@ def load(config_details):
         libraries[library]['source'] = definite_source
         libraries[library]['version'] = definite_version
 
-    volumes = load_mapping(
-        config_details.config_files,
-        'get_volumes',
-        'volumes',
-        config_details.working_dir
-    )
-
-    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, volumes)
+    return Config(main_file.version, name, unikraft, architectures, platforms, libraries)
 
 
 def load_yaml(filename, encoding=None, binary=True):
