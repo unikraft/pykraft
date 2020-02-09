@@ -300,10 +300,13 @@ class Repository(object):
             repo = GitRepo.init(self.localdir)
             repo.create_remote('origin', self.source)
 
-        for fetch_info in repo.remotes.origin.fetch():
-            logger.debug("Updated %s %s to %s" % (self.source, fetch_info.ref, fetch_info.commit))
-
-        self.last_checked = datetime.now()
+        try:
+            for fetch_info in repo.remotes.origin.fetch():
+                logger.debug("Updated %s %s to %s" % (self.source, fetch_info.ref, fetch_info.commit))
+            self.last_checked = datetime.now()
+        except GitCommandError as e:
+            logger.error("Could not fetch %s: %s" % (self.source, str(e)))
+        
         # self.checkout(self.version)
         # self.last_updated = datetime.fromtimestamp(repo.head.commit.committed_date)
 
