@@ -318,7 +318,7 @@ class Repository(object):
                 repo = GitRepo(self.localdir)
             
             except (NoSuchPathError, InvalidGitRepositoryError):
-                logger.warning("Attempting to checkout %s before update!" % self)
+                logger.debug("Attempting to checkout %s before update!" % self)
 
                 # Allow one retry
                 if retry is False:
