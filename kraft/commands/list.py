@@ -28,20 +28,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
+import sys
 import click
 from enum import Enum
-import kraft.kraft as kraft
-from kraft.repo import Repo
 from datetime import datetime
-from kraft.env import pass_environment
-from kraft.component import KraftComponent
+
+from kraft.context import kraft_context
+
+from kraft.component import Component
+from kraft.components import Repository
 
 @click.command('list', short_help='List supported unikraft architectures, platforms, libraries or applications via remote repositories.')
 @click.option('--core', '-c', is_flag=True, help='Display information about unikraft\'s core repository.')
-@click.option('--archs', '-m', is_flag=True, help='List supported architectures.')
+# @click.option('--archs', '-m', is_flag=True, help='List supported architectures.')
 @click.option('--plats', '-p', is_flag=True, help='List supported platforms.')
 @click.option('--libs', '-l', is_flag=True, help='List available libraries.')
 @click.option('--apps', '-a', is_flag=True, help='List supported application runtime execution environments.')
@@ -49,9 +49,9 @@ from kraft.component import KraftComponent
 @click.option('--show-local', '-d', is_flag=True, help='Show the local location for the source.')
 @click.option('--show-origin', '-r', is_flag=True, help='Show the remote location for the source.')
 # @click.option('--import', '-i', '_import', help='Import a library from a specified path.')
-@click.option('--paginate', '-n', is_flag=True, help='Paginate output')
-@pass_environment
-def cli(ctx, core, archs, plats, libs, apps, show_origin, show_local, paginate):
+@click.option('--paginate', '-n', is_flag=True, help='Paginate output.')
+@kraft_context
+def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate):
     """
     This subcommand retrieves lists of available architectures, platforms,
     libraries and applications supported by unikraft.  Use this command if you
@@ -61,35 +61,28 @@ def cli(ctx, core, archs, plats, libs, apps, show_origin, show_local, paginate):
     By default, this subcommand will list all possible targets.
 
     """
-    
-    # if _import:
-    #     if core:
-    #         _type = KraftComponent.APP
-    #     elif archs:
-    #         _type = KraftComponent.ARCH
-    #     elif plats:
-    #         _type = KraftComponent.PLAT
-    #     elif libs:
-    #         _type = KraftComponent.LIB
-    #     else:
-    #         _type = KraftComponent.APP
-        
-    #     ctx.cache.add_repo(Repo(
-    #         remoteurl=_import,
-    #         force_update=False,
-    #         download=True,
-    #         type=_type,
-    #     ))
+    # TODO: Architectures should be dynamically generated from the Unikraft
+    # source code.
+    archs = False
 
     # If no flags are set, show everything
     if core is False and archs is False and plats is False and libs is False and apps is False:
         core = archs = plats = libs = apps = True
 
     # Populate a matrix with all relevant columns and rows for each repository
+    repos = {}
     data = []
 
-    for type, member in KraftComponent.__members__.items():
-        columns = [member.plural.upper(), 'RELEASE', 'LAST UPDATED', 'LAST CHECKED']
+    for repo in ctx.cache.all():
+        repo = ctx.cache.get(repo)
+
+        if not repo.type in repos:
+            repos[repo.type] = []
+        
+        repos[repo.type].append(repo)
+        
+    for type, member in Component.__members__.items():
+        columns = [member.plural.upper(), 'RELEASE', 'LAST CHECKED']
 
         if show_local:
             columns.append('LOCATION')
@@ -98,32 +91,31 @@ def cli(ctx, core, archs, plats, libs, apps, show_origin, show_local, paginate):
             columns.append('ORIGIN')
 
         rows = []
-        # rows = ctx.cache.repos(member)
 
-        if core and member is KraftComponent.CORE:
-            rows = ctx.cache.repos(member).items()
+        if core and member is Component.CORE and member in repos:
+            rows = repos[member]
 
-        elif archs and member is KraftComponent.ARCH:
-            rows = ctx.cache.repos(member).items()
+        elif archs and member is Component.ARCH and member in repos:
+            rows = repos[member]
 
-        elif plats and member is KraftComponent.PLAT:
-            rows = ctx.cache.repos(member).items()
+        elif plats and member is Component.PLAT and member in repos:
+            rows = repos[member]
 
-        elif libs and member is KraftComponent.LIB:
-            rows = ctx.cache.repos(member).items()
+        elif libs and member is Component.LIB and member in repos:
+            rows = repos[member]
 
-        elif apps and member is KraftComponent.APP:
-            rows = ctx.cache.repos(member).items()
-
+        elif apps and member is Component.APP and member in repos:
+            rows = repos[member]
+        
         if len(rows) > 0:
             data.append(columns)
 
-        for key, row in rows:
+        for row in rows:
             line = [
-              row.name,
-              row.release,
-              prettydate(row.last_updated),
-              prettydate(row.last_checked),
+                row.name,
+                row.latest_release,
+                # prettydate(row.last_updated),
+                prettydate(row.last_checked),
             ]
 
             if show_local:
@@ -132,8 +124,8 @@ def cli(ctx, core, archs, plats, libs, apps, show_origin, show_local, paginate):
                 else:
                     line.append('')
             if show_origin:
-                if hasattr(row, 'remoteurl'):
-                    line.append(row.remoteurl)
+                if hasattr(row, 'source'):
+                    line.append(row.source)
                 else:
                     line.append('')
 

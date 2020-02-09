@@ -17,8 +17,12 @@ setup(
     author_email = 'a.jung@lancs.ac.uk',
     entry_points = """
         [console_scripts]
-        {program} = kraft.kraft:cli
+        {program} = kraft.kraft:kraft
         """.format(program = __program__),
+    scripts = [
+        'run/qemu-guest',
+        'run/xen-guest'
+    ],
     keywords = [],
     tests_require = ['pytest', 'coveralls'],
     zip_safe = False,

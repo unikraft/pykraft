@@ -24,54 +24,43 @@
 # LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 # SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITYs, WHETHER IN
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import sys
-import click
-import logging
 
-from kraft import __version__, __description__, __program__
+from kraft.component import Component
+from kraft.components.repository import Repository
+from kraft.components.repository import RepositoryManager
 
-from kraft.logger import logger
-from kraft.config import config
-from kraft.context import kraft_context
+UK_CORE_PLAT_DIR='%s/plat'
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
-)
+class Platform(Repository):
+    @classmethod
+    def from_config(cls, core=None, plat=None, config=None):
+        if not core.is_downloaded:
+            core.update()
+        
+        if 'source' in config:
+            return super(Platform, cls).from_source_string(config['source'], Component.PLAT)
+        
+        else:
+            return cls(
+                name = plat,
+                source = core.source,
+                version = core.version,
+                component_type = Component.CORE
+            )
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
-@kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
+    @classmethod
+    def from_source_string(cls, name, source=None):
+        return super(Platform, cls).from_source_string(
+            name = name,
+            source = source,
+            component_type = Component.PLAT
+        )
 
-    if workdir:
-        ctx.workdir = workdir
-    
-    ctx.cache.sync()
-
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+class Platforms(RepositoryManager):
+    pass

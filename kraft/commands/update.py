@@ -30,48 +30,45 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import sys
 import click
-import logging
 
-from kraft import __version__, __description__, __program__
+from github import Github
+from datetime import datetime
 
-from kraft.logger import logger
-from kraft.config import config
 from kraft.context import kraft_context
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
-)
+from kraft.components import Repository
+from kraft.errors import KraftError
+from kraft.logger import logger
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
+UK_GITHUB_ORG='unikraft'
+
+@click.command('update', short_help='Update list of available Unikraft components.')
 @kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
+def update(ctx):
+    """
+    This subcommand retrieves lists of available architectures, platforms,
+    libraries and applications supported by unikraft.
 
-    if workdir:
-        ctx.workdir = workdir
-    
-    ctx.cache.sync()
+    """
 
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+    if 'UK_KRAFT_GITHUB_TOKEN' in os.environ:
+        github = Github(os.environ['UK_KRAFT_GITHUB_TOKEN'])
+    else:
+        github = Github()
+
+    org = github.get_organization(UK_GITHUB_ORG)
+
+    for repo in org.get_repos():
+        # There is one repository which contains the codebase to kraft
+        # itself (this code!) that is returned in this iteration.  Let's
+        # filter it out here so we don't receive a prompt for an invalid
+        # repository.
+        if repo.clone_url == 'https://github.com/unikraft/tools.git':
+            continue
+
+        try:
+            logger.info("Found %s..." % repo.clone_url)
+            Repository.from_source_string(source=repo.clone_url)
+        except KraftError as e:
+            logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))

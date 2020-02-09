@@ -28,8 +28,6 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
 import re
 from enum import Enum
@@ -38,7 +36,7 @@ from kraft.logger import logger
 UK_GITHUB_NAMING_FORMAT=r'(%s)-([^.]+)'
 UK_GITHUB_CORE_FORMAT=re.compile(r'(unikraft)/(unikraft)')
 
-class KraftComponent(Enum):
+class Component(Enum):
     CORE = ( "core" , "core"         , "core"          )
     ARCH = ( "arch" , "architecture" , "architectures" )
     PLAT = ( "plat" , "platform"     , "platforms"     )
@@ -99,4 +97,3 @@ class KraftComponent(Enum):
         elif self.shortname == "app":
             logger.warn("Testing the validity of unikraft application is not yet implemented!")
             return True
-

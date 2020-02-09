@@ -29,49 +29,35 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
-import click
-import logging
+import re
 
-from kraft import __version__, __description__, __program__
+BRANCH_MASTER="master"
+BRANCH_STAGING="staging"
 
-from kraft.logger import logger
-from kraft.config import config
-from kraft.context import kraft_context
+# Match against dereferenced tags only
+# https://stackoverflow.com/a/15472310
+GIT_TAG_PATTERN=re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
+GIT_BRANCH_PATTERN=re.compile(r'refs/heads/(.*)')
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
+GITHUB_ORIGIN="https://github.com"
+UNIKRAFT_ORG="unikraft"
+UNIKRAFT_CORE="%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, "unikraft.git")
+
+REPO_VERSION_DELIMETERE = "@"
+ORG_DELIMETERE = "/"
+
+REPO_VALID_URL_PREFIXES = (
+    'http://',
+    'https://',
+    'git://',
+    'git@',
+    'file:///'
 )
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
-@kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
+SUPPORTED_FILENAMES = [
+    'kraft.yaml',
+    'kraft.yml',
+]
 
-    if workdir:
-        ctx.workdir = workdir
-    
-    ctx.cache.sync()
-
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+UNIKERNEL_IMAGE_FORMAT="%s/build/%s_%s-%s"
+UNIKERNEL_IMAGE_FORMAT_DGB="%s/build/%s_%s-%s.dbg"

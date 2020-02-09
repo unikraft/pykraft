@@ -28,45 +28,44 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
 import os
+import sys
 import click
+
+from kraft.config import config
 from kraft.logger import logger
-from kraft.kraft import pass_environment
-from kraft.app import UnikraftApp, MisconfiguredUnikraftApp, DOT_CONFIG
+from kraft.project import Project
+from kraft.errors import KraftError
+from kraft.kraft import kraft_context
 
-@click.command('configure', short_help='Sets the default configuration for an appliance.')
-@click.argument('path', required=False, type=click.Path(resolve_path=True))
-@click.option('--menuconfig', '-n', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
-@click.option('--dump-makefile', '-d', is_flag=True, help='Write a Makefile compatible Unikraft\'s build system.')
-@click.option('--dump-unikraft', '-u', is_flag=True, help='Copy Unikraft and source libraries into the path.')
-@pass_environment
-def cli(ctx, path, menuconfig, dump_makefile, dump_unikraft):
+@click.command('build', short_help='Build the Unikraft appliance.')
+@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
+@kraft_context
+def build(ctx, fast):
     """
-    This subcommand populates the local .config for the unikraft appliance with
-    with the default values found for the target application.
+    This builds the unikraft appliance for the target architecture, platform
+    and with all additional libraries and configurations.
     """
 
-    if path is None:
-        path = os.getcwd()
-    
+    logger.debug("Building %s..." % ctx.workdir)
+
     try:
-        app = UnikraftApp(ctx=ctx, path=path)
-    except MisconfiguredUnikraftApp as e:
-        click.echo("Unsupported configuration: %s" % str(e))
+        project = Project.from_config(
+            ctx.workdir,
+            config.load(
+                config.find(ctx.workdir, None, ctx.env)
+            )
+        )
+
+    except KraftError as e:
+        logger.error(str(e))
         sys.exit(1)
-
-    if menuconfig:
-        app.menuconfig()
     
-    elif dump_makefile:
-        app.generate_makefile()
-    
-    elif dump_unikraft:
-        app.dump_sources()
-
-    else:
-        app.configure()
+    n_proc = None
+    if fast:
+        # This simply set the `-j` flag which signals to make to use all cores.
+        n_proc = ""
         
+    project.build(n_proc=n_proc)
+    

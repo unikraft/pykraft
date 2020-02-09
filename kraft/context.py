@@ -28,56 +28,94 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
 import os
 import click
-from .cache import Cache
-from .logger import logger
+import logging
 
-class Environment(object):
+from kraft.cache import Cache
+from kraft.environment import Environment
+from kraft.logger import logger
+from kraft.config import config
+
+UNIKRAFT_WORKDIR = ".unikraft"
+UNIKRAFT_COREDIR = "unikraft"
+UNIKRAFT_LIBSDIR = "libs"
+UNIKRAFT_APPSDIR = "apps"
+
+class Context(object):
+    """Context manager acts as a decorator and helps initialize and persist and 
+    current state of affairs for the kraft utility."""
     def __init__(self):
-        self.sanity_check()
-        self.verbose = False
-        self.workdir = os.getcwd()
-        self.init_caching()
-
-    def sanity_check(self):
+        self._verbose = False
+        self._workdir = os.getcwd()
+        self.init_env()
+        self._cache = Cache(self._env)
+    
+    def init_env(self):
         """Determines whether the integrity of the kraft application, namely
         determining whether the kraft application can run under the given
         runtime environment."""
 
         if 'UK_WORKDIR' not in os.environ:
-            os.environ['UK_WORKDIR'] = os.environ['HOME'] + '/.unikraft'
+            os.environ['UK_WORKDIR'] = os.path.join(os.environ['HOME'], UNIKRAFT_WORKDIR)
         if os.path.isdir(os.environ['UK_WORKDIR']) is False:
             os.mkdir(os.environ['UK_WORKDIR'])
         if 'UK_ROOT' not in os.environ:
-            os.environ['UK_ROOT'] = os.environ['UK_WORKDIR'] + '/unikraft'
+            os.environ['UK_ROOT'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_COREDIR)
         if os.path.isdir(os.environ['UK_ROOT']) is False:
             os.mkdir(os.environ['UK_ROOT'])
         if 'UK_LIBS' not in os.environ:
-            os.environ['UK_LIBS'] = os.environ['UK_WORKDIR'] + '/libs'
+            os.environ['UK_LIBS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_LIBSDIR)
         if os.path.isdir(os.environ['UK_LIBS']) is False:
             os.mkdir(os.environ['UK_LIBS'])
         if 'UK_APPS' not in os.environ:
-            os.environ['UK_APPS'] = os.environ['UK_WORKDIR'] + '/apps'
+            os.environ['UK_APPS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_APPSDIR)
         if os.path.isdir(os.environ['UK_APPS']) is False:
             os.mkdir(os.environ['UK_APPS'])
 
         # Check if we have a build-time engine set
         if 'UK_BUILD_ENGINE' not in os.environ:
             os.environ['UK_BUILD_ENGINE'] = 'gcc'
+        
+        self._env =  Environment.from_env_file(self._workdir, None)
 
+    @property
+    def cache(self):
+        return self._cache
 
-    def init_caching(self):
-        """Initializes the cache so that kraft does not have to constantly
-        retrieve informational lists about unikraft, its available architectures,
-        platforms, libraries and supported applications.
+    @property
+    def verbose(self):
+        return self._verbose
 
-        The 'c' means that the object will open a cache if it exists, but will
-        create a new one if no cache is found. The 's' means that the cache is
-        opened in sync mode. All changes are immediately written to disk."""
-        self.cache = Cache()
+    @verbose.setter
+    def verbose(self, verbose):
+        self._verbose = verbose
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+    
+    @property
+    def workdir(self):
+        return self._workdir
 
-pass_environment = click.make_pass_decorator(Environment, ensure=True)
+    @workdir.setter
+    def workdir(self, workdir):
+        # Re-initialize an environment from a new given workding directory
+        self._env = Environment.from_env_file(workdir, None)
+        self._workdir = workdir
+
+    @property
+    def env(self):
+        return self._env
+
+    # def __call__(self, func):
+    #     # print("context: __call__")
+    #     print("verbosity =", self._verbose)
+    #     def wrapper(*args, **kwds):
+    #         with self:
+    #             return func(self, *args, **kwds)
+    #     return wrapper
+
+kraft_context = click.make_pass_decorator(Context, ensure=True)

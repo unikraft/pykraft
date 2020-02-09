@@ -29,49 +29,36 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
-import click
-import logging
+from kraft.component import Component
+from kraft.components.repository import Repository
+from kraft.components.repository import RepositoryManager
 
-from kraft import __version__, __description__, __program__
+class Library(Repository):
+    @classmethod
+    def from_config(cls, name, config=None):
+        source = None
+        version = None
 
-from kraft.logger import logger
-from kraft.config import config
-from kraft.context import kraft_context
+        if 'source' in config:
+            source = config['source']
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
-)
+        if 'version' in config:
+            version = config['version']
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
-@kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
+        return super(Library, cls).from_source_string(
+            name = name,
+            source = source,
+            version = version,
+            component_type = Component.LIB
+        )
 
-    if workdir:
-        ctx.workdir = workdir
-    
-    ctx.cache.sync()
+    @classmethod
+    def from_source_string(cls, name, source):
+        return super(Library, cls).from_source_string(
+            name = name,
+            source = source,
+            component_type = Component.LIB
+        )
 
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+class Libraries(RepositoryManager):
+    pass

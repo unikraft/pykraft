@@ -29,49 +29,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
-import click
-import logging
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from kraft import __version__, __description__, __program__
-
-from kraft.logger import logger
-from kraft.config import config
-from kraft.context import kraft_context
-
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
-)
-
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
-@kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
-
-    if workdir:
-        ctx.workdir = workdir
-    
-    ctx.cache.sync()
-
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+from .core import Core
+from .volume import Volume
+from .volume import Volumes
+from .library import Library
+from .library import Libraries
+from .platform import Platform
+from .platform import Platforms
+from .repository import Repository
+from .repository import RepositoryManager
+from .architecture import Architecture
+from .architecture import Architectures

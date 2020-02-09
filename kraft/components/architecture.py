@@ -30,48 +30,47 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import re
 import sys
-import click
-import logging
 
-from kraft import __version__, __description__, __program__
+from kraft.component import Component
+from kraft.components.repository import Repository
+from kraft.components.repository import RepositoryManager
 
-from kraft.logger import logger
-from kraft.config import config
-from kraft.context import kraft_context
+UK_CONFIG_FILE='%s/Config.uk'
+UK_CORE_ARCH_DIR='%s/arch'
+CONFIG_UK_ARCH=re.compile(r'source "\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"$')
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
-)
+class Architecture(Repository):
+    @classmethod
+    def from_config(cls, core=None, arch=None, config=None):
+        if not core.is_downloaded:
+            core.update()
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
-@kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
+        with open(UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)) as f:
+            for line in f:
+                match = CONFIG_UK_ARCH.findall(line)
+                if len(match) > 0:
+                    path, found_arch = match[0]
+                    if found_arch == arch:
+                        # TODO: os.path.join(core.localdir, path) isn't working for me?
+                        return cls(
+                            name = arch,
+                            source = core.source,
+                            version = core.version,
+                            localdir = core.localdir + path,
+                            component_type=Component.ARCH
+                        )
 
-    if workdir:
-        ctx.workdir = workdir
-    
-    ctx.cache.sync()
+        return None
 
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+    @classmethod
+    def from_source_string(cls, name, source=None):
+        return super(Architecture, cls).from_source_string(
+            name = name,
+            source = source, 
+            component_type = Component.ARCH
+        )
+
+class Architectures(RepositoryManager):
+    pass

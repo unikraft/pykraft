@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "specification_v0.4.json",
+  "type": "object",
+  "required": ["specification", "unikraft"],
+
+  "properties": {
+    "specification": {
+      "type": [ "string", "integer" ]
+    },
+
+    "name": {
+      "type": "string"
+    },
+
+    "unikraft": {
+      "id": "#/properties/unikraft",
+      "$ref": "#/definitions/unikraft",
+      "additionalProperties": false
+    },
+
+    "architectures": {
+      "id": "#/properties/architectures",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "$ref": "#/definitions/architecture"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "platforms": {
+      "id": "#/properties/platforms",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "$ref": "#/definitions/platform"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "libraries": {
+      "id": "#/properties/libraries",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "$ref": "#/definitions/library"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "volumes": {
+      "id": "#/properties/volumes",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "$ref": "#/definitions/volume"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "additionalProperties": false,
+
+  "definitions": {
+    
+    "unikraft": {
+      "id": "#/definitions/unikraft",
+      "type": [ "object", "string" ],
+      "properties": {
+        "source": { "type": "string" },
+        "version": { "type": "string" },
+        "kconfig": { "$ref": "#/definitions/list_or_dict" }
+      }
+    },
+
+    "architecture": {
+      "id": "#/definitions/architecture",
+      "type": [ "object", "null" ],
+      "properties": {
+        "source": { "type": "string" },
+        "version": { "type": "string" },
+        "kconfig": { "$ref": "#/definitions/list_or_dict" }
+      }
+    },
+    
+    "platform": {
+      "id": "#/definitions/platform",
+      "type": [ "object", "null" ],
+      "properties": {
+        "source": { "type": "string" },
+        "version": { "type": "string" },
+        "kconfig": { "$ref": "#/definitions/list_or_dict" },
+        "before_run": {
+          "oneOf": [
+            {"type": "string"},
+            {"type": "array", "items": {"type": "string"}}
+          ]
+        },
+        "cpus": { "type": [ "string", "integer" ] },
+        "memory": { "type": [ "string", "integer" ] }
+      }
+    },
+    
+    "library": {
+      "id": "#/definitions/platform",
+      "type": [ "object", "string" ],
+      "properties": {
+        "source": { "type": "string" },
+        "version": { "type": "string" },
+        "kconfig": { "$ref": "#/definitions/list_or_dict" }
+      }
+    },
+    
+    "volume": {
+      "id": "#/definitions/platform",
+      "type": [ "object", "null" ],
+      "properties": {
+        "source": { "type": "string" },
+        "kconfig": { "$ref": "#/definitions/list_or_dict" }
+      }
+    },
+
+    "source": {
+      "type": "string"
+    },
+
+    "list_or_dict": {
+      "oneOf": [
+        {
+          "type": "object",
+          "patternProperties": {
+            ".+": {
+              "type": ["string", "number", "null"]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      ]
+    }
+  }
+}

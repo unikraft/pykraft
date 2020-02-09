@@ -28,8 +28,6 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
 import os
 import subprocess
@@ -38,7 +36,6 @@ from shutil import copyfile, ignore_patterns
 
 def is_dir_empty(path=None):
     """Return a boolean of whether the provided directory `dir` is empty."""
-    print(path, len([f for f in os.listdir(path) if not f.startswith('.')]))
     return os.path.isdir(path) is False or len([f for f in os.listdir(path) if not f.startswith('.')]) == 0
 
 
@@ -46,6 +43,7 @@ def execute(cmd=""):
     if type(cmd) is list:
         cmd = " ".join(cmd)
 
+    logger.debug("Running: %s" % cmd)
     cmd = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
     for line in cmd.stdout:

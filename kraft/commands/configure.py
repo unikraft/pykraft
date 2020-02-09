@@ -32,46 +32,39 @@
 import os
 import sys
 import click
-import logging
 
-from kraft import __version__, __description__, __program__
-
-from kraft.logger import logger
 from kraft.config import config
-from kraft.context import kraft_context
+from kraft.logger import logger
+from kraft.project import Project
+from kraft.errors import KraftError
+from kraft.kraft import kraft_context
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    update,
-    list,
-    build,
-    configure,
-    clean
-)
-
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
+@click.command('configure', short_help='Configure the application against Unikraft.')
+@click.option('--menuconfig', '-m', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
 @kraft_context
-def kraft(ctx, verbose, workdir):
-    ctx.verbose = verbose
+def configure(ctx, menuconfig):
+    """
+    This subcommand populates the local .config for the unikraft appliance with
+    with the default values found for the target application.
+    """
 
-    if workdir:
-        ctx.workdir = workdir
+    logger.debug("Configuring %s..." % ctx.workdir)
+
+    try:
+        project = Project.from_config(
+            ctx.workdir,
+            config.load(
+                config.find(ctx.workdir, None, ctx.env)
+            )
+        )
+
+    except KraftError as e:
+        logger.error(str(e))
+        sys.exit(1)
     
-    ctx.cache.sync()
+    if menuconfig:
+        project.menuconfig()
 
-kraft.add_command(update)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
+    else:
+        project.configure()
+        

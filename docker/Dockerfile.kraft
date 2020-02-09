@@ -1,13 +1,28 @@
 ARG UK_ARCH=x86_64
 ARG GCC_VERSION=9.2.0
+ARG QEMU_VERSION=4.2.0
 
 FROM unikraft/tools:gcc${GCC_VERSION}-${UK_ARCH} AS gcc
+FROM unikraft/tools:qemu${QEMU_VERSION} AS qemu
 FROM python:3.6-slim
 
 COPY --from=gcc /bin/ /bin/
 COPY --from=gcc /lib/ /lib/
 COPY --from=gcc /include/ /include/
 COPY --from=gcc /libexec/ /libexec/
+
+COPY --from=qemu /bin/qemu-ga /bin/
+COPY --from=qemu /bin/qemu-img /bin/
+COPY --from=qemu /bin/qemu-io /bin/
+COPY --from=qemu /bin/qemu-nbd /bin/
+COPY --from=qemu /bin/qemu-pr-helper /bin/
+COPY --from=qemu /bin/qemu-system-aarch64 /bin/
+COPY --from=qemu /bin/qemu-system-arm /bin/
+COPY --from=qemu /bin/qemu-system-i386 /bin/
+COPY --from=qemu /bin/qemu-system-x86_64 /bin/
+COPY --from=qemu /share/qemu/ /share/qemu/
+# COPY --from=qemu /lib/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
+RUN ln -s /share/qemu /usr/share/qemu
 
 COPY / /usr/src/kraft
 
@@ -21,8 +36,10 @@ RUN set -xe; \
 		flex \
 		git \
 		wget \
+		socat \
 		bison \
-		unzip; \
+		unzip \
+		uuid-runtime; \
 	rm -Rf /var/cache/apt/*; \
 	mkdir -p /usr/src/unikraft/unikraft; \
 	mkdir -p /usr/src/unikraft/libs; \

@@ -28,27 +28,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
 
-import click
-from enum import Enum
-import kraft.kraft as kraft
-from datetime import datetime
-from kraft.env import pass_environment
-from kraft.component import KraftComponent
+from kraft.component import Component
+from kraft.components.repository import Repository
 
-@click.command('list', short_help='List supported unikraft architectures, platforms, libraries or applications via remote repositories.')
-@click.option('--staging', '-s', is_flag=True, help='Use staging branch (here be dragons).')
-@pass_environment
-def cli(ctx, staging):
-    """
-    This subcommand retrieves lists of available architectures, platforms,
-    libraries and applications supported by unikraft.
+class Core(Repository):
+    @classmethod
+    def from_config(cls, config=None):
+        source = None
+        version = None
 
-    """
+        if 'source' in config:
+            source = config['source']
 
-    if staging:
-        ctx.cache.update(use_branch='staging')
-    else:
-        ctx.cache.update()
+        if 'version' in config:
+            version = config['version']
+
+
+        return super(Core, cls).from_source_string(
+            name = None,
+            source = source,
+            version = version,
+            component_type = Component.CORE
+        )
+
+    @classmethod
+    def from_source_string(cls, source=None):
+        return super(Core, cls).from_source_string(
+            name = None,
+            source = source,
+            component_type = Component.CORE
+        )
