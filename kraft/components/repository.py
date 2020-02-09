@@ -44,6 +44,7 @@ from git import Repo as GitRepo
 from git import RemoteProgress
 from git import InvalidGitRepositoryError
 from git import NoSuchPathError
+from git import GitCommandError
 from git.cmd import Git as GitCmd
 from git.exc import GitCommandError
 
@@ -338,9 +339,13 @@ class Repository(object):
                     logger.debug("Checking-out %s@%s..." % (self.name, version))
             except ValueError as e:
                 pass
-            
-            repo.git.checkout(version)
-    
+
+            try:           
+                repo.git.checkout(version)
+            except GitCommandError as e:
+                logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e)))
+                sys.exit(1)
+
     @property
     def shortname(self):
         return '%s/%s' % (self.component_type.shortname, self.name)
