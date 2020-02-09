@@ -33,6 +33,7 @@ RUN set -xe; \
 	apt-get install -y --no-install-recommends \
 		build-essential \
 		libncurses-dev \
+		libyaml-dev \
 		flex \
 		git \
 		wget \
