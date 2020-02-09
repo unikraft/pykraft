@@ -372,6 +372,7 @@ class Repository(object):
             versions.remove(BRANCH_STAGING)
         
         if len(versions) > 0:
+            versions = sorted(versions)
             return versions[-1]
         
         if BRANCH_MASTER in self.known_versions:
