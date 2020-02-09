@@ -29,7 +29,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from .update import update
+from .list import list
 from .build import build
 from .clean import clean
-from .update import update
 from .configure import configure

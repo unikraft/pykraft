@@ -43,6 +43,7 @@ from kraft.context import kraft_context
 from kraft.commands.utils import CONTEXT_SETTINGS
 from kraft.commands import (
     update,
+    list,
     build,
     configure,
     clean
@@ -70,6 +71,7 @@ def kraft(ctx, verbose, workdir):
     ctx.cache.sync()
 
 kraft.add_command(update)
+kraft.add_command(list)
 kraft.add_command(configure)
 kraft.add_command(build)
 kraft.add_command(clean)
