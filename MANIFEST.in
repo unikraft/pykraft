@@ -1,0 +1,7 @@
+include requirements.txt
+include *.md
+include README.md
+include kraft/config/*.json
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.un~
