@@ -55,20 +55,11 @@ from kraft.commands import (
     is_flag=True,
     help='Enables verbose mode.'
 )
-@click.option(
-    '-w', '--workdir',
-    type=click.Path(resolve_path=True),
-    help='Use kraft on this working directory.',
-)
 @click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
 @click.version_option()
 @kraft_context
-def kraft(ctx, verbose, workdir):
+def kraft(ctx, verbose):
     ctx.verbose = verbose
-
-    if workdir:
-        ctx.workdir = workdir
-    
     ctx.cache.sync()
 
 kraft.add_command(update)
