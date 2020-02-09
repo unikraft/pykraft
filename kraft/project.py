@@ -45,8 +45,6 @@ from kraft.kraft import kraft_context
 
 from kraft.component import Component
 from kraft.components import Core
-from kraft.components import Volume
-from kraft.components import Volumes
 from kraft.components import Library
 from kraft.components import Libraries
 from kraft.components import Platform
@@ -74,8 +72,6 @@ class Project(object):
     _architectures = {}
     _platforms = {}
     _libraries = {}
-    # _volumes = {}
-    # _networks = {}
 
     def __init__(self,
         name,
@@ -84,8 +80,7 @@ class Project(object):
         core_config=None,
         architectures=None,
         platforms=None,
-        libraries=None,
-        volumes=None):
+        libraries=None):
         
         self._name = name
         self._path = path
@@ -94,8 +89,6 @@ class Project(object):
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
         self._libraries = libraries or Libraries([])
-        # self._volumes = volumes or Volumes({})
-        # self._networks = networks or Networks({})
     
     @property
     def name(self):
@@ -118,12 +111,6 @@ class Project(object):
     @property
     def libraries(self):
         return self._libraries
-    # @property
-    # def volumes(self):
-    #     return self._volumes
-    # @property
-    # def networks(self):
-    #     return self._networks
 
     @classmethod
     @kraft_context
@@ -154,14 +141,6 @@ class Project(object):
                 library = Library.from_config(lib, config.libraries[lib])
                 logger.info("Using %s..." % library)
                 libraries.add(lib, library, config.libraries[lib])
-
-            # volumes = Volumes({})
-            # for vol in config.volumes:
-            #     print(vol)
-
-            # networks = Networks({})
-            # for net in config.networks:
-            #     print(net)
 
         except InvalidRepositorySource as e:
             logger.fatal(e)
