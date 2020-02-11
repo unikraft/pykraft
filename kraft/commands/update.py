@@ -64,7 +64,7 @@ def update(ctx):
         # itself (this code!) that is returned in this iteration.  Let's
         # filter it out here so we don't receive a prompt for an invalid
         # repository.
-        if repo.clone_url == 'https://github.com/unikraft/tools.git':
+        if repo.clone_url == 'https://github.com/unikraft/kraft.git':
             continue
 
         try:
