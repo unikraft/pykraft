@@ -44,8 +44,7 @@ from kraft.kraft import kraft_context
 @kraft_context
 def configure(ctx, menuconfig):
     """
-    This subcommand populates the local .config for the unikraft appliance with
-    with the default values found for the target application.
+    Populates the local .config with the default values for the target application.
     """
 
     logger.debug("Configuring %s..." % ctx.workdir)

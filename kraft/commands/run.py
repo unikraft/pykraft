@@ -60,7 +60,7 @@ from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 @kraft_context
 def run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, block_storage, dry_run, args):
     """
-    This subcommand starts the unikraft application once it has been successfully
+    Starts the unikraft application once it has been successfully
     built.
     """
 

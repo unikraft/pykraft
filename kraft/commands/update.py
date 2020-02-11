@@ -47,8 +47,8 @@ UK_GITHUB_ORG='unikraft'
 @kraft_context
 def update(ctx):
     """
-    This subcommand retrieves lists of available architectures, platforms,
-    libraries and applications supported by unikraft.
+    Retrieves lists of available architectures, platforms,
+    libraries and applications supported by Unikraft.
 
     """
 

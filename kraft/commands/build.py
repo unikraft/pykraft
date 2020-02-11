@@ -44,8 +44,7 @@ from kraft.kraft import kraft_context
 @kraft_context
 def build(ctx, fast):
     """
-    This builds the unikraft appliance for the target architecture, platform
-    and with all additional libraries and configurations.
+    Builds the Unikraft application for the target architecture and platform
     """
 
     logger.debug("Building %s..." % ctx.workdir)
