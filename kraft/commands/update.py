@@ -43,7 +43,7 @@ from kraft.logger import logger
 
 UK_GITHUB_ORG='unikraft'
 
-@click.command('update', short_help='Update list of available Unikraft components.')
+@click.command('update', short_help='Update list of archs, platforms, libraries or applications.')
 @kraft_context
 def update(ctx):
     """

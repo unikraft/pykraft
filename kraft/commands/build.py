@@ -39,7 +39,7 @@ from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
-@click.command('build', short_help='Build the Unikraft appliance.')
+@click.command('build', short_help='Build the application.')
 @click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
 @kraft_context
 def build(ctx, fast):

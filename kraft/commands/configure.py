@@ -39,7 +39,7 @@ from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
-@click.command('configure', short_help='Configure the application against Unikraft.')
+@click.command('configure', short_help='Configure the application.')
 @click.option('--menuconfig', '-m', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
 @kraft_context
 def configure(ctx, menuconfig):

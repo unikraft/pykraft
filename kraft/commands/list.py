@@ -39,15 +39,15 @@ from kraft.context import kraft_context
 from kraft.component import Component
 from kraft.components import Repository
 
-@click.command('list', short_help='List supported unikraft architectures, platforms, libraries or applications via remote repositories.')
-@click.option('--core', '-c', is_flag=True, help='Display information about unikraft\'s core repository.')
+@click.command('list', short_help='List archs, platforms, libraries or applications.')
+@click.option('--core', '-c', is_flag=True, help='Display information about Unikraft\'s core repository.')
 # @click.option('--archs', '-m', is_flag=True, help='List supported architectures.')
 @click.option('--plats', '-p', is_flag=True, help='List supported platforms.')
-@click.option('--libs', '-l', is_flag=True, help='List available libraries.')
+@click.option('--libs', '-l', is_flag=True, help='List supported libraries.')
 @click.option('--apps', '-a', is_flag=True, help='List supported application runtime execution environments.')
 # @click.option('--json', '-j', is_flag=True, help='Return values in JSON format.')
-@click.option('--show-local', '-d', is_flag=True, help='Show the local location for the source.')
-@click.option('--show-origin', '-r', is_flag=True, help='Show the remote location for the source.')
+@click.option('--show-local', '-d', is_flag=True, help='Show local source path.')
+@click.option('--show-origin', '-r', is_flag=True, help='Show remote source location.')
 # @click.option('--import', '-i', '_import', help='Import a library from a specified path.')
 @click.option('--paginate', '-n', is_flag=True, help='Paginate output.')
 @kraft_context

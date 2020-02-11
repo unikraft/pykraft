@@ -44,7 +44,7 @@ from kraft.executor import Executor
 
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 
-@click.command('run', short_help='Run the unikraft application.')
+@click.command('run', short_help='Run the application.')
 @click.option('--plat', '-p', default='linuxu', help='Target platform.', show_default=True)
 @click.option('--arch', '-m', help='Target architecture.', default=lambda:platform.machine(), show_default=True)
 @click.option('--initrd', '-i', help='Provide an init ramdisk.')
@@ -54,7 +54,7 @@ from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 @click.option('--virtio-nic', '-n', help='Attach a NAT-ed virtio-NIC to the guest.')
 @click.option('--bridge', '-b', help='Attach a NAT-ed virtio-NIC an existing bridge.')
 @click.option('--interface', '-V', help='Assign host device interface directly as virtio-NIC to the guest.')
-@click.option('--block-storage', '-d', help='Attach a block storage device based on a raw.')
+@click.option('--block-storage', '-d', help='Attach a block storage device based on a raw device.')
 @click.option('--dry-run', '-D', is_flag=True, help='Perform a dry run.')
 @click.argument('args', nargs=-1)
 @kraft_context
