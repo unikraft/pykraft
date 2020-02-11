@@ -57,11 +57,11 @@ from kraft.errors import CannotReadDepsJson
 from kraft.errors import InvalidRepositorySource
 from kraft.errors import MisconfiguredUnikraftProject
 
-DEPS_JSON="deps.json"
-DOT_CONFIG=".config"
-DEFCONFIG="defconfig"
-MAKEFILE_UK="Makefile.uk"
-ENV_VAR_PATTERN=re.compile(r'([A-Z_^=]+)=(\'[/\w\.\-\s]+\')')
+from kraft.constants import DEPS_JSON
+from kraft.constants import DOT_CONFIG
+from kraft.constants import DEFCONFIG
+from kraft.constants import MAKEFILE_UK
+from kraft.constants import ENV_VAR_PATTERN
 
 class Project(object):
     _name = None
@@ -267,6 +267,8 @@ class Project(object):
         extra = []
         if n_proc is not None:
             extra.append('-j%s' % str(n_proc))
+            self.make('fetch')
+            self.make('prepare')
         
         self.make(extra)
 

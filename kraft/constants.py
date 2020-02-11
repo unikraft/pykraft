@@ -61,3 +61,9 @@ SUPPORTED_FILENAMES = [
 
 UNIKERNEL_IMAGE_FORMAT="%s/build/%s_%s-%s"
 UNIKERNEL_IMAGE_FORMAT_DGB="%s/build/%s_%s-%s.dbg"
+
+DEPS_JSON="deps.json"
+DOT_CONFIG=".config"
+DEFCONFIG="defconfig"
+MAKEFILE_UK="Makefile.uk"
+ENV_VAR_PATTERN=re.compile(r'([A-Z_^=]+)=(\'[/\w\.\-\s]+\')')
