@@ -44,6 +44,7 @@ from git import Repo as GitRepo
 from git import RemoteProgress
 from git import InvalidGitRepositoryError
 from git import NoSuchPathError
+from kraft.errors import NoTypeAndNameRepo
 from git import GitCommandError
 from git.cmd import Git as GitCmd
 from git.exc import GitCommandError
@@ -336,19 +337,27 @@ class Repository(object):
                 # out the repository before.
                 commit_hash = str(repo.head.commit)
                 
+                # Determine if the repository has already been checked out at
+                # this version
                 if commit_hash.startswith(version) \
                 or version in self.known_versions and self.known_versions[version] == commit_hash:
-                    logger.debug("%s already at %s..." % (self.name, version))         
-                else:
-                    logger.debug("Checking-out %s@%s..." % (self.name, version))
+                    logger.debug("%s already at %s..." % (self.name, version))
+                    return
             except ValueError as e:
                 pass
 
-            try:           
+            logger.debug("Checking-out %s@%s..." % (self.name, version))
+
+            # First simply attempting what was speciied
+            try:
                 repo.git.checkout(version)
             except GitCommandError as e:
-                logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e)))
-                sys.exit(1)
+                #  If that failed, attempt with `RELEASE-` as a prefix:
+                try:
+                    repo.git.checkout('RELEASE-%s' % version)
+                except GitCommandError as e:
+                    logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e)))
+                    sys.exit(1)
 
     @property
     def shortname(self):
