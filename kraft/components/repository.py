@@ -402,6 +402,14 @@ class Repository(object):
             return True
         except InvalidGitRepositoryError:
             return False
+    
+    def short_source(self):
+        """Determine the most succinct representation for the source and
+        version for this repository.  Such that default origins from Github
+        are 'minified'."""
+
+        # TODO: This.  For now return the full source;
+        return self.source
 
     def __repr__(self):
         """Python representation"""
