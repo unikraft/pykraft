@@ -91,6 +91,9 @@ class Cache(object):
 
         logger.debug("Checking cache for staleness...")
 
+        if len(self.all()) == 0:
+            return True
+
         # biggest_timeout = 0
         # repos = self.repos()
 

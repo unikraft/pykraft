@@ -29,15 +29,19 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import sys
 import click
 from enum import Enum
+from github import Github
 from datetime import datetime
 
-from kraft.context import kraft_context
-
+from kraft.logger import logger
+from kraft.errors import KraftError
 from kraft.component import Component
 from kraft.components import Repository
+from kraft.context import kraft_context
+from kraft.constants import UK_GITHUB_ORG
 
 @click.command('list', short_help='List archs, platforms, libraries or applications.')
 @click.option('--core', '-c', is_flag=True, help='Display information about Unikraft\'s core repository.')
@@ -50,17 +54,24 @@ from kraft.components import Repository
 @click.option('--show-origin', '-r', is_flag=True, help='Show remote source location.')
 # @click.option('--import', '-i', '_import', help='Import a library from a specified path.')
 @click.option('--paginate', '-n', is_flag=True, help='Paginate output.')
+@click.option('--update', '-u', 'force_update', is_flag=True, help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.')
 @kraft_context
-def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate):
+def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update):
     """
-    This subcommand retrieves lists of available architectures, platforms,
-    libraries and applications supported by unikraft.  Use this command if you
-    wish to determine (and then later select) the possible targets for your
-    unikraft appliance.
+    Retrieves lists of available architectures, platforms, libraries and applications
+    supported by unikraft.  Use this command if you wish to determine (and then
+    later select) the possible targets for yourunikraft application.
 
     By default, this subcommand will list all possible targets.
 
     """
+
+    if ctx.cache.is_stale() and not force_update:
+        if click.confirm('It looks like your cache is stale.  Would you like to update?'):
+            update()
+    elif force_update:
+        update()
+
     # TODO: Architectures should be dynamically generated from the Unikraft
     # source code.
     archs = False
@@ -147,6 +158,31 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate):
         click.echo_via_pager(output)
     else:
         print(output)
+
+def update():
+    if 'UK_KRAFT_GITHUB_TOKEN' in os.environ:
+        github = Github(os.environ['UK_KRAFT_GITHUB_TOKEN'])
+    else:
+        github = Github()
+
+    org = github.get_organization(UK_GITHUB_ORG)
+
+    for repo in org.get_repos():
+        # There is one repository which contains the codebase to kraft
+        # itself (this code!) that is returned in this iteration.  Let's
+        # filter it out here so we don't receive a prompt for an invalid
+        # repository.
+        if repo.clone_url == 'https://github.com/unikraft/kraft.git':
+            continue
+
+        try:
+            logger.info("Found %s..." % repo.clone_url)
+            Repository.from_source_string(
+                source=repo.clone_url,
+                force_update=True 
+            )
+        except KraftError as e:
+            logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))
 
 def pretty_columns(data = []):
     widths = [max(map(len, col)) for col in zip(*data)]

@@ -34,6 +34,8 @@ import re
 BRANCH_MASTER="master"
 BRANCH_STAGING="staging"
 
+UK_GITHUB_ORG='unikraft'
+
 # Match against dereferenced tags only
 # https://stackoverflow.com/a/15472310
 GIT_TAG_PATTERN=re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
