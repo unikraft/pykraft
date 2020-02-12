@@ -45,7 +45,7 @@ from kraft.executor import Executor
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 
 @click.command('run', short_help='Run the application.')
-@click.option('--plat', '-p', hel='Target platform.', default='linuxu', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
+@click.option('--plat', '-p', help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
 @click.option('--arch', '-m', help='Target architecture.', default=lambda:platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)
 @click.option('--initrd', '-i', help='Provide an init ramdisk.')
 @click.option('--background', '-X', is_flag=True, help='Run in background.')
