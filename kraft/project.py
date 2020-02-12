@@ -224,10 +224,10 @@ class Project(object):
         for arch in self.architectures.all():
             if target_arch == arch.name:
                 found_arch = True
-                if isinstance(arch.config, bool):
-                    dotconfig.extend([KCONFIG_Y % infer_arch_config_name(arch.name)])
-                elif 'kconfig' in arch.config:
+                if isinstance(arch.config, (dict)) and 'kconfig' in arch.config:
                     dotconfig.extend(arch.config['kconfig'])
+                else:
+                    dotconfig.extend([KCONFIG_Y % infer_arch_config_name(arch.name)])
 
         if not found_arch:
             raise MismatchTargetArchitecture(target_arch, [arch.name for arch in self.architectures.all()])
@@ -236,25 +236,27 @@ class Project(object):
         for plat in self.platforms.all():
             if target_plat == plat.name:
                 found_plat = True
-                if isinstance(plat.config, bool):
-                    dotconfig.extend([KCONFIG_Y % infer_plat_config_name(plat.name)])
-                elif 'kconfig' in plat.config:
+                if isinstance(plat.config, (dict)) and 'kconfig' in plat.config:
                     dotconfig.extend(plat.config['kconfig'])
+                else:
+                    dotconfig.extend([KCONFIG_Y % infer_plat_config_name(plat.name)])
 
         if not found_plat:
             raise MismatchTargetPlatform(target_plat, [plat.name for plat in self.platforms.all()])
             
         for lib in self.libraries.all():
-            if isinstance(lib.config, bool):
-                dotconfig.extend([KCONFIG_Y % infer_lib_config_name(lib.name)])
-            elif 'kconfig' in lib.config:
+            if isinstance(lib.config, (dict)) and 'kconfig' in lib.config:
                 dotconfig.extend(lib.config['kconfig'])
+            else:
+                dotconfig.extend([KCONFIG_Y % infer_lib_config_name(lib.name)])
 
         # Create a temporary file with the kconfig written to it
         fd, path = tempfile.mkstemp()
 
         with os.fdopen(fd, 'w+') as tmp:
+            logger.debug('Using the following defconfig:')
             for line in dotconfig:
+                logger.debug(' > ' + line)
                 tmp.write(line + '\n')
 
         try:
