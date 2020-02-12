@@ -1,4 +1,4 @@
-# Unikraft Tools 
+# `kraft` 
 
 To begin using [Unikraft](https://unikraft.org>) you can use the command-line
 utility `kraft`  which is a companion tool used for defining, configuring,
