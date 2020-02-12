@@ -65,9 +65,10 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
     By default, this subcommand will list all possible targets.
 
     """
-
+    
+    # Pre-flight check determines if we are trying to work with nothing
     if ctx.cache.is_stale() and not force_update:
-        if click.confirm('It looks like your cache is stale.  Would you like to update?'):
+        if click.confirm('kraft caches are out-of-date.  Would you like to update?'):
             update()
     elif force_update:
         update()
