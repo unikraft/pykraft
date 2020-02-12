@@ -6,6 +6,23 @@ building, and running Unikraft unikernel applications.  With `kraft`, you can
 create a build environment for your unikernel and manage dependencies for its
 build.
 
+```
+Usage: kraft [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version      Show the version and exit.
+  -v, --verbose  Enables verbose mode.
+  -h, --help     Show this message and exit.
+
+Commands:
+  build      Build the application.
+  clean      Clean the application.
+  configure  Configure the application.
+  init       Initialize a new unikraft application.
+  list       List architectures, platforms, libraries or applications.
+  run        Run the application.
+```
+
 ## Installation and documentation
 
 * Full documentation is available on [Unikraft's website](https://docs.unikraft.org).
