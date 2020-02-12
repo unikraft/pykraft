@@ -56,6 +56,8 @@ from kraft.components import Repository
 from kraft.errors import CannotReadDepsJson
 from kraft.errors import InvalidRepositorySource
 from kraft.errors import MisconfiguredUnikraftProject
+from kraft.errors import MismatchTargetArchitecture
+from kraft.errors import MismatchTargetPlatform
 
 from kraft.constants import DEPS_JSON
 from kraft.constants import DOT_CONFIG
@@ -68,7 +70,7 @@ class Project(object):
     _path = None
 
     _core = None
-    _core_config = None
+    _config = None
     _architectures = {}
     _platforms = {}
     _libraries = {}
@@ -77,7 +79,7 @@ class Project(object):
         name,
         core=None,
         path=None,
-        core_config=None,
+        config=None,
         architectures=None,
         platforms=None,
         libraries=None):
@@ -85,7 +87,7 @@ class Project(object):
         self._name = name
         self._path = path
         self._core = core or Core()
-        self._core_config = core_config or {}
+        self._config = config or {}
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
         self._libraries = libraries or Libraries([])
@@ -101,7 +103,7 @@ class Project(object):
         return self._core
     @property
     def config(self):
-        return self._core_config
+        return self._config
     @property
     def architectures(self):
         return self._architectures
@@ -149,40 +151,13 @@ class Project(object):
             name = config.name,
             core = core,
             path = path,
-            core_config = config.unikraft,
+            config = config,
             architectures = architectures,
             platforms = platforms,
-            libraries = libraries,
+            libraries = libraries
         )
 
         return project
-    
-    def get_defconfig(self):
-        dotconfig = []
-        
-        if 'kconfig' in self.config:
-            dotconfig.extend(self.config['kconfig'])
-
-        for arch in self.architectures.all():
-            if 'kconfig' in arch.config:
-                dotconfig.extend(arch.config['kconfig'])
-
-        for plat in self.platforms.all():
-            if 'kconfig' in plat.config:
-                dotconfig.extend(plat.config['kconfig'])
-
-        for lib in self.libraries.all():
-            if 'kconfig' in lib.config:
-                dotconfig.extend(lib.config['kconfig'])
-
-        # Create a temporary file with the kconfig written to it
-        fd, path = tempfile.mkstemp()
-
-        with os.fdopen(fd, 'w+') as tmp:
-            for line in dotconfig:
-                tmp.write(line + '\n')
-
-        return fd, path
 
     def gen_make_cmd(self, extra=None):
         """Return a string with a correctly formatted make entrypoint for this
@@ -218,13 +193,50 @@ class Project(object):
     def kconfig(self):
         env = self.dumpvarsconfig()
 
-    def configure(self):
+    def configure(self, target_arch=None, target_plat=None):
         """Configure a Unikraft application."""
 
         if not self.is_configured():
             self.init()
 
-        fd, path = self.get_defconfig()
+        # Generate a dynamic .config to populate defconfig with based on
+        # configure's parameterization.
+        dotconfig = []
+        
+        if 'kconfig' in self.config.unikraft:
+            dotconfig.extend(self.config.unikraft['kconfig'])
+
+        found_arch = False
+        for arch in self.architectures.all():
+            if target_arch == arch.name:
+                found_arch = True
+                if 'kconfig' in arch.config:
+                    dotconfig.extend(arch.config['kconfig'])
+
+        if not found_arch:
+            raise MismatchTargetArchitecture(target_arch, [arch.name for arch in self.architectures.all()])
+        
+        found_plat = False
+        for plat in self.platforms.all():
+            if target_plat == plat.name:
+                found_plat = True
+                if 'kconfig' in plat.config:
+                    dotconfig.extend(plat.config['kconfig'])
+
+        if not found_plat:
+            raise MismatchTargetPlatform(target_plat, [plat.name for plat in self.platforms.all()])
+            
+        for lib in self.libraries.all():
+            if 'kconfig' in lib.config:
+                dotconfig.extend(lib.config['kconfig'])
+
+        # Create a temporary file with the kconfig written to it
+        fd, path = tempfile.mkstemp()
+
+        with os.fdopen(fd, 'w+') as tmp:
+            for line in dotconfig:
+                tmp.write(line + '\n')
+
         try:
             self.make([
                 ('UK_DEFCONFIG=%s' % path),

@@ -99,6 +99,14 @@ class MismatchVersionRepo(KraftError):
     def __init__(self):
         super(MismatchVersionRepo, self).__init__("A repository with a different version has been provided")
 
+class MismatchTargetArchitecture(KraftError):
+    def __init__(self, target_arch="", supported_archs=[]):
+        super(MismatchTargetArchitecture, self).__init__("The target architecture (%s) does not match the supported architectures (%s)" % (target_arch, ", ".join(supported_archs)))
+
+class MismatchTargetPlatform(KraftError):
+    def __init__(self, target_plat="", supported_plats=[]):
+        super(MismatchTargetPlatform, self).__init__("The target platform (%s) does not match the supported platforms (%s)" % (target_plat, ", ".join(supported_plats)))
+
 class InvalidRepositorySource(KraftError):
     def __init__(self, source):
         super(InvalidRepositorySource, self).__init__("The source repository is invalid: %s" % source)

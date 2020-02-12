@@ -32,6 +32,7 @@
 import os
 import sys
 import click
+import platform
 
 from kraft.config import config
 from kraft.logger import logger
@@ -40,9 +41,11 @@ from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
 @click.command('configure', short_help='Configure the application.')
+@click.option('--plat', '-p', 'target_plat', help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
+@click.option('--arch', '-m', 'target_arch', help='Target architecture.', default=lambda:platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)
 @click.option('--menuconfig', '-m', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
 @kraft_context
-def configure(ctx, menuconfig):
+def configure(ctx, target_plat, target_arch, menuconfig):
     """
     Populates the local .config with the default values for the target application.
     """
@@ -65,5 +68,11 @@ def configure(ctx, menuconfig):
         project.menuconfig()
 
     else:
-        project.configure()
+        try:
+            project.configure(
+                target_arch=target_arch,
+                target_plat=target_plat
+            )
+        except KraftError as e:
+            logger.error(str(e))
         
