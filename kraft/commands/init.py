@@ -134,11 +134,12 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
             )
 
             preferred_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
-            if target_arch is None and preferred_arch:
-                target_arch = preferred_arch
-            else:
-                logger.error("Please provide an architecture.")
-                sys.exit(1)
+            if target_arch is None:
+                if preferred_arch:
+                    target_arch = preferred_arch
+                else:
+                    logger.error("Please provide an architecture.")
+                    sys.exit(1)
             
             arch_source, arch_version = interpolate_source_version(
                 source=target_arch,
@@ -152,11 +153,12 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
             ), {})
 
             preferred_plat = ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM)
-            if target_plat is None and preferred_plat:
-                target_plat = preferred_plat
-            else:
-                logger.error("Please provide a platform.")
-                sys.exit(1)
+            if target_plat is None:
+                if preferred_plat:
+                    target_plat = preferred_plat
+                else:
+                    logger.error("Please provide a platform.")
+                    sys.exit(1)
             
             plat_source, plat_version = interpolate_source_version(
                 source=target_plat,
