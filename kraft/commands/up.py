@@ -30,41 +30,22 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import sys
 import click
-import logging
 
-from kraft import __version__, __description__, __program__
+from github import Github
+from datetime import datetime
 
-from kraft.logger import logger
-from kraft.config import config
 from kraft.context import kraft_context
 
-from kraft.commands.utils import CONTEXT_SETTINGS
-from kraft.commands import (
-    up,
-    list,
-    build,
-    configure,
-    run,
-    clean
-)
+from kraft.components import Repository
+from kraft.errors import KraftError
+from kraft.logger import logger
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
-@click.version_option()
+@click.command('up', short_help='Retrieve, configure, build and run an application.')
 @kraft_context
-def kraft(ctx, verbose):
-    ctx.verbose = verbose
-    ctx.cache.sync()
+def up(ctx):
+    """
+    Retrieves lists of available architectures, platforms,
+    libraries and applications supported by Unikraft.
 
-kraft.add_command(up)
-kraft.add_command(list)
-kraft.add_command(configure)
-kraft.add_command(build)
-kraft.add_command(clean)
-kraft.add_command(run)
+    """
