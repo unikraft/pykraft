@@ -24,43 +24,42 @@
 # LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 # SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITYs, WHETHER IN
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
+from collections import namedtuple
 
-from kraft.component import Component
-from kraft.components.repository import Repository
-from kraft.components.repository import RepositoryManager
-
-UK_CORE_PLAT_DIR='%s/plat'
-
-class Platform(Repository):
+class ComponentConfigBase(namedtuple('_ComponentConfigBase', 'source version kconfig')):
     @classmethod
-    def from_config(cls, core=None, plat=None, config=None):
-        if not core.is_downloaded:
-            core.update()
-        
-        if not isinstance(config, bool) and 'source' in config:
-            return super(Platform, cls).from_source_string(config['source'], Component.PLAT)
-            
-        else:
-            return cls(
-                name = plat,
-                source = core.source,
-                version = core.version,
-                component_type = Component.CORE
-            )
-
-    @classmethod
-    def from_source_string(cls, name, source=None):
-        return super(Platform, cls).from_source_string(
-            name = name,
-            source = source,
-            component_type = Component.PLAT
+    def parse(cls, spec):
+        print('asd')
+        if isinstance(spec, six.string_types):
+            return cls(spec, None, None, None, None, None)
+        return cls(
+            spec.get('source'),
+            spec.get('version'),
+            spec.get('kconfig')
         )
 
-class Platforms(RepositoryManager):
+    @property
+    def merge_field(self):
+        return self.source
+
+    def repr(self):
+        return dict(
+            [(k, v) for k, v in zip(self._fields, self) if v is not None]
+        )
+
+class UnikraftConfig(object):
+    pass
+
+class ArchitectureConfig(ComponentConfigBase):
+    pass
+
+class PlatformConfig(ComponentConfigBase):
+    pass
+
+class LibraryConfig(ComponentConfigBase):
     pass

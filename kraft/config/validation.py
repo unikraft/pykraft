@@ -103,7 +103,7 @@ def validate_config_section(filename, config, section):
                     section=section,
                     name=key))
 
-        if not isinstance(value, (dict, type(None))):
+        if not isinstance(value, (dict, bool)):
             raise KraftError(
                 "In file '{filename}', {section} '{name}' must be a mapping not "
                 "{type}.".format(

@@ -36,10 +36,10 @@ import json
 import tempfile
 import kconfiglib
 import subprocess
+import dpath.util as dpath_util
 from pathlib import Path
 from json.decoder import JSONDecodeError
 
-import kraft.util as util
 from kraft.logger import logger
 from kraft.kraft import kraft_context
 
@@ -59,18 +59,30 @@ from kraft.errors import MisconfiguredUnikraftProject
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
 
+import kraft.util as util
+from kraft.constants import KCONFIG_Y
 from kraft.constants import DEPS_JSON
 from kraft.constants import DOT_CONFIG
 from kraft.constants import DEFCONFIG
 from kraft.constants import MAKEFILE_UK
 from kraft.constants import ENV_VAR_PATTERN
+from kraft.constants import SPECIFCATION_LATEST
+from kraft.constants import SUPPORTED_FILENAMES
+from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
+from kraft.constants import KRAFTCONF_PREFERRED_PLATFORM
+
+from kraft.config.kconfig import infer_arch_config_name
+from kraft.config.kconfig import infer_plat_config_name
+from kraft.config.kconfig import infer_lib_config_name
+
+from kraft.config.serialize import serialize_config
 
 class Project(object):
     _name = None
     _path = None
 
     _core = None
-    _config = None
+    _config = {}
     _architectures = {}
     _platforms = {}
     _libraries = {}
@@ -87,7 +99,9 @@ class Project(object):
         self._name = name
         self._path = path
         self._core = core or Core()
-        self._config = config or {}
+        self._config = config or {
+            'specification': SPECIFCATION_LATEST
+        }
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
         self._libraries = libraries or Libraries([])
@@ -210,7 +224,9 @@ class Project(object):
         for arch in self.architectures.all():
             if target_arch == arch.name:
                 found_arch = True
-                if 'kconfig' in arch.config:
+                if isinstance(arch.config, bool):
+                    dotconfig.extend([KCONFIG_Y % infer_arch_config_name(arch.name)])
+                elif 'kconfig' in arch.config:
                     dotconfig.extend(arch.config['kconfig'])
 
         if not found_arch:
@@ -220,14 +236,18 @@ class Project(object):
         for plat in self.platforms.all():
             if target_plat == plat.name:
                 found_plat = True
-                if 'kconfig' in plat.config:
+                if isinstance(plat.config, bool):
+                    dotconfig.extend([KCONFIG_Y % infer_plat_config_name(plat.name)])
+                elif 'kconfig' in plat.config:
                     dotconfig.extend(plat.config['kconfig'])
 
         if not found_plat:
             raise MismatchTargetPlatform(target_plat, [plat.name for plat in self.platforms.all()])
             
         for lib in self.libraries.all():
-            if 'kconfig' in lib.config:
+            if isinstance(lib.config, bool):
+                dotconfig.extend([KCONFIG_Y % infer_lib_config_name(lib.name)])
+            elif 'kconfig' in lib.config:
                 dotconfig.extend(lib.config['kconfig'])
 
         # Create a temporary file with the kconfig written to it
@@ -259,11 +279,16 @@ class Project(object):
         logger.debug("Running: %s" % ' '.join(cmd))
         subprocess.run(cmd)
 
-    def init(self):
+    def init(self, force_create=False):
         """Initialize a repository"""
         makefile_uk = os.path.join(self.path, MAKEFILE_UK)
-        if os.path.exists(makefile_uk) is False:
+        if os.path.exists(makefile_uk) is False or force_create:
             Path(makefile_uk).touch()
+        
+        kraft_yaml = os.path.join(self.path, SUPPORTED_FILENAMES[0])
+        if os.path.exists(kraft_yaml) is False or force_create:
+            with open(kraft_yaml, 'w+') as file:
+                file.write(self.toYAML())
 
     def is_configured(self):
         if os.path.exists(os.path.join(self.path, DOT_CONFIG)) is False:
@@ -308,6 +333,30 @@ class Project(object):
             text += "%s\n%17s" % (lib[1], " ")
         return text
 
+    @kraft_context
+    def get_config(ctx, self):
+        if 'specification' not in self.config:
+            self.config['specification'] = SPECIFCATION_LATEST
+    
+        if 'source' not in self.config:
+            dpath_util.new(self.config, 'unikraft/source', self.core.source)
+        if 'version' not in self.config:
+            dpath_util.new(self.config, 'unikraft/version', self.core.version)
+            
+        for arch in self.architectures.all():
+            dpath_util.new(self.config, 'architectures/%s' % arch.name, True)
+
+        for plat in self.platforms.all():
+            dpath_util.new(self.config, 'platforms/%s' % plat.name, True)
+            
+        # for lib in self.libraries.all():
+        #     print(lib)
+
+        return self.config
+
     def toYAML(self):
         """Return a YAML with the serialized string of this object."""
-        pass
+        
+        config = self.get_config()
+
+        return serialize_config(config)

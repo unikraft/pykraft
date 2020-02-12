@@ -31,6 +31,10 @@
 
 from kraft.errors import KconfigFileNotFound
 
+from kraft.constants import KCONFIG_ARCH_NAME
+from kraft.constants import KCONFIG_PLAT_NAME
+from kraft.constants import KCONFIG_LIB_NAME
+
 def split_kconfig(kconfig):
     if isinstance(kconfig, six.binary_type):
         kconfig = kconfig.decode('utf-8', 'replace')
@@ -56,6 +60,24 @@ def kconfig_from_file(filename):
         raise KconfigFileNotFound("%s is not a file." % filename)
 
     return dotenv.dotenv_values(dotenv_path=filename, encoding='utf-8-sig')
+
+def infer_arch_config_name(name = None):
+    if name is None:
+        return ''
+    
+    return KCONFIG_ARCH_NAME % name.replace('-', '_').upper()
+
+def infer_plat_config_name(name = None):
+    if name is None:
+        return ''
+    
+    return KCONFIG_PLAT_NAME % name.replace('-', '_').upper()
+    
+def infer_lib_config_name(name = None):
+    if name is None:
+        return ''
+    
+    return KCONFIG_LIB_NAME % name.replace('-', '_').upper()
 
 class Kconfig(dict):
     def __init__(self, *args, **kwargs):
@@ -110,10 +132,8 @@ class Kconfig(dict):
         return True
 
 
-
     def indent_print(s, indent):
         print(indent*" " + s)
-
 
     def traverse_config(node, indent):
         while node:

@@ -29,3 +29,51 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import six 
+import yaml
+
+import kraft.config.types as types
+
+def serialize_config_type(dumper, data):
+    representer = dumper.represent_str if six.PY3 else dumper.represent_unicode
+    return representer(data.repr())
+
+def serialize_dict_type(dumper, data):
+    return dumper.represent_dict(data.repr())
+
+def serialize_string(dumper, data):
+    """ Ensure boolean-like strings are quoted in the output """
+    representer = dumper.represent_str if six.PY3 else dumper.represent_unicode
+
+    if isinstance(data, six.binary_type):
+        data = data.decode('utf-8')
+
+    if data.lower() in ('y', 'n', 'yes', 'no', 'on', 'off', 'true', 'false'):
+        # Empirically only y/n appears to be an issue, but this might change
+        # depending on which PyYaml version is being used. Err on safe side.
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')
+    return representer(data)
+
+def serialize_string_escape_dollar(dumper, data):
+    """ Ensure boolean-like strings are quoted in the output and escape $ characters """
+    data = data.replace('$', '$$')
+    return serialize_string(dumper, data)
+
+yaml.SafeDumper.add_representer(types.ArchitectureConfig, serialize_dict_type)
+yaml.SafeDumper.add_representer(types.PlatformConfig, serialize_dict_type)
+yaml.SafeDumper.add_representer(types.LibraryConfig, serialize_dict_type)
+
+def serialize_config(config, escape_dollar=False):
+    if escape_dollar:
+        yaml.SafeDumper.add_representer(str, serialize_string_escape_dollar)
+        yaml.SafeDumper.add_representer(six.text_type, serialize_string_escape_dollar)
+    else:
+        yaml.SafeDumper.add_representer(str, serialize_string)
+        yaml.SafeDumper.add_representer(six.text_type, serialize_string)
+    return yaml.safe_dump(
+        config,
+        default_flow_style=False,
+        indent=2,
+        width=80,
+        allow_unicode=True
+    )

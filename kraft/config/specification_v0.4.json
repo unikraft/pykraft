@@ -80,7 +80,7 @@
 
     "architecture": {
       "id": "#/definitions/architecture",
-      "type": [ "object", "null" ],
+      "type": [ "object", "boolean" ],
       "properties": {
         "source": { "type": "string" },
         "version": { "type": "string" },
@@ -90,7 +90,7 @@
     
     "platform": {
       "id": "#/definitions/platform",
-      "type": [ "object", "null" ],
+      "type": [ "object", "boolean" ],
       "properties": {
         "source": { "type": "string" },
         "version": { "type": "string" },
@@ -107,20 +107,11 @@
     },
     
     "library": {
-      "id": "#/definitions/platform",
+      "id": "#/definitions/library",
       "type": [ "object", "string" ],
       "properties": {
         "source": { "type": "string" },
         "version": { "type": "string" },
-        "kconfig": { "$ref": "#/definitions/list_or_dict" }
-      }
-    },
-    
-    "volume": {
-      "id": "#/definitions/platform",
-      "type": [ "object", "null" ],
-      "properties": {
-        "source": { "type": "string" },
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
       }
     },

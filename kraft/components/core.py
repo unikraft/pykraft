@@ -53,9 +53,10 @@ class Core(Repository):
         )
 
     @classmethod
-    def from_source_string(cls, source=None):
+    def from_source_string(cls, source=None, version=None):
         return super(Core, cls).from_source_string(
             name = None,
             source = source,
+            version = version,
             component_type = Component.CORE
         )
