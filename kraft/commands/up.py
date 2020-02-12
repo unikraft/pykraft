@@ -42,6 +42,8 @@ from kraft.errors import KraftError
 from kraft.logger import logger
 
 @click.command('up', short_help='Retrieve, configure, build and run an application.')
+@click.option('--plat', '-p', 'target_plat', help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
+@click.option('--arch', '-m', 'target_arch', help='Target architecture.', default=lambda:platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)
 @kraft_context
 def up(ctx):
     """
@@ -49,3 +51,5 @@ def up(ctx):
     libraries and applications supported by Unikraft.
 
     """
+
+    
