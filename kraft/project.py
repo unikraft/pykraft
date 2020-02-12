@@ -296,6 +296,8 @@ class Project(object):
 
         if os.path.exists(os.path.join(self.path, MAKEFILE_UK)) is False:
             return False
+        
+        return True
     
     def build(self, n_proc=None):
         """Checkout all the correct versions based on the current app instance
