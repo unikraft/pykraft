@@ -42,7 +42,6 @@ from kraft.context import kraft_context
 
 from kraft.commands.utils import CONTEXT_SETTINGS
 from kraft.commands import (
-    up,
     run,
     init,
     list,
@@ -63,7 +62,6 @@ def kraft(ctx, verbose):
     ctx.verbose = verbose
     ctx.cache.sync()
 
-kraft.add_command(up)
 kraft.add_command(run)
 kraft.add_command(init)
 kraft.add_command(list)
