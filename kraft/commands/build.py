@@ -61,6 +61,10 @@ def build(ctx, fast):
         logger.error(str(e))
         sys.exit(1)
     
+    if not project.is_configured():
+        if click.confirm('It looks you have not configured your application.  Would you like to do this now?'):
+            project.configure()
+
     n_proc = None
     if fast:
         # This simply set the `-j` flag which signals to make to use all cores.
