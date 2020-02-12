@@ -58,7 +58,6 @@ def configure(ctx, target_plat, target_arch, menuconfig):
     # Check if we have used "--arch" before.  This saves the user from having to
     # re-type it.  This means omission uses the settings.
     if target_arch is None and ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE):
-        print('nooiec')
         target_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
 
     if target_arch is not None:
