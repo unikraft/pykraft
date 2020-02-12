@@ -43,11 +43,12 @@ from kraft.context import kraft_context
 from kraft.commands.utils import CONTEXT_SETTINGS
 from kraft.commands import (
     up,
+    run,
+    init,
     list,
     build,
+    clean,
     configure,
-    run,
-    clean
 )
 
 @click.option(
@@ -63,8 +64,9 @@ def kraft(ctx, verbose):
     ctx.cache.sync()
 
 kraft.add_command(up)
+kraft.add_command(run)
+kraft.add_command(init)
 kraft.add_command(list)
-kraft.add_command(configure)
 kraft.add_command(build)
 kraft.add_command(clean)
-kraft.add_command(run)
+kraft.add_command(configure)
