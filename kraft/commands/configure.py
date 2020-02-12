@@ -34,6 +34,9 @@ import sys
 import click
 import platform
 
+from kraft.constants import KRAFTCONF_PREFERRED_PLATFORM
+from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
+
 from kraft.config import config
 from kraft.logger import logger
 from kraft.project import Project
@@ -41,8 +44,8 @@ from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
 @click.command('configure', short_help='Configure the application.')
-@click.option('--plat', '-p', 'target_plat', help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
-@click.option('--arch', '-m', 'target_arch', help='Target architecture.', default=lambda:platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)
+@click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
+@click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
 @click.option('--menuconfig', '-m', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
 @kraft_context
 def configure(ctx, target_plat, target_arch, menuconfig):
@@ -51,6 +54,23 @@ def configure(ctx, target_plat, target_arch, menuconfig):
     """
 
     logger.debug("Configuring %s..." % ctx.workdir)
+
+    # Check if we have used "--arch" before.  This saves the user from having to
+    # re-type it.  This means omission uses the settings.
+    if target_arch is None and ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE):
+        print('nooiec')
+        target_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
+
+    if target_arch is not None:
+        ctx.settings.set(KRAFTCONF_PREFERRED_ARCHITECTURE, target_arch)
+
+    # Check if we have used "--plat" before.  This saves the user from having to
+    # re-type it.  This means omission uses the settings.
+    if target_plat is None and ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM):
+        target_plat = ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM)
+    
+    if target_plat is not None:
+        ctx.settings.set(KRAFTCONF_PREFERRED_PLATFORM, target_plat)
 
     try:
         project = Project.from_config(

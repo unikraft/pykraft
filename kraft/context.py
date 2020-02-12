@@ -32,16 +32,19 @@
 import os
 import click
 import logging
+from pathlib import Path
 
 from kraft.cache import Cache
+from kraft.settings import Settings
 from kraft.environment import Environment
 from kraft.logger import logger
 from kraft.config import config
 
-UNIKRAFT_WORKDIR = ".unikraft"
-UNIKRAFT_COREDIR = "unikraft"
-UNIKRAFT_LIBSDIR = "libs"
-UNIKRAFT_APPSDIR = "apps"
+from kraft.constants import UNIKRAFT_WORKDIR
+from kraft.constants import UNIKRAFT_COREDIR
+from kraft.constants import UNIKRAFT_LIBSDIR
+from kraft.constants import UNIKRAFT_APPSDIR
+from kraft.constants import KRAFTCONF
 
 class Context(object):
     """Context manager acts as a decorator and helps initialize and persist and 
@@ -50,7 +53,9 @@ class Context(object):
         self._verbose = False
         self._workdir = os.getcwd()
         self.init_env()
-        self._cache = Cache(self._env)
+        self._cache = Cache(self.env)
+
+        self._settings = Settings(os.environ['KRAFTCONF'])
     
     def init_env(self):
         """Determines whether the integrity of the kraft application, namely
@@ -77,6 +82,11 @@ class Context(object):
         # Check if we have a build-time engine set
         if 'UK_BUILD_ENGINE' not in os.environ:
             os.environ['UK_BUILD_ENGINE'] = 'gcc'
+        
+        if 'KRAFTCONF' not in os.environ:
+            os.environ['KRAFTCONF'] = os.path.join(os.environ['HOME'], KRAFTCONF)
+        if os.path.exists(os.environ['UK_APPS']) is False:
+            Path(os.environ['UK_APPS']).touch()
         
         self._env =  Environment.from_env_file(self._workdir, None)
 
@@ -110,12 +120,8 @@ class Context(object):
     def env(self):
         return self._env
 
-    # def __call__(self, func):
-    #     # print("context: __call__")
-    #     print("verbosity =", self._verbose)
-    #     def wrapper(*args, **kwds):
-    #         with self:
-    #             return func(self, *args, **kwds)
-    #     return wrapper
+    @property
+    def settings(self):
+        return self._settings
 
 kraft_context = click.make_pass_decorator(Context, ensure=True)

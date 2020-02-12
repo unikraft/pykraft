@@ -29,53 +29,43 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import re
+import os
+import sys
+import toml
 
-BRANCH_MASTER="master"
-BRANCH_STAGING="staging"
+import dpath.util
+from pathlib import Path
 
-UK_GITHUB_ORG='unikraft'
+from kraft.logger import logger
 
-# Match against dereferenced tags only
-# https://stackoverflow.com/a/15472310
-GIT_TAG_PATTERN=re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
-GIT_BRANCH_PATTERN=re.compile(r'refs/heads/(.*)')
+class Settings(object):
+    _kraftconf = None
+    _settings = {}
 
-GITHUB_ORIGIN="https://github.com"
-UNIKRAFT_ORG="unikraft"
-UNIKRAFT_CORE="%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, "unikraft.git")
+    def __init__(self, kraftconf):
+        self._kraftconf = kraftconf
 
-REPO_VERSION_DELIMETERE = "@"
-ORG_DELIMETERE = "/"
+        if os.path.exists(kraftconf) is False:
+            Path(kraftconf).touch()
+        
+        with open(self._kraftconf, 'r') as file:
+            self._settings = toml.loads(file.read())
+            
+    def save(self):
+        # Write everything from the the start of the file
+        with open(self._kraftconf, 'w+') as file:
+            file.write(toml.dumps(self._settings))
+    
+    def get(self, prop, default=None):
+        try:
+            result = dpath.util.get(self._settings, prop)
+        except KeyError:
+            logger.debug('Missed setting lookup: %s', prop)
+            result = None
 
-REPO_VALID_URL_PREFIXES = (
-    'http://',
-    'https://',
-    'git://',
-    'git@',
-    'file:///'
-)
-
-SUPPORTED_FILENAMES = [
-    'kraft.yaml',
-    'kraft.yml',
-]
-
-UNIKERNEL_IMAGE_FORMAT="%s/build/%s_%s-%s"
-UNIKERNEL_IMAGE_FORMAT_DGB="%s/build/%s_%s-%s.dbg"
-
-DEPS_JSON="deps.json"
-DOT_CONFIG=".config"
-DEFCONFIG="defconfig"
-MAKEFILE_UK="Makefile.uk"
-ENV_VAR_PATTERN=re.compile(r'([A-Z_^=]+)=(\'[/\w\.\-\s]+\')')
-
-UNIKRAFT_WORKDIR = ".unikraft"
-UNIKRAFT_COREDIR = "unikraft"
-UNIKRAFT_LIBSDIR = "libs"
-UNIKRAFT_APPSDIR = "apps"
-
-KRAFTCONF = ".kraftrc"
-KRAFTCONF_DELIMETER = "/"
-KRAFTCONF_PREFERRED_PLATFORM = "preferences/platform"
-KRAFTCONF_PREFERRED_ARCHITECTURE = "preferences/architecture"
+        return result
+    
+    def set(self, prop, val=None):
+        if val is not None:
+            dpath.util.new(self._settings, prop, val)
+            self.save()
