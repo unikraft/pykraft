@@ -29,6 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import sys
 from kraft.errors import KconfigFileNotFound
 
 from kraft.constants import KCONFIG_ARCH_NAME
@@ -76,6 +77,9 @@ def infer_plat_config_name(name = None):
 def infer_lib_config_name(name = None):
     if name is None:
         return ''
+
+    if name.startswith('lib'):
+        name = name[len('lib'):]
     
     return KCONFIG_LIB_NAME % name.replace('-', '_').upper()
 
