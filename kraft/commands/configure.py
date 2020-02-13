@@ -55,22 +55,6 @@ def configure(ctx, target_plat, target_arch, menuconfig):
 
     logger.debug("Configuring %s..." % ctx.workdir)
 
-    # Check if we have used "--arch" before.  This saves the user from having to
-    # re-type it.  This means omission uses the settings.
-    if target_arch is None and ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE):
-        target_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
-
-    if target_arch is not None:
-        ctx.settings.set(KRAFTCONF_PREFERRED_ARCHITECTURE, target_arch)
-
-    # Check if we have used "--plat" before.  This saves the user from having to
-    # re-type it.  This means omission uses the settings.
-    if target_plat is None and ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM):
-        target_plat = ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM)
-    
-    if target_plat is not None:
-        ctx.settings.set(KRAFTCONF_PREFERRED_PLATFORM, target_plat)
-
     try:
         project = Project.from_config(
             ctx.workdir,
@@ -82,7 +66,29 @@ def configure(ctx, target_plat, target_arch, menuconfig):
     except KraftError as e:
         logger.error(str(e))
         sys.exit(1)
+
+    # Check if we have used "--arch" before.  This saves the user from having to
+    # re-type it.  This means omission uses the settings.
+    if target_arch is None and len(project.architectures.all()) > 1 and ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE):
+        target_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
+    elif target_arch is None and len(project.architectures.all()) == 1:
+        for arch in project.architectures.all():
+            target_arch = arch.name
+
+    if target_arch is not None and ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE) is None:
+        ctx.settings.set(KRAFTCONF_PREFERRED_ARCHITECTURE, target_arch)
+
+    # Check if we have used "--plat" before.  This saves the user from having to
+    # re-type it.  This means omission uses the settings.
+    if target_plat is None and len(project.platforms.all()) > 1 and ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM):
+        target_plat = ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM)
+    elif target_plat is None and len(project.platforms.all()) == 1:
+        for plat in project.platforms.all():
+            target_plat = plat.name
     
+    if target_plat is not None and ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM) is None:
+        ctx.settings.set(KRAFTCONF_PREFERRED_PLATFORM, target_plat)
+
     if menuconfig:
         project.menuconfig()
 
