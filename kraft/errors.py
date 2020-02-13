@@ -100,12 +100,26 @@ class MismatchVersionRepo(KraftError):
         super(MismatchVersionRepo, self).__init__("A repository with a different version has been provided")
 
 class MismatchTargetArchitecture(KraftError):
-    def __init__(self, target_arch="", supported_archs=[]):
-        super(MismatchTargetArchitecture, self).__init__("The target architecture (%s) does not match the supported architectures (%s).\nPlease check your configuration." % (target_arch, ", ".join(supported_archs)))
+    def __init__(self, target_arch=None, supported_archs=[]):
+        if target_arch is None:
+            super(MismatchTargetArchitecture, self).__init__(
+                "Target architecture not set!  Supported architectures for this application include: %s" % ", ".join(supported_archs)
+            )
+        else:
+            super(MismatchTargetArchitecture, self).__init__(
+                "Target architecture (%s) set does not match the supported architectures (%s).\nPlease check your configuration." % (target_arch, ", ".join(supported_archs))
+            )
 
 class MismatchTargetPlatform(KraftError):
-    def __init__(self, target_plat="", supported_plats=[]):
-        super(MismatchTargetPlatform, self).__init__("The target platform (%s) does not match the supported platforms (%s).\nPlease check your configuration." % (target_plat, ", ".join(supported_plats)))
+    def __init__(self, target_plat=None, supported_plats=[]):
+        if target_plat is None:
+            super(MismatchTargetPlatform, self).__init__(
+                "Target platform not set!  Supported platforms for this application include: %s" % ", ".join(supported_plats)
+            )
+        else:
+            super(MismatchTargetPlatform, self).__init__(
+                "The target platform (%s) does not match the supported platforms (%s).\nPlease check your configuration." % (target_plat, ", ".join(supported_plats))
+            )
 
 class InvalidRepositorySource(KraftError):
     def __init__(self, source):
