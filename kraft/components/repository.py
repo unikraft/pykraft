@@ -56,6 +56,7 @@ from kraft.kraft import kraft_context
 
 from kraft.errors import InvalidRepositoryFormat
 from kraft.errors import InvalidRepositorySource
+from kraft.errors import NoSuchReferenceInRepo
 
 from kraft.constants import BRANCH_MASTER
 from kraft.constants import BRANCH_STAGING
@@ -211,18 +212,18 @@ class Repository(object):
             hash_ref_list = refs.split('\t')
 
             # Empty repository
-            if len(hash_ref_list) == 0:
+            if len(hash_ref_list) == 0 or hash_ref_list[0] == '':
                 continue
 
             # Check if branch
             ref = GIT_BRANCH_PATTERN.search(hash_ref_list[1])
-            if ref is not None:
+            if ref:
                 versions[ref.group(1)] = hash_ref_list[0]
                 continue
 
             # Check if version tag
             ref = GIT_TAG_PATTERN.search(hash_ref_list[1])
-            if ref is not None:
+            if ref:
                 versions[ref.group(1)] = hash_ref_list[0]
 
         self.last_checked = datetime.now()
