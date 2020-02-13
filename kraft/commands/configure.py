@@ -46,7 +46,7 @@ from kraft.kraft import kraft_context
 @click.command('configure', short_help='Configure the application.')
 @click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
 @click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--menuconfig', '-m', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
+@click.option('--menuconfig', '-k', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
 @kraft_context
 def configure(ctx, target_plat, target_arch, menuconfig):
     """
