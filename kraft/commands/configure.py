@@ -96,6 +96,7 @@ def kraft_configure(ctx, target_plat, target_arch, menuconfig):
             )
         except KraftError as e:
             logger.error(str(e))
+            sys.exit(1)
         
 @click.command('configure', short_help='Configure the application.')
 @click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))

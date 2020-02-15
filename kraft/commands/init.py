@@ -185,6 +185,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             logger.info('Initialized new unikraft application \'%s\' in %s' % (name, ctx.workdir))
         except KraftError as e:
             logger.error(str(e))
+            sys.exit(1)
 
 @click.command('init', short_help='Initialize a new unikraft application.')
 @click.argument('name', required=True)
