@@ -60,7 +60,7 @@ def kraft_build(ctx, fast):
         sys.exit(1)
     
     if not project.is_configured():
-        if click.confirm('It looks you have not configured your application.  Would you like to do this now?'):
+        if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):
             project.configure()
 
     n_proc = None
