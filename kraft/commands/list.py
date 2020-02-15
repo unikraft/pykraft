@@ -69,7 +69,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
     
     # Pre-flight check determines if we are trying to work with nothing
     if ctx.cache.is_stale() and not force_update:
-        if click.confirm('kraft caches are out-of-date.  Would you like to update?'):
+        if click.confirm('kraft caches are out-of-date.  Would you like to update?', default=True):
             update()
     elif force_update:
         update()
