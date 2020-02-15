@@ -70,6 +70,7 @@ class Cache(object):
 
     def get(self, source):
         if isinstance(source, six.string_types) and source in self._cache:
+            logger.debug("Retrieving %s from cache..."  % source)
             return self._cache[source]
         
         return None
@@ -79,6 +80,7 @@ class Cache(object):
 
     def set(self, source, repository):
         if isinstance(source, six.string_types):
+            logger.debug("Saving %s into cache..."  % repository)
             self._cache[source] = repository
     
     def sync(self):
