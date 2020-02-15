@@ -342,9 +342,9 @@ class Project(object):
         extra = []
         if n_proc is not None:
             extra.append('-j%s' % str(n_proc))
-            self.make('fetch')
-            self.make('prepare')
         
+        self.make('fetch')
+        self.make('prepare')
         self.make(extra)
 
     def clean(self, proper=False):
