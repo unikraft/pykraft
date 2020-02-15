@@ -42,6 +42,7 @@ from kraft.context import kraft_context
 
 from kraft.commands.utils import CONTEXT_SETTINGS
 from kraft.commands import (
+    up,
     run,
     init,
     list,
@@ -55,13 +56,20 @@ from kraft.commands import (
     is_flag=True,
     help='Enables verbose mode.'
 )
+@click.option(
+    '-C', '--ignore-git-checkout-warnings', 'dont_checkout',
+    is_flag=True,
+    help='Ignore checkout errors.'
+)
 @click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
 @click.version_option()
 @kraft_context
-def kraft(ctx, verbose):
+def kraft(ctx, verbose, dont_checkout):
     ctx.verbose = verbose
+    ctx.dont_checkout = dont_checkout
     ctx.cache.sync()
 
+kraft.add_command(up)
 kraft.add_command(run)
 kraft.add_command(init)
 kraft.add_command(list)

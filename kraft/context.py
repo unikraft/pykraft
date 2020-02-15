@@ -47,6 +47,9 @@ from kraft.constants import UNIKRAFT_APPSDIR
 from kraft.constants import KRAFTCONF
 
 class Context(object):
+    _verbose = False
+    _dont_checkout = False 
+
     """Context manager acts as a decorator and helps initialize and persist and 
     current state of affairs for the kraft utility."""
     def __init__(self):
@@ -97,6 +100,14 @@ class Context(object):
     @property
     def verbose(self):
         return self._verbose
+
+    @property
+    def dont_checkout(self):
+        return self._dont_checkout
+
+    @dont_checkout.setter
+    def dont_checkout(self, dont_checkout):
+        self._dont_checkout = dont_checkout
 
     @verbose.setter
     def verbose(self, verbose):
