@@ -52,7 +52,6 @@ from kraft.util import ClickOptionMutex
 
 @click.command('up', short_help='Configure, build and run an application.')
 @click.argument('name', required=True)
-# @click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], )
 @click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
 @click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
 @click.option('--initrd', '-i', help='Provide an init ramdisk.')
@@ -117,16 +116,3 @@ def up(name, target_plat, target_arch, initrd, background, paused, gdb, virtio_n
         ip_lease_time=ip_lease_time
     )
 
-
-
-
-    # init(ctx,
-    # name, target_plat, target_arch, name, None, force_create)
-    # configure(name, target_plat, target_arch, False)
-    # build(fast)
-
-
-    # bridge = "virbr0"
-
-
-    # run(target_plat, target_arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores)
