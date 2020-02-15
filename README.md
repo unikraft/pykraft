@@ -1,33 +1,34 @@
-# `kraft` 
+# kraft Tool
 
-To begin using [Unikraft](https://unikraft.org>) you can use the command-line
-utility `kraft`  which is a companion tool used for defining, configuring,
-building, and running Unikraft unikernel applications.  With `kraft`, you can
-create a build environment for your unikernel and manage dependencies for its
-build.
+To begin using [Unikraft](https://unikraft.org>) you can use the
+command-line utility `kraft`, which is a companion tool used for
+defining, configuring, building, and running Unikraft applications.
+With `kraft` you can seamlessly create a build environment for your
+unikernel and painlessly manage dependencies for its build.
 
-```
-Usage: kraft [OPTIONS] COMMAND [ARGS]...
+## Installing kraft
 
-Options:
-  --version      Show the version and exit.
-  -v, --verbose  Enables verbose mode.
-  -h, --help     Show this message and exit.
+The `kraft` tool and Unikraft build system have a number of package requirements; please run the following command (on `apt-get```-based systems) to install the requirements:
 
-Commands:
-  build      Build the application.
-  clean      Clean the application.
-  configure  Configure the application.
-  init       Initialize a new unikraft application.
-  list       List architectures, platforms, libraries or applications.
-  run        Run the application.
-```
+    apt-get install -y --no-install-recommends build-essential libncurses-dev libyaml-dev flex git wget socat bison unzip uuid-runtime; 
 
-## Installation and documentation
+To install `kraft` simply run:
 
-* Full documentation is available on [Unikraft's website](https://docs.unikraft.org).
-* Code repository for `kraft` is on [GitHub](https://github.com/unikraft/tools).
-* If you find any problems please [fill out an issue](https://github.com/unikraft/tools/issues/new/choose). Thank you!
+    git clone https://github.com/unikraft/kraft
+    cd kraft
+    python setup.py install
+	
+You can then type `kraft` to see its help menu
+
+## Building an Application
+
+The simplest way to get the sources for, build and run an application
+is by running the following commands:
+
+    kraft list
+    kraft up -p [platform] -m [architecture] [app name]
+
+For more information about that command type `kraft up -h`. For more information about `kraft` type ```kraft -h``` or read the documentation at [Unikraft's website](https://docs.unikraft.org). If you find any problems please [fill out an issue](https://github.com/unikraft/tools/issues/new/choose). Thank you!
 
 ## Contributing
 
