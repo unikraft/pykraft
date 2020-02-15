@@ -236,6 +236,8 @@ class Project(object):
         if not self.is_configured():
             self.init()
 
+        self.checkout()
+
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.
         dotconfig = []
