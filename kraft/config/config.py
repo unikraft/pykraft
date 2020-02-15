@@ -47,7 +47,7 @@ from .validation import validate_against_config_schema
 from .interpolation import interpolate_environment_variables
 from .interpolation import interpolate_source_version
 
-from kraft.component import Component
+from kraft.types import RepositoryType
 
 from kraft.errors import KraftError
 from kraft.errors import KraftFileNotFound
@@ -120,7 +120,19 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     def get_libraries(self):
         return self.config.get('libraries', {})
 
-class Config(namedtuple('_Config', 'specification name unikraft architectures platforms libraries')):
+    def get_volume(self, name):
+        return self.get_volumes()[name]
+
+    def get_volumes(self):
+        return self.config.get('volumes', {})
+
+    def get_network(self, name):
+        return self.get_networks()[name]
+
+    def get_networks(self):
+        return self.config.get('networks', {})
+
+class Config(namedtuple('_Config', 'specification name unikraft architectures platforms libraries volumes networks')):
     """
     :param specification: configuration version
     :type  specification: int
@@ -139,6 +151,12 @@ class Config(namedtuple('_Config', 'specification name unikraft architectures pl
 
     :param libraries: Dictionary mapping library names to description dictionaries
     :type  libraries: :class:`dict`
+
+    :param volumes: Dictionary mapping volume names to description dictionaries
+    :type  volumes: :class:`dict`
+
+    :param networks: Dictionary mapping network names to description dictionaries
+    :type  networks: :class:`dict`
     """
 
 def get_project_name(workdir, project_name=None, environment=None):
@@ -242,6 +260,20 @@ def process_config_file(config_file, environment, service_name=None, interpolate
     )
     processed_config['libraries'] = process_libraries(
         config_file,
+        environment,
+        interpolate,
+    )
+    processed_config['volumes'] = process_config_section(
+        config_file,
+        config_file.get_volumes(),
+        'volumes',
+        environment,
+        interpolate,
+    )
+    processed_config['networks'] = process_config_section(
+        config_file,
+        config_file.get_networks(),
+        'networks',
         environment,
         interpolate,
     )
@@ -361,7 +393,7 @@ def load(config_details):
         if 'version' in unikraft:
             thought_version = unikraft['version']
         
-    definite_source, definite_version = interpolate_source_version('unikraft', thought_source, thought_version, Component.CORE)
+    definite_source, definite_version = interpolate_source_version('unikraft', thought_source, thought_version, RepositoryType.CORE)
     unikraft['source'] = definite_source
     unikraft['version'] = definite_version
     
@@ -397,11 +429,24 @@ def load(config_details):
             if 'version' in libraries[library]:
                 thought_version = libraries[library]['version']
             
-        definite_source, definite_version = interpolate_source_version(library, thought_source, thought_version, Component.LIB)
+        definite_source, definite_version = interpolate_source_version(library, thought_source, thought_version, RepositoryType.LIB)
         libraries[library]['source'] = definite_source
         libraries[library]['version'] = definite_version
 
-    return Config(main_file.version, name, unikraft, architectures, platforms, libraries)
+    volumes = load_mapping(
+        config_details.config_files,
+        'get_volumes',
+        'volumes',
+        config_details.working_dir
+    )
+    networks = load_mapping(
+        config_details.config_files,
+        'get_networks',
+        'networks',
+        config_details.working_dir
+    )
+
+    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, volumes, networks)
 
 
 def load_yaml(filename, encoding=None, binary=True):

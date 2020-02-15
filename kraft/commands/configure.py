@@ -43,12 +43,8 @@ from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
-@click.command('configure', short_help='Configure the application.')
-@click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
-@click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--menuconfig', '-k', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
 @kraft_context
-def configure(ctx, target_plat, target_arch, menuconfig):
+def kraft_configure(ctx, target_plat, target_arch, menuconfig):
     """
     Populates the local .config with the default values for the target application.
     """
@@ -101,3 +97,9 @@ def configure(ctx, target_plat, target_arch, menuconfig):
         except KraftError as e:
             logger.error(str(e))
         
+@click.command('configure', short_help='Configure the application.')
+@click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
+@click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
+@click.option('--menuconfig', '-k', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
+def configure(target_plat, target_arch, menuconfig):
+    kraft_configure(target_plat=target_plat, target_arch=target_arch, menuconfig=menuconfig)

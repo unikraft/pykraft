@@ -82,8 +82,23 @@ KRAFTCONF_PREFERRED_ARCHITECTURE = "preferences/architecture"
 
 SPECIFCATION_LATEST='0.4'
 
-KCONFIG_Y='%s=y'
-KCONFIG_N='%s=n'
+KCONFIG='CONFIG_%s'
+KCONFIG_Y='y'
+KCONFIG_N='n'
+KCONFIG_EQ='%s=%s'
 KCONFIG_ARCH_NAME="CONFIG_ARCH_%s"
 KCONFIG_PLAT_NAME="CONFIG_PLAT_%s"
 KCONFIG_LIB_NAME="CONFIG_LIB%s"
+
+UK_CONFIG_FILE='%s/Config.uk'
+UK_CORE_ARCH_DIR='%s/arch'
+UK_CORE_PLAT_DIR='%s/plat'
+
+CONFIG_UK_ARCH=re.compile(r'if\s+\(([\w\_]+)\)[\n\s]+source\s+"\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"')
+CONFIG_UK_PLAT=re.compile(r'menuconfig\s+([\w\_]+)')
+CONFIG_UK_LIB=re.compile(r'config\s+([\w\_]+)')
+
+UK_GITHUB_NAMING_FORMAT=r'(%s)-([^.]+)'
+UK_GITHUB_CORE_FORMAT=re.compile(r'(unikraft)/(unikraft)')
+
+UK_COMPAT_CORE_v0_4_0 = "0.4.0"

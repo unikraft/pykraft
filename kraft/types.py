@@ -33,10 +33,10 @@ import re
 from enum import Enum
 from kraft.logger import logger
 
-UK_GITHUB_NAMING_FORMAT=r'(%s)-([^.]+)'
-UK_GITHUB_CORE_FORMAT=re.compile(r'(unikraft)/(unikraft)')
+from kraft.constants import UK_GITHUB_NAMING_FORMAT
+from kraft.constants import UK_GITHUB_CORE_FORMAT
 
-class Component(Enum):
+class RepositoryType(Enum):
     CORE = ( "core" , "core"         , "core"          )
     ARCH = ( "arch" , "architecture" , "architectures" )
     PLAT = ( "plat" , "platform"     , "platforms"     )
@@ -65,16 +65,16 @@ class Component(Enum):
     def search(self, name):
         """Search determines whether the provided input `name` is of the
         repository naming format.  The method returns the usable name for the
-        repository and thus the component."""
+        repository and thus the repository."""
         return self.format.search(name)
 
     def valid_dir(self, dir):
         """Make a reasonable attempt to determine whether the provided directory
-        is valid for this component.  This is a heuristic which checks a number
-        of required files depending on the component type.  Unikraft itself
+        is valid for this repository.  This is a heuristic which checks a number
+        of required files depending on the repository type.  Unikraft itself
         requires the files checked and the syntax of these files to be correct
-        before it can use the component.  By checking the validity of the
-        directory for the component we are to preemptively warn a developer of
+        before it can use the repository.  By checking the validity of the
+        directory for the repository we are to preemptively warn a developer of
         of any problems that may arise before the unikraft build system throws
         its own errors."""
 

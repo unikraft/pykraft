@@ -124,3 +124,25 @@ class MismatchTargetPlatform(KraftError):
 class InvalidRepositorySource(KraftError):
     def __init__(self, source):
         super(InvalidRepositorySource, self).__init__("The source repository is invalid: %s" % source)
+
+class InvalidVolumeType(KraftError):
+    def __init__(self, name):
+        super(InvalidVolumeType, self).__init__("The provided volume type was unknown: %s" % name)
+
+class KraftNetworkError(KraftError):
+    pass
+
+class KraftNetworkBridgeError(KraftNetworkError):
+    pass
+
+class KraftNetworkBridgeUnsupported(KraftNetworkBridgeError):
+    def __init__(self, driver):
+        super(KraftNetworkBridgeUnsupported, self).__init__("bridge driver '%s' is not supported" % driver)
+
+class InvalidBridgeName(KraftError):
+    def __init__(self, name):
+        super(InvalidBridgeName, self).__init__("Invalid network bridge name %s" % name)
+
+class DNSMASQCannotStartServer(KraftError):
+    def __init__(self, message):
+        super(DNSMASQCannotStartServer, self).__init__("Cannot start Dnsmasq  server: %s" % message)

@@ -30,12 +30,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
+from enum import Enum
 
-from kraft.component import Component
+from kraft.types import RepositoryType
+
+from kraft.constants import UK_CORE_PLAT_DIR
+
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
-
-UK_CORE_PLAT_DIR='%s/plat'
 
 class Platform(Repository):
     @classmethod
@@ -44,14 +46,16 @@ class Platform(Repository):
             core.update()
         
         if not isinstance(config, bool) and 'source' in config:
-            return super(Platform, cls).from_source_string(config['source'], Component.PLAT)
+            return super(Platform, cls).from_source_string(config['source'], RepositoryType.PLAT)
             
         else:
+            # Return a core-based platform
             return cls(
                 name = plat,
                 source = core.source,
                 version = core.version,
-                component_type = Component.CORE
+                localdir = os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
+                repository_type = RepositoryType.PLAT
             )
 
     @classmethod
@@ -59,7 +63,7 @@ class Platform(Repository):
         return super(Platform, cls).from_source_string(
             name = name,
             source = source,
-            component_type = Component.PLAT
+            repository_type = RepositoryType.PLAT
         )
 
 class Platforms(RepositoryManager):

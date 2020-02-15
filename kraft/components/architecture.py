@@ -31,37 +31,52 @@
 
 import os
 import re
-import sys
 
-from kraft.component import Component
+from enum import Enum
+
+from kraft.types import RepositoryType
+
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
 
-UK_CONFIG_FILE='%s/Config.uk'
-UK_CORE_ARCH_DIR='%s/arch'
-CONFIG_UK_ARCH=re.compile(r'source "\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"$')
-
+from kraft.constants import UK_CONFIG_FILE
+from kraft.constants import UK_CORE_ARCH_DIR
+from kraft.constants import CONFIG_UK_ARCH
+from kraft.constants import KCONFIG
+from kraft.constants import KCONFIG_Y
+    
 class Architecture(Repository):
     @classmethod
     def from_config(cls, core=None, arch=None, config=None):
+
         arch_dir = UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)
+        
         if not os.path.isfile(arch_dir):
             core.checkout()
 
-        with open(arch_dir) as f:
-            for line in f:
-                match = CONFIG_UK_ARCH.findall(line)
-                if len(match) > 0:
-                    path, found_arch = match[0]
-                    if found_arch == arch:
-                        # TODO: os.path.join(core.localdir, path) isn't working for me?
-                        return cls(
-                            name = arch,
-                            source = core.source,
-                            version = core.version,
-                            localdir = core.localdir + path,
-                            component_type=Component.ARCH
-                        )
+        known_archs = {}
+
+        with open(arch_dir, 'r+') as f:
+            data = f.read()
+            matches = CONFIG_UK_ARCH.findall(data)
+
+            for match in matches:
+                known_archs[match[2]] = {
+                    'kconfig': {
+                        KCONFIG % match[0]: KCONFIG_Y
+                    },
+                    'localdir': core.localdir + match[1]
+                }
+
+        if arch in known_archs:
+            return cls(
+                name = arch,
+                source = core.source,
+                version = core.version,
+                localdir = known_archs[arch]['localdir'],
+                repository_type=RepositoryType.ARCH,
+                kconfig_extra=known_archs[arch]['kconfig']
+            )
 
         return None
 
@@ -70,7 +85,7 @@ class Architecture(Repository):
         return super(Architecture, cls).from_source_string(
             name = name,
             source = source, 
-            component_type = Component.ARCH
+            repository_type = RepositoryType.ARCH
         )
 
 class Architectures(RepositoryManager):

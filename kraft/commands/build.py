@@ -39,10 +39,8 @@ from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
-@click.command('build', short_help='Build the application.')
-@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
 @kraft_context
-def build(ctx, fast):
+def kraft_build(ctx, fast):
     """
     Builds the Unikraft application for the target architecture and platform
     """
@@ -72,3 +70,7 @@ def build(ctx, fast):
         
     project.build(n_proc=n_proc)
     
+@click.command('build', short_help='Build the application.')
+@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
+def build(fast):
+    kraft_build(fast=fast)

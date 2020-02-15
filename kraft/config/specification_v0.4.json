@@ -61,6 +61,17 @@
         }
       },
       "additionalProperties": false
+    },
+
+    "networks": {
+      "id": "#/properties/networks",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9._-]+$": {
+          "$ref": "#/definitions/network"
+        }
+      },
+      "additionalProperties": false
     }
   },
 
@@ -113,6 +124,23 @@
         "source": { "type": "string" },
         "version": { "type": "string" },
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
+      }
+    },
+    
+    "volume": {
+      "id": "#/definitions/volume",
+      "type": [ "object" ],
+      "properties": {
+        "type": { "type": "string" },
+        "mountpoint": { "type": "string" }
+      }
+    },
+    
+    "network": {
+      "id": "#/definitions/network",
+      "type": [ "object" ],
+      "properties": {
+        "dhcp": { "type": "boolean" }
       }
     },
 

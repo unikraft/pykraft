@@ -39,12 +39,12 @@ from kraft.logger import logger
 from kraft.project import Project
 from kraft.errors import KraftError
 
-from kraft.component import Component
 from kraft.components import Core
 from kraft.components import Platform
 from kraft.components import Platforms
 from kraft.components import Architecture
 from kraft.components import Architectures
+from kraft.types import RepositoryType
 
 from kraft.commands.list import update
 from kraft.util import ClickOptionMutex
@@ -56,15 +56,8 @@ from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
 
 from kraft.config.interpolation import interpolate_source_version
 
-@click.command('init', short_help='Initialize a new unikraft application.')
-@click.argument('name', required=True)
-@click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
-@click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
-@click.option('--arch', '-m', 'target_arch', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--version', '-V', help="Use specific Unikraft release version.")
-@click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files.')
 @kraft_context
-def init(ctx, name, target_plat, target_arch, template_app, version, force_create):
+def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force_create):
     """
     Initializes a new unikraft application.
 
@@ -93,7 +86,7 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
         for repo in ctx.cache.all():
             repo = ctx.cache.get(repo)
 
-            if repo.type is Component.APP:
+            if repo.type is RepositoryType.APP:
                 apps[repo.name] = repo
 
         if template_app not in apps.keys():
@@ -109,7 +102,12 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
         
         app.checkout(version)
         
-        util.recursively_copy(app.localdir, ctx.workdir, overwrite=force_create, ignore=['.git'])
+        util.recursively_copy(app.localdir, ctx.workdir, overwrite=force_create, ignore=[
+            '.git', 'build', '.config', '.config.old', '.config.orig'
+        ])
+
+        logger.info('Initialized new unikraft application \'%s\' in %s' % (name, ctx.workdir))
+        
     
     # If no application is provided, we can initialize a template by dumping 
     # a YAML file
@@ -124,7 +122,7 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
         else:
             unikraft_source, unikraft_version = interpolate_source_version(
                 source=version,
-                component_type=Component.CORE
+                repository_type=RepositoryType.CORE
             )
 
         try:
@@ -143,7 +141,7 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
             
             arch_source, arch_version = interpolate_source_version(
                 source=target_arch,
-                component_type=Component.ARCH
+                repository_type=RepositoryType.ARCH
             )
 
             archs = Architectures([])
@@ -162,7 +160,7 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
             
             plat_source, plat_version = interpolate_source_version(
                 source=target_plat,
-                component_type=Component.PLAT
+                repository_type=RepositoryType.PLAT
             )
 
             plats = Platforms([])
@@ -188,4 +186,19 @@ def init(ctx, name, target_plat, target_arch, template_app, version, force_creat
         except KraftError as e:
             logger.error(str(e))
 
-    
+@click.command('init', short_help='Initialize a new unikraft application.')
+@click.argument('name', required=True)
+@click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
+@click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
+@click.option('--arch', '-m', 'target_arch', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
+@click.option('--version', '-V', help="Use specific Unikraft release version.")
+@click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files.')
+def init(name, target_plat, target_arch, template_app, version, force_create):
+    kraft_init(
+        name=name,
+        target_plat=target_plat,
+        target_arch=target_arch,
+        template_app=name,
+        version=version,
+        force_create=force_create
+    )

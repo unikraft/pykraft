@@ -42,7 +42,7 @@ from kraft.constants import ORG_DELIMETERE
 from kraft.constants import REPO_VERSION_DELIMETERE
 from kraft.constants import REPO_VALID_URL_PREFIXES
 
-from kraft.component import Component
+from kraft.types import RepositoryType
 from kraft.errors import InvalidInterpolation
 from kraft.errors import InvalidRepositorySource
 
@@ -136,7 +136,7 @@ def interpolate_environment_variables(version, config, section, environment):
             for name, config_dict in config.items()
         )
 
-def interpolate_source_version(name=None, source=None, version=None, component_type=None):
+def interpolate_source_version(name=None, source=None, version=None, repository_type=None):
     """Parse a well-known repository naming format such that a Repository
     object is realized.
 
@@ -186,12 +186,12 @@ def interpolate_source_version(name=None, source=None, version=None, component_t
             source = "%s/%s" % (GITHUB_ORIGIN, source)
         
         # Does the repository start with lib-, plat-, etc.?
-        elif source.startswith(tuple(y.shortname + '-' for x, y in Component.__members__.items())):
+        elif source.startswith(tuple(y.shortname + '-' for x, y in RepositoryType.__members__.items())):
             source = "%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, source)
 
         # Can we inference anything from its name (which will have been
         # retrieved from the configuration prefix, e.g. my-lib: version)
-        elif name is not None and component_type is Component.LIB:
+        elif name is not None and repository_type is RepositoryType.LIB:
             version = source
             source = "%s/%s/lib-%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, name)
 

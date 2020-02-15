@@ -33,6 +33,11 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .core import Core
+from .volume import Volume
+from .volume import Volumes
+from .volume import VolumeType
+from .network import Network
+from .network import Networks
 from .library import Library
 from .library import Libraries
 from .platform import Platform

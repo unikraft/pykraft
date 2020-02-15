@@ -38,8 +38,8 @@ from datetime import datetime
 
 from kraft.logger import logger
 from kraft.errors import KraftError
-from kraft.component import Component
 from kraft.components import Repository
+from kraft.types import RepositoryType
 from kraft.context import kraft_context
 from kraft.constants import UK_GITHUB_ORG
 
@@ -55,8 +55,9 @@ from kraft.constants import UK_GITHUB_ORG
 # @click.option('--import', '-i', '_import', help='Import a library from a specified path.')
 @click.option('--paginate', '-n', is_flag=True, help='Paginate output.')
 @click.option('--update', '-u', 'force_update', is_flag=True, help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.')
+@click.option('--flush', '-F', 'force_flush', is_flag=True, help='Cleans the cache and lists.')
 @kraft_context
-def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update):
+def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update, force_flush):
     """
     Retrieves lists of available architectures, platforms, libraries and applications
     supported by unikraft.  Use this command if you wish to determine (and then
@@ -93,7 +94,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
         
         repos[repo.type].append(repo)
         
-    for type, member in Component.__members__.items():
+    for type, member in RepositoryType.__members__.items():
         columns = [member.plural.upper(), 'RELEASE', 'LAST CHECKED']
 
         if show_local:
@@ -104,19 +105,19 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
 
         rows = []
 
-        if core and member is Component.CORE and member in repos:
+        if core and member is RepositoryType.CORE and member in repos:
             rows = repos[member]
 
-        elif archs and member is Component.ARCH and member in repos:
+        elif archs and member is RepositoryType.ARCH and member in repos:
             rows = repos[member]
 
-        elif plats and member is Component.PLAT and member in repos:
+        elif plats and member is RepositoryType.PLAT and member in repos:
             rows = repos[member]
 
-        elif libs and member is Component.LIB and member in repos:
+        elif libs and member is RepositoryType.LIB and member in repos:
             rows = repos[member]
 
-        elif apps and member is Component.APP and member in repos:
+        elif apps and member is RepositoryType.APP and member in repos:
             rows = repos[member]
         
         if len(rows) > 0:

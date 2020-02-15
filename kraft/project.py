@@ -43,8 +43,11 @@ from json.decoder import JSONDecodeError
 from kraft.logger import logger
 from kraft.kraft import kraft_context
 
-from kraft.component import Component
 from kraft.components import Core
+from kraft.components import Volume
+from kraft.components import Volumes
+from kraft.components import Network
+from kraft.components import Networks
 from kraft.components import Library
 from kraft.components import Libraries
 from kraft.components import Platform
@@ -52,6 +55,7 @@ from kraft.components import Platforms
 from kraft.components import Architecture
 from kraft.components import Architectures
 from kraft.components import Repository
+from kraft.types import RepositoryType
 
 from kraft.errors import CannotReadDepsJson
 from kraft.errors import InvalidRepositorySource
@@ -86,6 +90,8 @@ class Project(object):
     _architectures = {}
     _platforms = {}
     _libraries = {}
+    _volumes = {}
+    _networks = {}
 
     def __init__(self,
         name,
@@ -94,7 +100,9 @@ class Project(object):
         config=None,
         architectures=None,
         platforms=None,
-        libraries=None):
+        libraries=None,
+        volumes=None,
+        networks=None):
         
         self._name = name
         self._path = path
@@ -105,6 +113,8 @@ class Project(object):
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
         self._libraries = libraries or Libraries([])
+        self._volumes = volumes or Volumes([])
+        self._networks = networks or Networks([])
     
     @property
     def name(self):
@@ -127,6 +137,12 @@ class Project(object):
     @property
     def libraries(self):
         return self._libraries
+    @property
+    def volumes(self):
+        return self._volumes
+    @property
+    def networks(self):
+        return self._networks
 
     @classmethod
     @kraft_context
@@ -138,25 +154,28 @@ class Project(object):
     
         try:
             core = Core.from_config(config.unikraft)
-            logger.info("Using %s..." % core)
+            logger.debug("Discovered %s" % core)
 
             architectures = Architectures([])
             for arch in config.architectures:
                 architecture = Architecture.from_config(core, arch, config.architectures[arch])
-                logger.info("Using %s via %s..." % (arch, architecture))
+                logger.debug("Discovered %s" % architecture)
                 architectures.add(arch,  architecture, config.architectures[arch])
 
             platforms = Platforms([])
             for plat in config.platforms:
                 platform = Platform.from_config(core, plat, config.platforms[plat])
-                logger.info("Using %s via %s..." % (plat, platform))
+                logger.debug("Discovered %s" % platform)
                 platforms.add(plat, platform, config.platforms[plat])
 
             libraries = Libraries([])
             for lib in config.libraries:
                 library = Library.from_config(lib, config.libraries[lib])
-                logger.info("Using %s..." % library)
+                logger.debug("Discovered %s" % library)
                 libraries.add(lib, library, config.libraries[lib])
+
+            volumes = Volumes.from_config(ctx.workdir, config.volumes)
+            networks = Networks.from_config(config.networks)
 
         except InvalidRepositorySource as e:
             logger.fatal(e)
@@ -168,12 +187,14 @@ class Project(object):
             config = config,
             architectures = architectures,
             platforms = platforms,
-            libraries = libraries
+            libraries = libraries,
+            volumes = volumes,
+            networks = networks
         )
 
         return project
 
-    def gen_make_cmd(self, extra=None):
+    def gen_make_cmd(self, extra=None, verbose=False):
         """Return a string with a correctly formatted make entrypoint for this
         application"""
 
@@ -183,6 +204,9 @@ class Project(object):
             ('A=%s' % self.path)
         ]
         paths = []
+
+        if verbose:
+            cmd.append('V=1')
 
         for lib in self.libraries.all():
             paths.append(lib.repository.localdir)
@@ -198,16 +222,15 @@ class Project(object):
 
         return cmd
     
-    def make(self, extra=None):
+    @kraft_context
+    def make(ctx, self, extra=None):
         """Run a make target for this project."""
         self.checkout()
-        cmd = self.gen_make_cmd(extra)
+        cmd = self.gen_make_cmd(extra, ctx.verbose)
         util.execute(cmd)
 
-    def kconfig(self):
-        env = self.dumpvarsconfig()
-
-    def configure(self, target_arch=None, target_plat=None):
+    @kraft_context
+    def configure(ctx, self, target_arch=None, target_plat=None):
         """Configure a Unikraft application."""
 
         if not self.is_configured():
@@ -219,16 +242,19 @@ class Project(object):
         
         if 'kconfig' in self.config.unikraft:
             dotconfig.extend(self.config.unikraft['kconfig'])
-
+        
         found_arch = False
         for arch in self.architectures.all():
             if target_arch == arch.name:
                 found_arch = True
+                logger.info("Using %s" % arch.repository)
+                kconfig_enable = arch.repository.kconfig_enabled_flag()
+                if kconfig_enable:
+                    dotconfig.extend([kconfig_enable])
                 if isinstance(arch.config, (dict)) and 'kconfig' in arch.config:
                     dotconfig.extend(arch.config['kconfig'])
-                else:
-                    dotconfig.extend([KCONFIG_Y % infer_arch_config_name(arch.name)])
-
+                dotconfig.extend(arch.repository.kconfig_extra)
+        
         if not found_arch:
             raise MismatchTargetArchitecture(target_arch, [arch.name for arch in self.architectures.all()])
         
@@ -236,19 +262,25 @@ class Project(object):
         for plat in self.platforms.all():
             if target_plat == plat.name:
                 found_plat = True
+                logger.info("Using %s" % plat.repository)
+                kconfig_enable = plat.repository.kconfig_enabled_flag()
+                if kconfig_enable:
+                    dotconfig.extend([kconfig_enable])
                 if isinstance(plat.config, (dict)) and 'kconfig' in plat.config:
                     dotconfig.extend(plat.config['kconfig'])
-                else:
-                    dotconfig.extend([KCONFIG_Y % infer_plat_config_name(plat.name)])
+                dotconfig.extend(plat.repository.kconfig_extra)
 
         if not found_plat:
             raise MismatchTargetPlatform(target_plat, [plat.name for plat in self.platforms.all()])
             
         for lib in self.libraries.all():
+            logger.info("Using %s" % lib.repository)
+            kconfig_enable = lib.repository.kconfig_enabled_flag()
+            if kconfig_enable:
+                dotconfig.extend([kconfig_enable])
             if isinstance(lib.config, (dict)) and 'kconfig' in lib.config:
                 dotconfig.extend(lib.config['kconfig'])
-            else:
-                dotconfig.extend([KCONFIG_Y % infer_lib_config_name(lib.name)])
+            dotconfig.extend(lib.repository.kconfig_extra)
 
         # Create a temporary file with the kconfig written to it
         fd, path = tempfile.mkstemp()
@@ -334,7 +366,7 @@ class Project(object):
              + " Core........... %s\n" % self.core \
              + " Libraries...... "
         for lib in self.libraries.all():
-            text += "%s\n%17s" % (lib[1], " ")
+            text += "%s\n%17s" % (lib.repository, " ")
         return text
 
     @kraft_context

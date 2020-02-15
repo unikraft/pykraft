@@ -29,7 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from kraft.component import Component
+from kraft.types import RepositoryType
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
 
@@ -49,7 +49,7 @@ class Library(Repository):
             name = name,
             source = source,
             version = version,
-            component_type = Component.LIB
+            repository_type = RepositoryType.LIB
         )
 
     @classmethod
@@ -57,7 +57,7 @@ class Library(Repository):
         return super(Library, cls).from_source_string(
             name = name,
             source = source,
-            component_type = Component.LIB
+            repository_type = RepositoryType.LIB
         )
 
 class Libraries(RepositoryManager):

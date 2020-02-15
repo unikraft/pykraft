@@ -29,7 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from kraft.component import Component
+from kraft.types import RepositoryType
 from kraft.components.repository import Repository
 
 class Core(Repository):
@@ -49,7 +49,7 @@ class Core(Repository):
             name = None,
             source = source,
             version = version,
-            component_type = Component.CORE
+            repository_type = RepositoryType.CORE
         )
 
     @classmethod
@@ -58,5 +58,13 @@ class Core(Repository):
             name = None,
             source = source,
             version = version,
-            component_type = Component.CORE
+            repository_type = RepositoryType.CORE
         )
+    
+    # One day we will need this
+    # e.g. 
+    #    if core.compatible(UK_COMPAT_CORE_v0_4_0):
+    #
+    def compatible(self, version):
+        return True
+    

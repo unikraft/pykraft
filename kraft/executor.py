@@ -62,13 +62,33 @@ class Executor(object):
         if interface:
             self._cmd.extend(('-V', interface))
 
-    def add_block_storage(self, block_storage=None):
-        if block_storage:
-            self._cmd.extend(('-d', block_storage))
+    def add_virtio_raw(self, image=None):
+        if image:
+            self._cmd.extend(('-d', image))
+
+    def add_virtio_qcow2(self, image=None):
+        if image:
+            self._cmd.extend(('-q', image))
+
+    def add_virtio_9pfs(self, image=None):
+        if image:
+            self._cmd.extend(('-e', image))
 
     def open_gdb(self, port=None):
         if port and isinstance(port, int):
             self._cmd.extend(('-g', port))
+
+    def set_memory(self, memory=None):
+        if memory and isinstance(memory, int):
+            self._cmd.extend(('-m', memory))
+
+    def set_cpu_sockets(self, cpu_sockets=None):
+        if cpu_sockets and isinstance(cpu_sockets, int):
+            self._cmd.extend(('-s', cpu_sockets))
+
+    def set_cpu_cores(self, cpu_cores=None):
+        if cpu_cores and isinstance(cpu_cores, int):
+            self._cmd.extend(('-c', cpu_cores))
 
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
         if background:
@@ -90,7 +110,8 @@ class Executor(object):
             cmd = [
                 self._kernel
             ]
-            cmd.extend(extra_args)
+            if extra_args:
+                cmd.extend(extra_args)
         else:
             cmd = [QEMU_GUEST]
             cmd.extend(self._cmd)
