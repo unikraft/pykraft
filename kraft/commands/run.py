@@ -42,7 +42,7 @@ from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 from kraft.executor import Executor
 from kraft.components import VolumeType
-
+from kraft.components.network import start_dnsmasq_server
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 
 @kraft_context
@@ -177,9 +177,9 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, brid
 @click.option('--cpu-sockets', '-s',  help="Number of guest CPU sockets.", type=int)
 @click.option('--cpu-cores', '-c',  help="Number of guest cores per socket.", type=int)
 @click.option('--with-dnsmasq', is_flag=True, help='Start a Dnsmasq server.')
-@click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254')
-@click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0')
-@click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h')
+@click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254', show_default=True)
+@click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0', show_default=True)
+@click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h', show_default=True)
 @click.argument('args', nargs=-1)
 def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
     kraft_run(

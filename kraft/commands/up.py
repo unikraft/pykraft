@@ -41,7 +41,6 @@ from kraft.context import kraft_context
 from kraft.logger import logger
 from kraft.errors import KraftError
 from kraft.components import Repository
-from kraft.components.network import start_dnsmasq_server
 
 from .init import kraft_init
 from .configure import kraft_configure
