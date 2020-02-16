@@ -102,3 +102,5 @@ UK_GITHUB_NAMING_FORMAT=r'(%s)-([^.]+)'
 UK_GITHUB_CORE_FORMAT=re.compile(r'(unikraft)/(unikraft)')
 
 UK_COMPAT_CORE_v0_4_0 = "0.4.0"
+
+KRAFT_SPEC_V04='0.4'

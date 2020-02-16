@@ -54,6 +54,7 @@ from kraft.errors import KraftFileNotFound
 from kraft.logger import logger
 
 from kraft.constants import SUPPORTED_FILENAMES
+from kraft.constants import KRAFT_SPEC_V04
 
 class ConfigDetails(namedtuple('_ConfigDetails', 'working_dir config_files environment')):
     """
@@ -84,7 +85,7 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     @cached_property
     def version(self):
         if 'specification' not in self.config:
-            return V1
+            return KRAFT_SPEC_V04
 
         version = self.config['specification']
 
