@@ -338,6 +338,9 @@ class Repository(object):
     def checkout(ctx, self, version=None, retry=False):
         """Checkout a version of the repository."""
 
+        if ctx.dont_checkout:
+            return
+
         if version is None:
             version = self.version
 
@@ -383,10 +386,10 @@ class Repository(object):
                     try:
                         repo.git.checkout('RELEASE-%s' % version)
                     except GitCommandError as e2:
-                        if not ctx.dont_checkout:
+                        if not ctx.ignore_checkout_errors:
                             logger.error("Could not checkout %s@%s: %s" % (self._name, version, str(e2)))
                             sys.exit(1)
-                elif not ctx.dont_checkout:
+                elif not ctx.ignore_checkout_errors:
                     logger.error("Could not checkout %s@%s: %s" % (self._name, version, str(e1)))
                     sys.exit(1)
 

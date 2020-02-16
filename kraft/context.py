@@ -48,7 +48,8 @@ from kraft.constants import KRAFTCONF
 
 class Context(object):
     _verbose = False
-    _dont_checkout = False 
+    _dont_checkout = False
+    ignore_checkout_errors = False
 
     """Context manager acts as a decorator and helps initialize and persist and 
     current state of affairs for the kraft utility."""
@@ -108,6 +109,14 @@ class Context(object):
     @dont_checkout.setter
     def dont_checkout(self, dont_checkout):
         self._dont_checkout = dont_checkout
+
+    @property
+    def ignore_checkout_errors(self):
+        return self._ignore_checkout_errors
+
+    @ignore_checkout_errors.setter
+    def ignore_checkout_errors(self, ignore_checkout_errors):
+        self._ignore_checkout_errors = ignore_checkout_errors
 
     @verbose.setter
     def verbose(self, verbose):
