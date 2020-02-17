@@ -29,6 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import platform
 import subprocess
 
 from kraft.logger import logger
@@ -104,6 +105,9 @@ class Executor(object):
             self._cmd.extend(('-t', 'x86pc'))
         elif self._architecture == "arm64":
             self._cmd.extend(('-t', 'arm64v'))
+        
+        if platform.machine() != self._architecture:
+            self._cmd.append('-W')
         
         # TODO: This sequence needs to be better throughout as a result of the 
         # provisioning of `plat-` repositories will have their own runtime
