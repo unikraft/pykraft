@@ -8,7 +8,7 @@ unikernel and painlessly manage dependencies for its build.
 
 ## Installing kraft
 
-The `kraft` tool and Unikraft build system have a number of package requirements; please run the following command (on `apt-get```-based systems) to install the requirements:
+The `kraft` tool and Unikraft build system have a number of package requirements; please run the following command (on `apt-get`-based systems) to install the requirements:
 
     apt-get install -y --no-install-recommends build-essential libncurses-dev libyaml-dev flex git wget socat bison unzip uuid-runtime; 
 
@@ -16,7 +16,7 @@ To install `kraft` simply run:
 
     git clone https://github.com/unikraft/kraft
     cd kraft
-    python setup.py install
+    sudo python3 setup.py install
 	
 You can then type `kraft` to see its help menu
 
