@@ -101,14 +101,6 @@ class Executor(object):
         if extra_args:
             self._cmd.extend(('-a', ' '.join(extra_args)))
 
-        if self._architecture == "x86_64":
-            self._cmd.extend(('-t', 'x86pc'))
-        elif self._architecture == "arm64":
-            self._cmd.extend(('-t', 'arm64v'))
-        
-        if platform.machine() != self._architecture:
-            self._cmd.append('-W')
-        
         # TODO: This sequence needs to be better throughout as a result of the 
         # provisioning of `plat-` repositories will have their own runtime
         # mechanics.  For now this is "hard-coded":
@@ -122,6 +114,13 @@ class Executor(object):
             if extra_args:
                 cmd.extend(extra_args)
         else:
+            if self._architecture == "x86_64":
+                self._cmd.extend(('-t', 'x86pc'))
+            elif self._architecture == "arm64":
+                self._cmd.extend(('-t', 'arm64v'))
+            
+            if platform.machine() != self._architecture:
+                self._cmd.append('-W')
             cmd = [QEMU_GUEST]
             cmd.extend(self._cmd)
 
