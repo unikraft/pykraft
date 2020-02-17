@@ -57,7 +57,7 @@ from kraft.components import Architectures
 from kraft.components import Repository
 from kraft.types import RepositoryType
 
-from kraft.errors import CannotReadDepsJson
+from kraft.errors import CannotReadKraftfile
 from kraft.errors import InvalidRepositorySource
 from kraft.errors import MisconfiguredUnikraftProject
 from kraft.errors import MismatchTargetArchitecture
@@ -65,12 +65,11 @@ from kraft.errors import MismatchTargetPlatform
 
 import kraft.utils as utils
 from kraft.constants import KCONFIG_Y
-from kraft.constants import DEPS_JSON
 from kraft.constants import DOT_CONFIG
 from kraft.constants import DEFCONFIG
 from kraft.constants import MAKEFILE_UK
 from kraft.constants import ENV_VAR_PATTERN
-from kraft.constants import SPECIFCATION_LATEST
+from kraft.constants import KRAFT_SPEC_LATEST
 from kraft.constants import SUPPORTED_FILENAMES
 from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
 from kraft.constants import KRAFTCONF_PREFERRED_PLATFORM
@@ -80,6 +79,8 @@ from kraft.config.kconfig import infer_plat_config_name
 from kraft.config.kconfig import infer_lib_config_name
 
 from kraft.config.serialize import serialize_config
+
+from kraft.config.config import get_default_config_files
 
 class Project(object):
     _name = None
@@ -108,7 +109,7 @@ class Project(object):
         self._path = path
         self._core = core or Core()
         self._config = config or {
-            'specification': SPECIFCATION_LATEST
+            'specification': KRAFT_SPEC_LATEST
         }
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
@@ -320,9 +321,10 @@ class Project(object):
         makefile_uk = os.path.join(self.path, MAKEFILE_UK)
         if os.path.exists(makefile_uk) is False or force_create:
             Path(makefile_uk).touch()
-        
-        kraft_yaml = os.path.join(self.path, SUPPORTED_FILENAMES[0])
-        if os.path.exists(kraft_yaml) is False or force_create:
+    
+        filenames = get_default_config_files(self.path)
+        if len(filenames) == 0 or force_create:
+            kraft_yaml = os.path.join(self.path, SUPPORTED_FILENAMES[0])
             with open(kraft_yaml, 'w+') as file:
                 file.write(self.toYAML())
 

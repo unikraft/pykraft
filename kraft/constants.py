@@ -64,7 +64,6 @@ SUPPORTED_FILENAMES = [
 UNIKERNEL_IMAGE_FORMAT="%s/build/%s_%s-%s"
 UNIKERNEL_IMAGE_FORMAT_DGB="%s/build/%s_%s-%s.dbg"
 
-DEPS_JSON="deps.json"
 DOT_CONFIG=".config"
 DEFCONFIG="defconfig"
 MAKEFILE_UK="Makefile.uk"
@@ -79,8 +78,6 @@ KRAFTCONF = ".kraftrc"
 KRAFTCONF_DELIMETER = "/"
 KRAFTCONF_PREFERRED_PLATFORM = "preferences/platform"
 KRAFTCONF_PREFERRED_ARCHITECTURE = "preferences/architecture"
-
-SPECIFCATION_LATEST='0.4'
 
 KCONFIG='CONFIG_%s'
 KCONFIG_Y='y'
@@ -104,3 +101,4 @@ UK_GITHUB_CORE_FORMAT=re.compile(r'(unikraft)/(unikraft)')
 UK_COMPAT_CORE_v0_4_0 = "0.4.0"
 
 KRAFT_SPEC_V04='0.4'
+KRAFT_SPEC_LATEST=KRAFT_SPEC_V04

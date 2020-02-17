@@ -51,10 +51,11 @@ from kraft.types import RepositoryType
 
 from kraft.errors import KraftError
 from kraft.errors import KraftFileNotFound
+from kraft.errors import CannotReadKraftfile
 from kraft.logger import logger
 
 from kraft.constants import SUPPORTED_FILENAMES
-from kraft.constants import KRAFT_SPEC_V04
+from kraft.constants import KRAFT_SPEC_LATEST
 
 class ConfigDetails(namedtuple('_ConfigDetails', 'working_dir config_files environment')):
     """
@@ -85,7 +86,7 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     @cached_property
     def version(self):
         if 'specification' not in self.config:
-            return KRAFT_SPEC_V04
+            return KRAFT_SPEC_LATEST
 
         version = self.config['specification']
 
@@ -231,6 +232,9 @@ def process_config_section(config_file, config, section, environment, interpolat
 
 def process_config_file(config_file, environment, service_name=None, interpolate=True):
 
+    if config_file.config is None:
+        return config_file
+
     processed_config = dict(config_file.config)
 
     processed_config['unikraft'] = process_unikraft(
@@ -311,8 +315,8 @@ def get_default_config_files(base_dir):
     winner = candidates[0]
 
     if len(candidates) > 1:
-        log.warning("Found multiple config files with supported names: %s", ", ".join(candidates))
-        log.warning("Using %s\n", winner)
+        logger.warning("Found multiple config files with supported names: %s", ", ".join(candidates))
+        logger.warning("Using %s", winner)
 
     return [os.path.join(path, winner)]
 
@@ -339,16 +343,17 @@ def find(base_dir, filenames, environment, override_dir=None):
 
 def load_mapping(config_files, get_func, entity_type, working_dir=None):
     mapping = {}
-
+    
     for config_file in config_files:
-        attr = getattr(config_file, get_func)()
-        if isinstance(attr, list):
-            for name, config in getattr(config_file, get_func)().items():
-                mapping[name] = config or {}
-                if not config:
-                    continue
-        else:
-            mapping = attr
+        if config_file.config is not None:
+            attr = getattr(config_file, get_func)()
+            if isinstance(attr, list):
+                for name, config in getattr(config_file, get_func)().items():
+                    mapping[name] = config or {}
+                    if not config:
+                        continue
+            else:
+                mapping = attr
 
     return mapping
 
@@ -367,6 +372,9 @@ def load(config_details):
     config_details = config_details._replace(config_files=processed_files)
 
     main_file = config_details.config_files[0]
+
+    if main_file.config == None:
+        raise CannotReadKraftfile(main_file.filename)
     
     name = load_mapping(
         config_details.config_files,
@@ -393,7 +401,7 @@ def load(config_details):
             thought_source = unikraft['source']
         if 'version' in unikraft:
             thought_version = unikraft['version']
-        
+    
     definite_source, definite_version = interpolate_source_version('unikraft', thought_source, thought_version, RepositoryType.CORE)
     unikraft['source'] = definite_source
     unikraft['version'] = definite_version

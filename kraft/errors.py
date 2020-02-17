@@ -65,16 +65,16 @@ Supported filenames: %s
 class IncompatibleKconfig(KraftError):
     def __init__(self):
         super(IncompatibleKconfig, self).__init__(
-            "The provided KConfiguration was not compatible."
+            "The provided KConfig was not compatible."
         )
 
 class NonExistentLibrary(KraftError):
     def __init__(self):
         super(NonExistentLibrary, self).__init__("The referred library does not exist.")
 
-class CannotReadDepsJson(KraftError):
-    def __init__(self):
-        super(CannotReadDepsJson, self).__init__("The provided file does not exist or is corrupt.")
+class CannotReadKraftfile(KraftError):
+    def __init__(self, file):
+        super(CannotReadKraftfile, self).__init__("The provided file does not exist, is empty or is corrupt: %s" % file)
 
 class InvalidInterpolation(KraftError):
     pass
