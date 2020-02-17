@@ -39,8 +39,6 @@ from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
-from kraft.utils.cli import KraftHelpGroup
-
 @kraft_context
 def kraft_build(ctx, fast):
     logger.debug("Building %s..." % ctx.workdir)
@@ -68,7 +66,7 @@ def kraft_build(ctx, fast):
         
     project.build(n_proc=n_proc)
 
-@click.group(cls=KraftHelpGroup, short_help='Build the application.')
+@click.command('build', short_help='Build the application.')
 @click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
 def build(fast):
     """

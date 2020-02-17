@@ -42,9 +42,8 @@ from kraft.components import Repository
 from kraft.types import RepositoryType
 from kraft.context import kraft_context
 from kraft.constants import UK_GITHUB_ORG
-from kraft.utils import KraftHelpGroup
 
-@click.group(cls=KraftHelpGroup, short_help='List architectures, platforms, libraries or applications.')
+@click.command('list', short_help='List architectures, platforms, libraries or applications.')
 @click.option('--core', '-c', is_flag=True, help='Display information about Unikraft\'s core repository.')
 # @click.option('--archs', '-m', is_flag=True, help='List supported architectures.')
 @click.option('--plats', '-p', is_flag=True, help='List supported platforms.')

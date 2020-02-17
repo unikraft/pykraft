@@ -34,7 +34,6 @@ import sys
 import click
 import platform
 import kraft.utils as utils
-from kraft.utils import KraftHelpGroup
 from kraft.utils import ClickOptionMutex
 
 from kraft.logger import logger
@@ -188,7 +187,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             logger.error(str(e))
             sys.exit(1)
 
-@click.group(cls=KraftHelpGroup, short_help='Initialize a new unikraft application.')
+@click.command('init', short_help='Initialize a new unikraft application.')
 @click.argument('name', required=True)
 @click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
 @click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))

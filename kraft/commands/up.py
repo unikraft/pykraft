@@ -47,10 +47,7 @@ from .configure import kraft_configure
 from .build import kraft_build
 from .run import kraft_run
 
-from kraft.utils import ClickOptionMutex
-from kraft.utils import KraftHelpGroup
-
-@click.group(cls=KraftHelpGroup, short_help='Configure, build and run an application.')
+@click.command('up', short_help='Configure, build and run an application.')
 @click.argument('name', required=True)
 @click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
 @click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))

@@ -44,7 +44,6 @@ from kraft.executor import Executor
 from kraft.components import VolumeType
 from kraft.components.network import start_dnsmasq_server
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
-from kraft.utils import KraftHelpGroup
 
 @kraft_context
 def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
@@ -163,7 +162,7 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, brid
         dry_run=dry_run
     )
 
-@click.group(cls=KraftHelpGroup, short_help='Run the application.')
+@click.command('run', short_help='Run the application.')
 @click.option('--plat', '-p', help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
 @click.option('--arch', '-m', help='Target architecture.', default=lambda:platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)
 @click.option('--initrd', '-i', help='Provide an init ramdisk.')
