@@ -707,7 +707,7 @@ case "$ARG_MACHINETYPE" in
 			QEMU_BASE_ARGS+=("pc,accel=kvm")
 
 			QEMU_BASE_ARGS+=("-cpu")
-			QEMU_BASE_ARGS+=("host,+x2apic,-pmu")
+			QEMU_BASE_ARGS+=("host,+x2apic")
 		else
 			QEMU_BASE_ARGS+=("-machine")
 			QEMU_BASE_ARGS+=("pc")
@@ -728,7 +728,7 @@ case "$ARG_MACHINETYPE" in
 			QEMU_BASE_ARGS+=("q35,accel=kvm")
 
 			QEMU_BASE_ARGS+=("-cpu")
-			QEMU_BASE_ARGS+=("host,+x2apic,-pmu")
+			QEMU_BASE_ARGS+=("host,+x2apic")
 		else
 			QEMU_BASE_ARGS+=("-machine")
 			QEMU_BASE_ARGS+=("q35")
