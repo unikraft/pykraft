@@ -99,7 +99,7 @@ class Executor(object):
         if dry_run:
             self._cmd.append('-D')
         if extra_args:
-            self._cmd.extend(('-a', extra_args))
+            self._cmd.extend(('-a', ' '.join(extra_args)))
 
         if self._architecture == "x86_64":
             self._cmd.extend(('-t', 'x86pc'))
