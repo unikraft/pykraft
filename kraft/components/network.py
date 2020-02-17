@@ -35,7 +35,7 @@ import subprocess
 from enum import Enum
 from shutil import which
 
-import kraft.util as util
+import kraft.utils as utils
 from kraft.logger import logger
 
 from kraft.errors import InvalidBridgeName
@@ -62,7 +62,7 @@ class BridgeDriver(object):
         if name is not None:
             self._name = name
         else:
-            self._name = self.generate_bridge_name()
+            self._name = BridgeDriver.generate_bridge_name()
         
         self._type = type
     
@@ -84,6 +84,7 @@ class BridgeDriver(object):
     def exists(self, name=None):
         raise NetworkBridgeError("Checking for a bridge is not possible with driver %s" % self.type)
     
+    @classmethod
     def generate_bridge_name(self, prefix='virbr'):
         return None
 
@@ -102,7 +103,7 @@ class LinuxBRCTLDriver(BridgeDriver):
             name = self.name
 
         if name is not None and len(name) > 0:
-            util.execute([
+            utils.execute([
                 BRCTL, "addbr", name
             ])
         else:
@@ -116,7 +117,7 @@ class LinuxBRCTLDriver(BridgeDriver):
             name = self.name
 
         if name is not None and len(name) > 0:
-            util.execute([
+            utils.execute([
                 BRCTL, "delbr", name
             ])
         else:
@@ -344,5 +345,5 @@ def start_dnsmasq_server(bridge=None, listen_addr=None, ip_range=None, netmask=N
         ("--listen-address=%s" % listen_addr),
         ("--dhcp-range=%s,%s,%s,%s" % (ip_range_start, ip_range_end, netmask, lease_time))
     ]
-
+    logger.info("Starting dnsmasq server...")
     return subprocess.Popen(cmd)

@@ -29,11 +29,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-CONTEXT_SETTINGS = dict(
-    auto_envvar_prefix='UK',
-    help_option_names=['-h', '--help'],
-)
-UNKNOWN_OPTIONS = {
-    'ignore_unknown_options': True,
-    **CONTEXT_SETTINGS
-}
+import subprocess
+
+from kraft.logger import logger
+
+def execute(cmd=""):
+    if type(cmd) is list:
+        cmd = " ".join(cmd)
+
+    logger.debug("Running: %s" % cmd)
+    cmd = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+
+    for line in cmd.stdout:
+        logger.info(line.strip().decode('ascii'))

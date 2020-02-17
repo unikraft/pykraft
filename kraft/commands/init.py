@@ -33,7 +33,9 @@ import os
 import sys
 import click
 import platform
-import kraft.util as util
+import kraft.utils as utils
+from kraft.utils import KraftHelpGroup
+from kraft.utils import ClickOptionMutex
 
 from kraft.logger import logger
 from kraft.project import Project
@@ -47,7 +49,6 @@ from kraft.components import Architectures
 from kraft.types import RepositoryType
 
 from kraft.commands.list import update
-from kraft.util import ClickOptionMutex
 from kraft.context import kraft_context
 
 from kraft.constants import UNIKRAFT_CORE
@@ -69,7 +70,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
         update()
     
     # Check if the directory is non-empty and prompt for validation
-    if util.is_dir_empty(ctx.workdir) is False and force_create is False:
+    if utils.is_dir_empty(ctx.workdir) is False and force_create is False:
         if click.confirm('%s is a non-empty directory, would you like to continue?' % ctx.workdir):
             # It should be safe to set this now
             force_create = True
@@ -102,7 +103,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
         
         app.checkout(version)
         
-        util.recursively_copy(app.localdir, ctx.workdir, overwrite=force_create, ignore=[
+        utils.recursively_copy(app.localdir, ctx.workdir, overwrite=force_create, ignore=[
             '.git', 'build', '.config', '.config.old', '.config.orig'
         ])
 
@@ -187,7 +188,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             logger.error(str(e))
             sys.exit(1)
 
-@click.command('init', short_help='Initialize a new unikraft application.')
+@click.group(cls=KraftHelpGroup, short_help='Initialize a new unikraft application.')
 @click.argument('name', required=True)
 @click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
 @click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))

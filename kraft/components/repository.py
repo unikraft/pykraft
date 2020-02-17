@@ -328,7 +328,7 @@ class Repository(object):
             for fetch_info in repo.remotes.origin.fetch():
                 logger.debug("Updated %s %s to %s" % (self._source, fetch_info.ref, fetch_info.commit))
             self._last_checked = datetime.now()
-        except GitCommandError as e:
+        except (GitCommandError, AttributeError) as e:
             logger.error("Could not fetch %s: %s" % (self._source, str(e)))
         
         # self.checkout(self._version)

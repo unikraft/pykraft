@@ -63,7 +63,7 @@ from kraft.errors import MisconfiguredUnikraftProject
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
 
-import kraft.util as util
+import kraft.utils as utils
 from kraft.constants import KCONFIG_Y
 from kraft.constants import DEPS_JSON
 from kraft.constants import DOT_CONFIG
@@ -227,7 +227,7 @@ class Project(object):
         """Run a make target for this project."""
         self.checkout()
         cmd = self.gen_make_cmd(extra, ctx.verbose)
-        util.execute(cmd)
+        utils.execute(cmd)
 
     @kraft_context
     def configure(ctx, self, target_arch=None, target_plat=None):

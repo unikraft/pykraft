@@ -29,49 +29,14 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
-import click
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from kraft.config import config
-from kraft.logger import logger
-from kraft.project import Project
-from kraft.errors import KraftError
-from kraft.kraft import kraft_context
+from .cli import KraftHelpGroup
+from .cli import ClickOptionMutex
+from .cli import KraftHelpCommand
 
-from kraft.utils.cli import KraftHelpGroup
+from .dir import is_dir_empty
+from .dir import recursively_copy
 
-@kraft_context
-def kraft_build(ctx, fast):
-    logger.debug("Building %s..." % ctx.workdir)
-
-    try:
-        project = Project.from_config(
-            ctx.workdir,
-            config.load(
-                config.find(ctx.workdir, None, ctx.env)
-            )
-        )
-
-    except KraftError as e:
-        logger.error(str(e))
-        sys.exit(1)
-    
-    if not project.is_configured():
-        if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):
-            project.configure()
-
-    n_proc = None
-    if fast:
-        # This simply set the `-j` flag which signals to make to use all cores.
-        n_proc = ""
-        
-    project.build(n_proc=n_proc)
-
-@click.group(cls=KraftHelpGroup, short_help='Build the application.')
-@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
-def build(fast):
-    """
-    Builds the Unikraft application for the target architecture and platform.
-    """
-    kraft_build(fast=fast)
+from .exec import execute

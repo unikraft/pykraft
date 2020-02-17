@@ -39,8 +39,9 @@ from kraft import __version__, __description__, __program__
 from kraft.logger import logger
 from kraft.config import config
 from kraft.context import kraft_context
+from kraft.utils.cli import KraftHelpGroup
+from kraft.utils.cli import CONTEXT_SETTINGS
 
-from kraft.commands.utils import CONTEXT_SETTINGS
 from kraft.commands import (
     up,
     run,
@@ -66,7 +67,23 @@ from kraft.commands import (
     is_flag=True,
     help='Ignore checkout errors.'
 )
-@click.group(cls=click.Group, context_settings=CONTEXT_SETTINGS)
+@click.group(cls=KraftHelpGroup, context_settings=CONTEXT_SETTINGS, epilog="""
+Influential Environmental Variables:
+  env::UK_WORKDIR The working directory for all Unikraft
+             source code [default: ~/.unikraft]
+  env::UK_ROOT    The directory for Unikraft's core source
+             code [default: $UK_WORKDIR/unikraft]
+  env::UK_LIBS    The directory of all the external Unikraft
+             libraries [default: $UK_WORKDIR/libs]
+  env::UK_APPS    The directory of all the template applications
+             [default: $UK_WORKDIR/apps]
+  env::KRAFTCONF  The location of kraft's preferences file
+             [default: ~/.kraftrc]
+
+Help:
+  For help using this tool, please open an issue on Github:
+  https://github.com/unikraft/kraft
+""")
 @click.version_option()
 @kraft_context
 def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors):

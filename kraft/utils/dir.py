@@ -30,9 +30,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import click
-import subprocess
-from .logger import logger
+from kraft.logger import logger
 from shutil import copyfile
 from shutil import ignore_patterns
 from shutil import SameFileError
@@ -40,17 +38,6 @@ from shutil import SameFileError
 def is_dir_empty(path=None):
     """Return a boolean of whether the provided directory `dir` is empty."""
     return os.path.isdir(path) is False or len([f for f in os.listdir(path) if not f.startswith('.')]) == 0
-
-
-def execute(cmd=""):
-    if type(cmd) is list:
-        cmd = " ".join(cmd)
-
-    logger.debug("Running: %s" % cmd)
-    cmd = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-    for line in cmd.stdout:
-        logger.info(line.strip().decode('ascii'))
 
 def recursively_copy(src, dest, overwrite=False, ignore=None):
     if os.path.basename(src) in ignore:
@@ -72,19 +59,3 @@ def recursively_copy(src, dest, overwrite=False, ignore=None):
             copyfile(src, dest)
         except SameFileError:
             pass
-
-class ClickOptionMutex(click.Option):
-    def __init__(self, *args, **kwargs):
-        self.not_required_if = kwargs.pop("not_required_if")
-        assert self.not_required_if, "'not_required_if' parameter required"
-        super(ClickOptionMutex, self).__init__(*args, **kwargs)
-
-    def handle_parse_result(self, ctx, opts, args):
-        current_opt = self.name in opts
-        for mutex_opt in self.not_required_if:
-            if mutex_opt in opts:
-                if current_opt:
-                    raise click.UsageError("Illegal usage: '" + str(self.name) + "' is mutually exclusive with " + str(mutex_opt) + ".")
-                else:
-                    self.prompt = None
-        return super(ClickOptionMutex, self).handle_parse_result(ctx, opts, args)
