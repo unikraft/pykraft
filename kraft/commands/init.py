@@ -58,12 +58,6 @@ from kraft.config.interpolation import interpolate_source_version
 
 @kraft_context
 def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force_create):
-    """
-    Initializes a new unikraft application.
-
-    Start here if this is your first time using (uni)kraft.
-    """
-
     # Pre-flight check determines if we are trying to work with nothing
     if ctx.cache.is_stale() and click.confirm('kraft caches are out-of-date.  Would you like to update?'):
         update()
@@ -195,11 +189,17 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
 @click.option('--version', '-V', help="Use specific Unikraft release version.")
 @click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files.')
 def init(name, target_plat, target_arch, template_app, version, force_create):
+    """
+    Initializes a new unikraft application.
+
+    Start here if this is your first time using (uni)kraft.
+    """
+
     kraft_init(
         name=name,
         target_plat=target_plat,
         target_arch=target_arch,
-        template_app=name,
+        template_app=template_app,
         version=version,
         force_create=force_create
     )
