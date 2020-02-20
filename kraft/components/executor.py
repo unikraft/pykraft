@@ -57,15 +57,27 @@ class Executor(object):
     _architecture = None
     _pre_up = []
     _post_down = []
+    _arguments = None
 
     @property
     def volumes(self):
         return self._volumes
+
     @property
     def networks(self):
         return self._networks
 
-    def __init__(self, volumes, networks):
+    @property
+    def arguments(self):
+        if isinstance(self._arguments, six.string_types):
+            return self._arguments
+        elif isinstance(self._arguments, list):
+            return ' '.join(self._arguments)
+        else:
+            return None
+
+    def __init__(self, arguments=[], volumes=None, networks=None):
+        self._arguments = arguments
         self._volumes = volumes or Volumes([])
         self._networks = networks or Networks([])
     
@@ -209,13 +221,18 @@ class Executor(object):
     
     @classmethod
     def from_config(cls, config=None, workdir=None, executor_base=None):
+        arguments = None
+        if config and 'arguments' in config:
+            arguments = config['arguments']
+        elif executor_base is not None:
+            arguments = executor_base.arguments
+
         if config and 'volumes' in config:
             volumes = Volumes.from_config(workdir, config['volumes'])
         else:
             volumes = Volumes([])
 
         if config and 'networks' in config:
-            # print(config['networks'])
             networks = Networks.from_config(config['networks'])
         else:
             networks = Networks([])
@@ -228,6 +245,7 @@ class Executor(object):
             volumes = executor_base.volumes
 
         executor = cls(
+            arguments=arguments,
             networks=networks,
             volumes=volumes
         )
@@ -284,6 +302,9 @@ class LinuxExecutor(Executor):
         cmd = [
             self._unikernel
         ]
+
+        if self.arguments:
+            cmd.append(self.arguments)
 
         if extra_args:
             cmd.extend(extra_args)
@@ -347,6 +368,9 @@ class KVMExecutor(Executor):
         
         if platform.machine() != self.architecture:
             self._cmd.append('-W')
+
+        if self.arguments:
+            self._cmd.extend(('-a', '"%s"' % self.arguments.replace("\"", "\\\"")))
         
         cmd = [QEMU_GUEST]
 
@@ -398,6 +422,9 @@ class XenExecutor(Executor):
         
         self.automount()
         self.autoconnect(dry_run)
+        
+        if self.arguments:
+            self._cmd.extend(('-a', '"%s"' % self.arguments.replace("\"", "\\\"")))
         
         cmd = [XEN_GUEST]
         cmd.extend(self._cmd)
