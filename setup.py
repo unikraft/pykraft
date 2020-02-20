@@ -12,7 +12,7 @@ setup(
     version = __version__,
     packages = find_packages(),
     description = __description__,
-    url = 'https://github.com/unikraft/tools.git',
+    url = 'https://github.com/unikraft/kraft.git',
     author = 'Alexander Jung',
     author_email = 'a.jung@lancs.ac.uk',
     entry_points = """
