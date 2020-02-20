@@ -1,0 +1,182 @@
+#!/bin/bash
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# Authors: Alexander Jung <alexander.jung@neclab.eu>
+#
+# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+HELP=n
+WITH_DNSMASQ=n
+DNSMASQ_PID_FILE=/var/run/kraft-dnsmasq.pid
+KRAFT_ARCHITECTURE=${KRAFT_ARCHITECTURE:-}
+KRAFT_PLATFORM=${KRAFT_PLATFORM:-}
+KRAFT_IMAGE=${KRAFT_IMAGE:-}
+KRAFT_NETWORK_NAME=${KRAFT_NETWORK_NAME:-kraft0}
+KRAFT_NETWORK_DRIVER=${KRAFT_NETWORK_DRIVER:-}
+KRAFT_NETWORK_BRIDGE=${KRAFT_NETWORK_BRIDGE:-}
+KRAFT_KCONFIG=${KRAFT_KCONFIG:-}
+
+DNSMASQ_LISTEN_ADDR=172.88.0.1
+DNSMASQ_DHCP_RANGE=172.88.0.2,172.88.0.254
+DNSMASQ_NETMASK=255.255.255.0
+DNSMASQ_LEASE_TIME=12h
+DNSMASQ_LOGFILE=/var/log/dnsmasq-$KRAFT_NETWORK_NAME.log
+
+_help() {
+    cat <<EOF
+kraft-net - Unikraft network service helper
+
+Usage:
+  kraft-net [OPTIONS] up      Start network services
+  kraft-net [OPTIONS] down    Stop network services
+
+Options:
+  -h --help                   Show this help menu.
+  
+
+DNSMASQ Options:
+  --with-dnsmasq              Start a DNSMASQ server.
+  --dnsmasq-pid-file=FILE     DNSMASQ process ID file location at FILE
+                                (default: $DNSMASQ_PID_FILE).
+  --dnsmasq-listen-addr=IP    The IP address of dnsmasq server
+                                (default: $DNSMASQ_LISTEN_ADDR).
+  --dnsmasq-dhcp-range=IP,IP  The range IP addresses dnsmasq will lease
+                                (default: $DNSMASQ_DHCP_RANGE).
+  --dnsmasq-netmask=MASK      The dhcp netmask
+                                (default: $DNSMASQ_NETMASK).
+  --dnsmasq-lease-time=TIME   The lease time for the dnsmasq dhcp server
+                                advertises (default: $DNSMASQ_LEASE_TIME).
+  --dnsmasq-logfile           The log file the running dnsmasq instance
+                                (default: $DNSMASQ_LOGFILE).
+                                
+
+Influential environmental variables:
+  KRAFT_ARCHITECTURE          The architecture of the unikraft unikernel
+  KRAFT_PLATFORM              The target platform for the unikernel
+  KRAFT_IMAGE                 The location of the unikernel binary
+  KRAFT_NETWORK_NAME          
+  KRAFT_NETWORK_DRIVER        
+  KRAFT_NETWORK_BRIDGE        
+  KRAFT_KCONFIG               The list of selected Kconfig enabeld for the
+                                unikernel.
+
+Help:
+  For help using thihs tool, please open an issue on the Github repository:
+  https://gitub.com/unikraft/kraft
+EOF
+}
+
+# Parse arguments
+for i in "$@"; do
+    case $i in
+        --with-dnsmasq)
+            WITH_DNSMASQ=y
+            shift
+            ;;
+
+        --dnsmasq-pid-file=*)
+            DNSMASQ_PID_FILE="${i#*=}"
+            shift
+            ;;
+
+        --dnsmasq-listen-addr=*)
+            DNSMASQ_LISTEN_ADDR="${i#*=}"
+            shift
+            ;;
+
+        --dnsmasq-dhcp-range=*)
+            DNSMASQ_DHCP_RANGE="${i#*=}"
+            shift
+            ;;
+
+        --dnsmasq-netmask=*)
+            DNSMASQ_NETMASK="${i#*=}"
+            shift
+            ;;
+
+        --dnsmasq-lease-time=*)
+            DNSMASQ_LEASE_TIME="${i#*=}"
+            shift
+            ;;
+
+        --dnsmasq-logfile=*)
+            DNSMASQ_LOGFILE="${i#*=}"
+            shift
+            ;;
+        
+        -h|--help)
+            HELP=y
+            shift
+            ;;
+
+        *)
+            ;;
+    esac
+done
+
+# Show help menu if requested
+if [[ $HELP == 'y' ]]; then
+    _help
+    exit
+fi
+
+start_dnsmasq_server() {
+    echo "Starting dnsmasq..."
+
+    dnsmasq \
+        --no-daemon \
+        --bind-interface \
+        --interface=$KRAFT_NETWORK_BRIDGE \
+        --listen-address=$DNSMASQ_LISTEN_ADDR \
+        --dhcp-range=$DNSMASQ_DHCP_RANGE,$DNSMASQ_NETMASK,$DNSMASQ_LEASE_TIME &>$DNSMASQ_LOGFILE &
+        
+    PID=$(echo $!)
+    echo "dnsmasq runninig with pid: $PID"
+}
+
+COMMAND=$1
+shift
+
+case "$COMMAND" in
+    up)
+        echo "Starting network services..."
+        ifconfig $KRAFT_NETWORK_BRIDGE $DNSMASQ_LISTEN_ADDR
+
+        if [[ $WITH_DNSMASQ == 'y' ]]; then
+            start_dnsmasq_server
+        fi
+
+        ;;
+    down)
+        echo "Stopping network services..."
+
+        ;;
+    *)
+        _help
+        ;;
+esac

@@ -20,8 +20,9 @@ setup(
         {program} = kraft.kraft:kraft
         """.format(program = __program__),
     scripts = [
-        'run/qemu-guest',
-        'run/xen-guest'
+        'scripts/qemu-guest',
+        'scripts/xen-guest',
+        'scripts/kraft-net'
     ],
     keywords = [],
     tests_require = ['pytest', 'coveralls'],
