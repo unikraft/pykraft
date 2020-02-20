@@ -30,6 +30,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import subprocess
 
 from kraft.logger import logger
 
