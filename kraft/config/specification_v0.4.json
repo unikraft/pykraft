@@ -9,14 +9,12 @@
       "type": [ "string", "integer" ]
     },
 
-    "name": {
-      "type": "string"
-    },
+    "name": { "type": "string" },
 
     "unikraft": {
       "id": "#/properties/unikraft",
       "$ref": "#/definitions/unikraft",
-      "additionalProperties": false
+      "additionalProperties": true
     },
 
     "architectures": {
@@ -27,7 +25,7 @@
           "$ref": "#/definitions/architecture"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
 
     "platforms": {
@@ -38,7 +36,7 @@
           "$ref": "#/definitions/platform"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
 
     "libraries": {
@@ -49,33 +47,17 @@
           "$ref": "#/definitions/library"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": true
     },
 
-    "volumes": {
-      "id": "#/properties/volumes",
-      "type": "object",
-      "patternProperties": {
-        "^[a-zA-Z0-9._-]+$": {
-          "$ref": "#/definitions/volume"
-        }
-      },
-      "additionalProperties": false
-    },
-
-    "networks": {
-      "id": "#/properties/networks",
-      "type": "object",
-      "patternProperties": {
-        "^[a-zA-Z0-9._-]+$": {
-          "$ref": "#/definitions/network"
-        }
-      },
-      "additionalProperties": false
+    "run": {
+      "id": "#/properties/run",
+      "$ref": "#/definitions/run",
+      "additionalProperties": true
     }
   },
 
-  "additionalProperties": false,
+  "additionalProperties": true,
 
   "definitions": {
     
@@ -106,12 +88,8 @@
         "source": { "type": "string" },
         "version": { "type": "string" },
         "kconfig": { "$ref": "#/definitions/list_or_dict" },
-        "before_run": {
-          "oneOf": [
-            {"type": "string"},
-            {"type": "array", "items": {"type": "string"}}
-          ]
-        },
+        "pre_up": { "$ref": "#/definitions/command" },
+        "post_down": { "$ref": "#/definitions/command" },
         "cpus": { "type": [ "string", "integer" ] },
         "memory": { "type": [ "string", "integer" ] }
       }
@@ -127,20 +105,62 @@
       }
     },
     
+    "run": {
+      "id": "#/definitions/run",
+      "type": "object",
+      "properties": {
+        "arguments": { "type": "string" },
+        "pre_up": { "$ref": "#/definitions/command" },
+        "post_down": { "$ref": "#/definitions/command" },
+        "networks": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9._-]+$": {
+              "$ref": "#/definitions/network"
+            }
+          },
+          "additionalProperties": false
+        },
+        "volumes": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z0-9._-]+$": {
+              "$ref": "#/definitions/volume"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    
     "volume": {
       "id": "#/definitions/volume",
       "type": [ "object" ],
       "properties": {
         "type": { "type": "string" },
-        "mountpoint": { "type": "string" }
+        "source": { "type": "string" }
       }
     },
     
     "network": {
       "id": "#/definitions/network",
-      "type": [ "object" ],
+      "type": [ "object", "boolean" ],
       "properties": {
-        "dhcp": { "type": "boolean" }
+        "pre_up": {
+          "$ref": "#/definitions/command",
+          "additionalProperties": false
+        },
+        "post_down": {
+          "$ref": "#/definitions/command",
+          "additionalProperties": false
+        },
+        "ip": { "type": "string" },
+        "gateway": { "type": "string" },
+        "netmask": { "type": "string" },
+        "interface": { "type": "string" },
+        "driver": { "type": "string" },
+        "type": { "type": "string" },
+        "bridge_name": { "type": "string" }
       }
     },
 
@@ -148,7 +168,23 @@
       "type": "string"
     },
 
+    "command": {
+      "type": [ "string", "array" ],
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+
     "list_or_dict": {
+      "type": [ "object", "array" ],
       "oneOf": [
         {
           "type": "object",

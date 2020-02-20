@@ -35,11 +35,12 @@ from __future__ import unicode_literals
 from .core import Core
 from .volume import Volume
 from .volume import Volumes
-from .volume import VolumeType
+from .volume import VolumeDriver
 from .network import Network
 from .network import Networks
 from .library import Library
 from .library import Libraries
+from .executor import Executor
 from .platform import Platform
 from .platform import Platforms
 from .repository import Repository

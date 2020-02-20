@@ -36,27 +36,60 @@ from kraft.types import RepositoryType
 
 from kraft.constants import UK_CORE_PLAT_DIR
 
+from kraft.components.executor import Executor
+from kraft.components.executor import ExecutorDriverEnum
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
 
 class Platform(Repository):
+    _executor = None
+    
+    @property
+    def executor(self):
+        return self._executor
+    
+    @executor.setter
+    def executor(self, executor):
+        self._executor = executor
+
     @classmethod
-    def from_config(cls, core=None, plat=None, config=None):
+    def from_config(cls, core=None, plat=None, config=None, workdir=None, executor_base=None):
         if not core.is_downloaded:
             core.update()
+    
+        # Set the executor to the base in case we cannot later determine
+        executor = executor_base
+        executor_config = None
+        platform = None
         
-        if not isinstance(config, bool) and 'source' in config:
-            return super(Platform, cls).from_source_string(config['source'], RepositoryType.PLAT)
+        if not isinstance(config, bool):
+            if 'run' in config:
+                executor_config = config['run']
+
+            if 'source' in config:
+                platform = super(Platform, cls).from_source_string(config['source'], RepositoryType.PLAT)
             
-        else:
-            # Return a core-based platform
-            return cls(
+        if platform is None:
+            platform = cls(
                 name = plat,
                 source = core.source,
                 version = core.version,
                 localdir = os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
                 repository_type = RepositoryType.PLAT
             )
+
+        # Determine executor driver
+        for driver_name, member in ExecutorDriverEnum.__members__.items():
+            if member.name == plat:
+                executor = member.cls.from_config(
+                    config=executor_config,
+                    workdir=workdir,
+                    executor_base=executor_base
+                )
+                break
+
+        platform.executor = executor
+        return platform
 
     @classmethod
     def from_source_string(cls, name, source=None):

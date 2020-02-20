@@ -33,9 +33,9 @@ import os
 from enum import Enum
 
 from kraft.logger import logger
-from kraft.errors import InvalidVolumeType
+from kraft.errors import InvalidVolumeDriver
 
-class VolumeType(Enum):
+class VolumeDriver(Enum):
     VOL_INITRD = ( "initrd"  , [""] )
     VOL_9PFS   = ( "9pfs"    , [
         "CONFIG_LIBDEVFS=y"
@@ -58,7 +58,7 @@ class VolumeType(Enum):
     
     @classmethod
     def from_name(cls, name = None):
-        for vol in VolumeType.__members__.items():
+        for vol in VolumeDriver.__members__.items():
             if name == vol[1].name:
                 return vol
         
@@ -66,49 +66,49 @@ class VolumeType(Enum):
 
 class Volume(object):
     _name = None
-    _image = None
-    _type = None
+    _source = None
+    _driver = None
 
-    def __init__(self, name=None, type=None, image=None):
+    def __init__(self, name=None, driver=None, source=None):
         self._name = name
-        self._type = type
-        self._image = image
+        self._driver = driver
+        self._source = source
 
     @property
     def name(self):
         return self._name
 
     @property
-    def image(self):
-        return self._image
+    def source(self):
+        return self._source
 
     @property
-    def type(self):
-        return self._type[1]
+    def driver(self):
+        return self._driver[1]
     
     @classmethod
-    def from_config(cls, name, type, config=None, workdir=None):
-        image = None
+    def from_config(cls, name, driver, config=None, workdir=None):
+        source = None
 
-        if 'image' in config:
-            image = config['image']
+        if 'source' in config:
+            source = config['source']
 
             # Check if the path exists and simply warn the user for anything
             # not immediately retrievable
-            if os.path.exists(image):
+            if os.path.exists(source):
                 pass
-            elif workdir and os.path.exists(os.path.join(workdir, image)):
-                image = os.path.join(workdir, image)
+            elif workdir and os.path.exists(os.path.join(workdir, source)):
+                source = os.path.join(workdir, source)
             else:
-                logger.warn("The provide image path for '%s' could not be found: %s" % (name, image))
+                logger.warn("The provide source path for '%s' could not be found: %s" % (name, source))
         
-        if type is None and 'type' in config:
-            type = VolumeType.from_name(config['type'])
+        if driver is None and 'driver' in config:
+            driver = VolumeDriver.from_name(config['driver'])
 
         return cls(
             name=name,
-            type=type,
-            image=image
+            driver=driver,
+            source=source
         )
     
 class Volumes(object):
@@ -118,7 +118,18 @@ class Volumes(object):
         self._volumes = volume_base or []
 
     def add(self, volume):
-        self._volumes.append(volume)
+        if isinstance(volume, Volume):
+            # Remove existing volume with the same name so as to override 
+            for net in self._volumes:
+                if net.name == volume.name:
+                    self._volumes.remove(net)
+                    break
+
+            self._volumes.append(volume)
+
+        elif isinstance(volume, Volumes):
+            for vol in volume.all():
+                self.add(vol)
 
     def get(self, key, default=None):
         for volume in self._volumes:
@@ -134,18 +145,18 @@ class Volumes(object):
 
         for vol in config:
 
-            vol_type = None
-            if 'type' in config[vol]:
-                vol_type = VolumeType.from_name(config[vol]['type'])
+            driver = None
+            if 'driver' in config[vol]:
+                driver = VolumeDriver.from_name(config[vol]['driver'])
 
-            if vol_type:
+            if driver:
                 volumes.add(Volume.from_config(
                     name=vol,
-                    type=vol_type,
+                    driver=driver,
                     config=config[vol],
                     workdir=workdir,
                 ))
             else:
-                raise InvalidVolumeType(vol)
+                raise InvalidVolumeDriver(vol)
         
         return volumes

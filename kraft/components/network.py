@@ -29,6 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import six
 import ipaddress
 import subprocess
 
@@ -38,15 +39,16 @@ from shutil import which
 import kraft.utils as utils
 from kraft.logger import logger
 
+from kraft.errors import NetworkDriverError
 from kraft.errors import InvalidBridgeName
 from kraft.errors import DNSMASQCannotStartServer
-from kraft.errors import KraftNetworkBridgeUnsupported
+from kraft.errors import NetworkBridgeUnsupported
 
 BRCTL = "brctl"
-DNSMASQ = "dnsmasq"
+# DNSMASQ = "dnsmasq"
 DEFAULT_NETWORK_BRIDGE_DRIVER = "brctl"
 
-class BridgeDriver(object):
+class NetworkDriver(object):
     _name = None
     _type = None
 
@@ -62,56 +64,72 @@ class BridgeDriver(object):
         if name is not None:
             self._name = name
         else:
-            self._name = BridgeDriver.generate_bridge_name()
+            self._name = NetworkDriver.generate_bridge_name()
         
         self._type = type
     
-    def check_driver_integrity(self):
+    def integrity_ok(self):
         return False
 
-    def create(self, name=None):
-        raise NetworkBridgeError("Creating a bridge is not possible with driver %s" % self.type)
+    def create_bridge(self, name=None, dry_run=False):
+        raise NetworkDriverError("Creating a bridge is not possible with driver %s" % self.type)
     
     def add_vif(self, name=None):
-        raise NetworkBridgeError("Adding an interface is not possible with driver %s" % self.type)
+        raise NetworkDriverError("Adding an interface is not possible with driver %s" % self.type)
     
     def remove_vif(self, name=None):
-        raise NetworkBridgeError("Removing an interface is not possible with driver %s" % self.type)
+        raise NetworkDriverError("Removing an interface is not possible with driver %s" % self.type)
     
-    def destroy(self, name=None):
-        raise NetworkBridgeError("Removing a bridge is not possible with driver %s" % self.type)
+    def destroy_bridge(self, name=None):
+        raise NetworkDriverError("Removing a bridge is not possible with driver %s" % self.type)
     
-    def exists(self, name=None):
-        raise NetworkBridgeError("Checking for a bridge is not possible with driver %s" % self.type)
+    def bridge_exists(self, name=None):
+        raise NetworkDriverError("Checking for a bridge is not possible with driver %s" % self.type)
     
-    @classmethod
-    def generate_bridge_name(self, prefix='virbr'):
-        return None
+    def generate_bridge_name(self, prefix='virbr', max_tries=1024):
+        suffix_i = 0
+        new_name = None
 
-class LinuxBRCTLDriver(BridgeDriver):
+        while suffix_i < max_tries:
+            new_name = prefix + str(suffix_i)
+
+            if not self.bridge_exists(new_name):
+                return new_name
+
+            suffix_i += 1
+
+        raise KraftError("Max tries for bridge creation reached!")
+
+class LinuxBRCTLDriver(NetworkDriver):
     def __init__(self, name, type):
         super(LinuxBRCTLDriver, self).__init__(name, type)
     
-    def check_driver_integrity(self):
+    def integrity_ok(self):
         return which(BRCTL) is not None
 
-    def create(self, name=None):
-        if not self.check_driver_integrity():
-            raise KraftNetworkBridgeUnsupported(self.type.name)
+    def create_bridge(self, name=None, dry_run=False):
+        if not self.integrity_ok():
+            raise NetworkBridgeUnsupported(self.type.name)
         
         if name is None:
-            name = self.name
+            name = self._name
+
+        if self.bridge_exists(name):
+            logger.warning("Bridge '%s' already exists!" % name)
+            return True
 
         if name is not None and len(name) > 0:
             utils.execute([
                 BRCTL, "addbr", name
-            ])
+            ], dry_run=dry_run)
         else:
             raise InvalidBridgeName(name)
+        
+        return True
 
-    def destroy(self, name=None):
-        if not self.check_driver_integrity():
-            raise KraftNetworkBridgeUnsupported(self.type.name)
+    def destroy_bridge(self, name=None):
+        if not self.integrity_ok():
+            raise NetworkBridgeUnsupported(self.type.name)
         
         if name is None:
             name = self.name
@@ -123,23 +141,29 @@ class LinuxBRCTLDriver(BridgeDriver):
         else:
             raise InvalidBridgeName(name)
 
-    def exists(self, name=None):
-        if not self.check_driver_integrity():
-            raise KraftNetworkBridgeUnsupported(self.type.name)
-        
-        process = subprocess.Popen([BRCTL, "show", name])
-        process.communicate()[0]
-        return process.returncode == 0
+    def bridge_exists(self, name=None):
+        if not self.integrity_ok():
+            raise NetworkBridgeUnsupported(self.type.name)
 
-# class OVSDriver(BridgeDriver):
+        process = subprocess.Popen([BRCTL, "show", name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        
+        if err == b"can't get info No such device\n":
+            return False
+        
+        return True
+
+        
+
+# class OVSDriver(NetworkDriver):
 
 #     def __init__(self, name, type):
 #         super(OVSDriver, self).__init__(name, type)
     
-#     def check_driver_integrity(self):
+#     def integrity_ok(self):
 #         return False
     
-#     def create(self, name=None):
+#     def create_bridge(self, name=None, dry_run=False):
 #         pass
     
 #     def add_vif(self, name=None):
@@ -148,21 +172,21 @@ class LinuxBRCTLDriver(BridgeDriver):
 #     def remove_vif(self, name=None):
 #         pass
     
-#     def destroy(self, name=None):
+#     def destroy_bridge(self, name=None):
 #         pass
     
-#     def exists(self, name=None):
+#     def bridge_exists(self, name=None):
 #         pass
 
-# class NetmapDriver(BridgeDriver):
+# class NetmapDriver(NetworkDriver):
 
 #     def __init__(self, name, type):
 #         super(NetmapDriver, self).__init__(name, type)
     
-#     def check_driver_integrity(self):
+#     def integrity_ok(self):
 #         return False
     
-#     def create(self, name=None):
+#     def create_bridge(self, name=None, dry_run=False):
 #         pass
     
 #     def add_vif(self, name=None):
@@ -171,13 +195,13 @@ class LinuxBRCTLDriver(BridgeDriver):
 #     def remove_vif(self, name=None):
 #         pass
     
-#     def destroy(self, name=None):
+#     def destroy_bridge(self, name=None):
 #         pass
     
-#     def exists(self, name=None):
+#     def bridge_exists(self, name=None):
 #         pass
 
-class BridgeDriverEnum(Enum):
+class NetworkDriverEnum(Enum):
     BRCTL   = ("brctl"  , LinuxBRCTLDriver)
     # OVS     = ("ovs"    , OVSDriver)
     # NETMAP  = ("netmap" , NetmapDriver)
@@ -192,92 +216,181 @@ class BridgeDriverEnum(Enum):
 
 class Network(object):
     _name = None
-    _bridge = None
     _ip = None
     _mac = None
     _gateway = None
     _driver = None
-    _use_dhcp = False
+    # _type = None
+    _driver = None
+    _bridge_name = None
+    _pre_up = []
+    _post_down = []
 
     @property
     def name(self):
+        """This refers to the network name and is used to distinguish against
+        other networks used on the target platform and within the unikraft
+        specification."""
         return self._name
 
     @property
-    def bridge(self):
-        return self._bridge
-    @property
     def ip(self):
+        """The desired IP address for the unikraft application on this network.
+        """
         return self._ip
+
     @property
     def mac(self):
+        """The desired MAC address for the unikraft application on this network.
+        """
         return self._mac
+
     @property
     def gateway(self):
+        """The gateway IP address for this network."""
         return self._gateway
 
-    def __init__(self, name, bridge, ip, mac, gateway, use_dhcp):
+    @property
+    def driver(self):
+        """The network driver represents the mechanism by the which the network
+        will operate under.  The network driver is responsible for creating,
+        when necessary, the bridge and adding sany virtual network interfaces to
+        the unikernel.  This is limited to a number of supported software-
+        defined networking systems."""
+        return self._driver
+
+    # @property
+    # def type(self):
+    #     """The network type represents the internal unikraft supported network
+    #     stack.
+    #     """
+    #     return self._type
+
+    @property
+    def bridge_name(self):
+        """The desired name of the bridge for this network."""
+        return self._bridge_name
+
+    @property
+    def pre_up(self):
+        """This is the user-defined script which is called before the networking
+        stack is instantiated and is used to configure the network on behalf of
+        the unikernel where internal support is insufficient."""
+        return self._pre_up
+
+    def append_pre_up(self, cmds=None):
+        if isinstance(cmds, six.string_types):
+            self._pre_up.extend([cmds])
+
+        elif isinstance(cmds, list):
+            self._pre_up.extend(cmds)
+
+    @property
+    def post_down(self):
+        """The is the user-defined script which is called after the networking
+        stack is destructed on the exit of a unikraft unikernel and is used to
+        clean up networking artifacts (bridges, vifs, leases, etc.)."""
+        return self._post_down
+
+    def append_post_down(self, cmds=[]):
+        if isinstance(cmds, six.string_types):
+            self._post_down.append(cmds)
+
+        elif isinstance(cmds, list):
+            self._post_down.extend(cmds)
+
+    def __init__(self, name, ip, mac, gateway, driver, bridge_name, pre_up,
+        post_down):
         self._name = name
-        self._bridge = bridge
         self._ip = ip
         self._mac = mac
         self._gateway = gateway
-        self._use_dhcp = use_dhcp
+        self._driver = driver
+        self._bridge_name = bridge_name
+        
+        if isinstance(pre_up, six.string_types):
+            pre_up = [pre_up]
+        if isinstance(post_down, six.string_types):
+            post_down = [post_down]
+
+        self._pre_up = pre_up
+        self._post_down = post_down
     
     @classmethod
     def from_config(cls, name=None, config={}):
-        if 'name' in config:
-            name = config['name']
-        
-        bridge = None
-        if 'bridge' in config:
-            bridge = config['bridge']
-        
+        interface = None
         ip = None
-        if 'ip' in config:
-            ip = config['ip']
-        
         mac = None
-        if 'mac' in config:
-            mac = config['mac']
-        
         gateway = None
-        if 'gateway' in config:
-            gateway = config['gateway']
-        
-        use_dhcp = False
-        if 'dhcp' in config and isinstance(config['dhcp'], bool):
-            use_dhcp = config['dhcp']
-        
-        # Determine bridge driver
-        bridge_driver = DEFAULT_NETWORK_BRIDGE_DRIVER
-        if 'bridge_driver' in config \
-        and config['bridge_driver'] in [member.name for _, member in BridgeDriverEnum.__members__.items()]:
-            bridge_driver = config['bridge_driver']
+        driver = DEFAULT_NETWORK_BRIDGE_DRIVER
+        bridge_name = None
+        pre_up = []
+        post_down = []
 
+        if not isinstance(config, bool):
+            if 'name' in config:
+                name = config['name']
+
+            if 'interface' in config:
+                interface = config['interface']
+            
+            if 'ip' in config:
+                ip = config['ip']
+            
+            if 'mac' in config:
+                mac = config['mac']
+            
+            if 'gateway' in config:
+                gateway = config['gateway']
+            
+            if 'driver' in config \
+                and config['driver'] in [
+                    member.name for _, member in NetworkDriverEnum.__members__.items()
+                ]:
+                driver = config['driver']
+
+            if 'bridge_name' in config:
+                bridge_name = config['bridge_name']
+            
+            if 'pre_up' in config:
+                pre_up = config['pre_up']
+            
+            if 'post_down' in config:
+                post_down = config['post_down']
+    
         # Instantiate the driver
-        for driver_name, member in BridgeDriverEnum.__members__.items():
-            if member.name == bridge_driver:
-                bridge = member.cls(
-                    name=bridge,
+        for driver_name, member in NetworkDriverEnum.__members__.items():
+            if member.name == driver:
+                if interface == None:
+                    interface = name
+
+                driver = member.cls(
+                    name=interface,
                     type=member
                 )
                 break
         
+        if bridge_name is None:
+            bridge_name = name
+        
         return cls(
             name = name,
-            bridge = bridge,
             ip = ip,
             mac = mac,
             gateway = gateway,
-            use_dhcp = use_dhcp
+            driver = driver,
+            bridge_name = bridge_name,
+            pre_up = pre_up,
+            post_down = post_down,
         )
     
-    def generate_mac(self):
-        pass
-    
-    def determine_ip(self):
-        pass
+    def __str__(self):
+        text = "name:        %s\n" % self.name \
+             + "pre_up:      %s\n" % (' '.join(self.pre_up)) \
+             + "driver:      %s\n" % self.driver.type.name \
+             + "bridge_name: %s\n" % self.bridge_name
+
+        return text
 
 class Networks(object):
     _networks = []
@@ -286,11 +399,23 @@ class Networks(object):
         self._networks = network_base or []
 
     def add(self, network):
-        self._networks.append(network)
+        if isinstance(network, Network):
+            # Remove existing network with the same name so as to override 
+            for net in self._networks:
+                if net.name == network.name:
+                    logger.warning('Overriding existing network %s' % net.name)
+                    self._networks.remove(net)
+                    break
+
+            self._networks.append(network)
+            
+        elif isinstance(network, Networks):
+            for net in network.all():
+                self.add(net)
 
     def get(self, key, default=None):
         for network in self._networks:
-            if getattr(network, key) == value:
+            if network.name == key:
                 return network
 
     def all(self):
@@ -305,45 +430,48 @@ class Networks(object):
 
         return networks
 
-def start_dnsmasq_server(bridge=None, listen_addr=None, ip_range=None, netmask=None, lease_time=None):
-    """Instantiate a new Dnsmasq server running as a user-space daemon."""
-    
-    if bridge is None:
-        raise DNSMASQCannotStartServer("No bridge provided")
+# def start_dnsmasq_server(bridge=None, listen_addr=None, ip_range=None, netmask=None, lease_time=None):
+#     """Instantiate a new Dnsmasq server running as a user-space daemon."""
 
-    if ip_range is None:
-        raise DNSMASQCannotStartServer("No IP range provided")
+#     if ip_range is None:
+#         raise DNSMASQCannotStartServer("No IP range provided")
     
-    if netmask is None:
-        netmask = "255.255.0.0"
+#     if netmask is None:
+#         netmask = "255.255.0.0"
 
-    ip_range_start, ip_range_end = ip_range.split(',')
+#     ip_range_start, ip_range_end = ip_range.split(',')
 
-    if ip_range_start is None or ip_range_end is None:
-        raise DNSMASQCannotStartServer("Could not parse IP range, format is: a.b.c.d,w.x.y.z")
+#     if ip_range_start is None or ip_range_end is None:
+#         raise DNSMASQCannotStartServer("Could not parse IP range, format is: a.b.c.d,w.x.y.z")
     
-    # We can figure out the listen address and increase the start IP.  This
-    # logic may not work in all circumstances, particularly if the netmask
-    # does not correspond to the IP range start.
-    if listen_addr is None:
-        listen_addr = ip_range_start
-        new_start = ipaddress.ip_network((ip_range_start, netmask), strict=False)
-        if new_start.num_addresses > 3:
-            ip_range_start = new_start[2]
-        else:
-            raise DNSMASQCannotStartServer("Could not assign a listen address based on provided netmask")
+#     # We can figure out the listen address and increase the start IP.  This
+#     # logic may not work in all circumstances, particularly if the netmask
+#     # does not correspond to the IP range start.
+#     if listen_addr is None:
+#         listen_addr = ip_range_start
+#         new_start = ipaddress.ip_network((ip_range_start, netmask), strict=False)
+#         if new_start.num_addresses > 3:
+#             ip_range_start = new_start[2]
+#         else:
+#             raise DNSMASQCannotStartServer("Could not assign a listen address based on provided netmask")
 
-    if lease_time is None:
-        lease_time = "12h"
+#     if lease_time is None:
+#         lease_time = "12h"
     
-    cmd = [
-        DNSMASQ,
-        "-i", bridge,
-        "-d",
-        "--log-queries",
-        "--bind-interface",
-        ("--listen-address=%s" % listen_addr),
-        ("--dhcp-range=%s,%s,%s,%s" % (ip_range_start, ip_range_end, netmask, lease_time))
-    ]
-    logger.info("Starting dnsmasq server...")
-    return subprocess.Popen(cmd)
+#     cmd = [
+#         DNSMASQ,
+#         # "-d",
+#         "--log-queries",
+#         "--bind-interface",
+#         ("--listen-address=%s" % listen_addr),
+#         ("--dhcp-range=%s,%s,%s,%s" % (ip_range_start, ip_range_end, netmask, lease_time))
+#     ]
+
+#     if bridge is not None:
+#         cmd.extend(('-i', bridge))
+
+#     logger.info("Starting dnsmasq server...")
+#     logger.debug('Running: %s' % ' '.join(cmd))
+
+#     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#     return process

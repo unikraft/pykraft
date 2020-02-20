@@ -64,6 +64,9 @@ class PlatformConfig(ComponentConfigBase):
 class LibraryConfig(ComponentConfigBase):
     pass
 
+class ExecutorConfig(object):
+    pass
+
 class VolumeConfig(object):
     pass
 

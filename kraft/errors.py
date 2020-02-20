@@ -125,19 +125,19 @@ class InvalidRepositorySource(KraftError):
     def __init__(self, source):
         super(InvalidRepositorySource, self).__init__("The source repository is invalid: %s" % source)
 
-class InvalidVolumeType(KraftError):
+class InvalidVolumeDriver(KraftError):
     def __init__(self, name):
-        super(InvalidVolumeType, self).__init__("The provided volume type was unknown: %s" % name)
+        super(InvalidVolumeDriver, self).__init__("The provided volume driver was unknown: %s" % name)
 
-class KraftNetworkError(KraftError):
+class NetworkError(KraftError):
     pass
 
-class KraftNetworkBridgeError(KraftNetworkError):
+class NetworkDriverError(NetworkError):
     pass
 
-class KraftNetworkBridgeUnsupported(KraftNetworkBridgeError):
+class NetworkBridgeUnsupported(NetworkDriverError):
     def __init__(self, driver):
-        super(KraftNetworkBridgeUnsupported, self).__init__("bridge driver '%s' is not supported" % driver)
+        super(NetworkBridgeUnsupported, self).__init__("bridge driver '%s' is not supported" % driver)
 
 class InvalidBridgeName(KraftError):
     def __init__(self, name):
@@ -146,3 +146,6 @@ class InvalidBridgeName(KraftError):
 class DNSMASQCannotStartServer(KraftError):
     def __init__(self, message):
         super(DNSMASQCannotStartServer, self).__init__("Cannot start Dnsmasq  server: %s" % message)
+
+class ExecutorError(KraftError):
+    pass

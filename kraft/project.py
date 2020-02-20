@@ -40,22 +40,20 @@ import dpath.util as dpath_util
 from pathlib import Path
 from json.decoder import JSONDecodeError
 
+import kraft.utils as utils
 from kraft.logger import logger
 from kraft.kraft import kraft_context
+from kraft.types import RepositoryType
 
 from kraft.components import Core
-from kraft.components import Volume
-from kraft.components import Volumes
-from kraft.components import Network
-from kraft.components import Networks
 from kraft.components import Library
 from kraft.components import Libraries
 from kraft.components import Platform
 from kraft.components import Platforms
+from kraft.components import Executor
 from kraft.components import Architecture
 from kraft.components import Architectures
 from kraft.components import Repository
-from kraft.types import RepositoryType
 
 from kraft.errors import CannotReadKraftfile
 from kraft.errors import InvalidRepositorySource
@@ -63,7 +61,6 @@ from kraft.errors import MisconfiguredUnikraftProject
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
 
-import kraft.utils as utils
 from kraft.constants import KCONFIG_Y
 from kraft.constants import DOT_CONFIG
 from kraft.constants import DEFCONFIG
@@ -74,13 +71,11 @@ from kraft.constants import SUPPORTED_FILENAMES
 from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
 from kraft.constants import KRAFTCONF_PREFERRED_PLATFORM
 
+from kraft.config.config import get_default_config_files
 from kraft.config.kconfig import infer_arch_config_name
 from kraft.config.kconfig import infer_plat_config_name
 from kraft.config.kconfig import infer_lib_config_name
-
 from kraft.config.serialize import serialize_config
-
-from kraft.config.config import get_default_config_files
 
 class Project(object):
     _name = None
@@ -91,8 +86,6 @@ class Project(object):
     _architectures = {}
     _platforms = {}
     _libraries = {}
-    _volumes = {}
-    _networks = {}
 
     def __init__(self,
         name,
@@ -101,9 +94,7 @@ class Project(object):
         config=None,
         architectures=None,
         platforms=None,
-        libraries=None,
-        volumes=None,
-        networks=None):
+        libraries=None):
         
         self._name = name
         self._path = path
@@ -114,8 +105,6 @@ class Project(object):
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
         self._libraries = libraries or Libraries([])
-        self._volumes = volumes or Volumes([])
-        self._networks = networks or Networks([])
     
     @property
     def name(self):
@@ -138,12 +127,6 @@ class Project(object):
     @property
     def libraries(self):
         return self._libraries
-    @property
-    def volumes(self):
-        return self._volumes
-    @property
-    def networks(self):
-        return self._networks
 
     @classmethod
     @kraft_context
@@ -155,6 +138,7 @@ class Project(object):
     
         try:
             core = Core.from_config(config.unikraft)
+            executor_base = Executor.from_config(config.executor, ctx.workdir)
             logger.debug("Discovered %s" % core)
 
             architectures = Architectures([])
@@ -165,7 +149,7 @@ class Project(object):
 
             platforms = Platforms([])
             for plat in config.platforms:
-                platform = Platform.from_config(core, plat, config.platforms[plat])
+                platform = Platform.from_config(core, plat, config.platforms[plat], ctx.workdir, executor_base)
                 logger.debug("Discovered %s" % platform)
                 platforms.add(plat, platform, config.platforms[plat])
 
@@ -174,9 +158,6 @@ class Project(object):
                 library = Library.from_config(lib, config.libraries[lib])
                 logger.debug("Discovered %s" % library)
                 libraries.add(lib, library, config.libraries[lib])
-
-            volumes = Volumes.from_config(ctx.workdir, config.volumes)
-            networks = Networks.from_config(config.networks)
 
         except InvalidRepositorySource as e:
             logger.fatal(e)
@@ -188,9 +169,7 @@ class Project(object):
             config = config,
             architectures = architectures,
             platforms = platforms,
-            libraries = libraries,
-            volumes = volumes,
-            networks = networks
+            libraries = libraries
         )
 
         return project
@@ -380,6 +359,7 @@ class Project(object):
     
         if 'source' not in self.config:
             dpath_util.new(self.config, 'unikraft/source', self.core.source)
+        
         if 'version' not in self.config:
             dpath_util.new(self.config, 'unikraft/version', self.core.version)
             

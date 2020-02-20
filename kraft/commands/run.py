@@ -39,14 +39,16 @@ from kraft.config import config
 from kraft.logger import logger
 from kraft.project import Project
 from kraft.errors import KraftError
+from kraft.errors import ExecutorError
 from kraft.kraft import kraft_context
-from kraft.executor import Executor
-from kraft.components import VolumeType
-from kraft.components.network import start_dnsmasq_server
+from kraft.components import VolumeDriver
+# from kraft.components.executor import Executor
+# from kraft.components.network import start_dnsmasq_server
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 
 @kraft_context
-def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
+def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, 
+    bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores):
     """
     Starts the unikraft application once it has been successfully
     built.
@@ -68,27 +70,27 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, brid
 
     for platform in project.platforms.all():
         if plat == platform.name:
-            target_platform = plat
+            target_platform = platform
     
     if target_platform is None:
-        logger.error('Application platform not set')
+        logger.error('Application platform not configured or set')
         sys.exit(1)
     
     target_architecture = None
 
     for architecture in project.architectures.all():
         if arch == architecture.name:
-            target_architecture = arch
+            target_architecture = architecture
     
     if target_architecture is None:
-        logger.error('Application architecture not set')
+        logger.error('Application architecture not configured or set')
         sys.exit(1)
 
     unikernel = UNIKERNEL_IMAGE_FORMAT % (
         ctx.workdir,
         project.name,
-        target_platform,
-        target_architecture
+        target_platform.name,
+        target_architecture.name
     )
 
     if not os.path.exists(unikernel):
@@ -96,41 +98,9 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, brid
         logger.info('Have you tried running `kraft build`?')
         sys.exit(1)
 
-    executor = Executor(
-        kernel=unikernel,
-        architecture=arch,
-        platform=plat
-    )
-
-    for volume in project.volumes.all():
-        if volume.type is VolumeType.VOL_INITRD:
-            executor.add_initrd(volume.image)
-        elif volume.type is VolumeType.VOL_9PFS:
-            executor.add_virtio_9pfs(volume.image)
-        elif volume.type is VolumeType.VOL_RAW:
-            executor.add_virtio_raw(volume.image)
-        elif volume.type is VolumeType.VOL_QCOW2:
-            executor.add_virtio_qcow2(volume.image)
+    executor = target_platform.repository.executor
+    executor.architecture = target_architecture.name
     
-    # Set up networking
-    for network in project.networks.all():
-        if network.bridge is not None:
-            try:
-                new_bridge = network.bridge.create()
-                executor.add_bridge(new_bridge)
-
-            except KraftError as e:
-                logger.warn("Could not create network %s: %s" % (network.name, e))
-                continue
-
-    if with_dnsmasq:
-        try:
-            start_dnsmasq_server(bridge, None, ip_range, ip_netmask, ip_lease_time)
-        except Exception as e:
-            logger.error(str(e))
-            sys.exit(1)
-            
-    # for network in project.networks.all():
     if initrd:
         executor.add_initrd(initrd)
 
@@ -155,12 +125,17 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, brid
     if cpu_cores:
         executor.set_cpu_cores(cpu_cores)
     
-    executor.execute(
-        extra_args=args,
-        background=background,
-        paused=paused,
-        dry_run=dry_run
-    )
+    try:
+        executor.unikernel = unikernel
+        executor.execute(
+            extra_args=args,
+            background=background,
+            paused=paused,
+            dry_run=dry_run,
+        )
+    except ExecutorError as e:
+        logger.error("Cannot execute: %s" % e)
+        sys.exit(1)
 
 @click.command('run', short_help='Run the application.')
 @click.option('--plat', '-p', help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
@@ -176,12 +151,14 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, brid
 @click.option('--memory', '-M',  help="Assign MB memory to the guest.", type=int)
 @click.option('--cpu-sockets', '-s',  help="Number of guest CPU sockets.", type=int)
 @click.option('--cpu-cores', '-c',  help="Number of guest cores per socket.", type=int)
-@click.option('--with-dnsmasq', is_flag=True, help='Start a Dnsmasq server.')
-@click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254', show_default=True)
-@click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0', show_default=True)
-@click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h', show_default=True)
+# @click.option('--with-dnsmasq', is_flag=True, help='Start a Dnsmasq server.')
+# @click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254', show_default=True)
+# @click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0', show_default=True)
+# @click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h', show_default=True)
 @click.argument('args', nargs=-1)
-def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
+def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge,
+    interface, dry_run, args, memory, cpu_sockets, cpu_cores):
+    
     kraft_run(
         plat=plat,
         arch=arch,
@@ -197,8 +174,7 @@ def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge, interfa
         memory=memory,
         cpu_sockets=cpu_sockets,
         cpu_cores=cpu_cores,
-        with_dnsmasq=with_dnsmasq,
-        ip_range=ip_range,
-        ip_netmask=ip_netmask,
-        ip_lease_time=ip_lease_time
+        # ip_range=ip_range,
+        # ip_netmask=ip_netmask,
+        # ip_lease_time=ip_lease_time
     )

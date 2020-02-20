@@ -39,6 +39,7 @@ from collections import namedtuple
 from cached_property import cached_property
 
 from .version import SpecificationVersion
+from .validation import validate_executor_section
 from .validation import validate_config_section
 from .validation import validate_libraries_section
 from .validation import validate_unikraft_section
@@ -122,19 +123,22 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     def get_libraries(self):
         return self.config.get('libraries', {})
 
-    def get_volume(self, name):
-        return self.get_volumes()[name]
+    # def get_volume(self, name):
+    #     return self.get_volumes()[name]
 
-    def get_volumes(self):
-        return self.config.get('volumes', {})
+    # def get_volumes(self):
+    #     return self.config.get('volumes', {})
 
-    def get_network(self, name):
-        return self.get_networks()[name]
+    # def get_network(self, name):
+    #     return self.get_networks()[name]
 
-    def get_networks(self):
-        return self.config.get('networks', {})
+    # def get_networks(self):
+    #     return self.config.get('networks', {})
 
-class Config(namedtuple('_Config', 'specification name unikraft architectures platforms libraries volumes networks')):
+    def get_executor(self):
+        return self.config.get('run', {})
+
+class Config(namedtuple('_Config', 'specification name unikraft architectures platforms libraries executor')):
     """
     :param specification: configuration version
     :type  specification: int
@@ -154,11 +158,8 @@ class Config(namedtuple('_Config', 'specification name unikraft architectures pl
     :param libraries: Dictionary mapping library names to description dictionaries
     :type  libraries: :class:`dict`
 
-    :param volumes: Dictionary mapping volume names to description dictionaries
-    :type  volumes: :class:`dict`
-
-    :param networks: Dictionary mapping network names to description dictionaries
-    :type  networks: :class:`dict`
+    :param executor: Dictionary mapping of execution description dictionaries
+    :type  executor: :class:`dict`
     """
 
 def get_project_name(workdir, project_name=None, environment=None):
@@ -182,6 +183,18 @@ def get_project_name(workdir, project_name=None, environment=None):
 
 def process_top_level_string(config_file, config, environment, section, interpolate):
     validate_top_level_string(config_file, config, section)
+    if interpolate and isinstance(config, dict):
+        return interpolate_environment_variables(
+            config_file.version,
+            config,
+            section,
+            environment
+            )
+    else:
+        return config
+
+def process_top_level_string_or_list(config_file, config, environment, section, interpolate):
+    validate_top_level_string_or_list(config_file, config, section)
     if interpolate and isinstance(config, dict):
         return interpolate_environment_variables(
             config_file.version,
@@ -230,6 +243,19 @@ def process_config_section(config_file, config, section, environment, interpolat
     else:
         return config
 
+def process_executor_section(config_file, section, environment, interpolate):
+    config = config_file.get_executor()
+    validate_executor_section(config_file, config)
+    if interpolate and isinstance(config, dict):
+        return interpolate_environment_variables(
+            config_file.version,
+            config,
+            "run",
+            environment
+            )
+    else:
+        return config
+
 def process_config_file(config_file, environment, service_name=None, interpolate=True):
 
     if config_file.config is None:
@@ -268,17 +294,9 @@ def process_config_file(config_file, environment, service_name=None, interpolate
         environment,
         interpolate,
     )
-    processed_config['volumes'] = process_config_section(
+    processed_config['executor'] = process_executor_section(
         config_file,
-        config_file.get_volumes(),
-        'volumes',
-        environment,
-        interpolate,
-    )
-    processed_config['networks'] = process_config_section(
-        config_file,
-        config_file.get_networks(),
-        'networks',
+        'run',
         environment,
         interpolate,
     )
@@ -442,20 +460,26 @@ def load(config_details):
         libraries[library]['source'] = definite_source
         libraries[library]['version'] = definite_version
 
-    volumes = load_mapping(
+    # volumes = load_mapping(
+    #     config_details.config_files,
+    #     'get_volumes',
+    #     'volumes',
+    #     config_details.working_dir
+    # )
+    # networks = load_mapping(
+    #     config_details.config_files,
+    #     'get_networks',
+    #     'networks',
+    #     config_details.working_dir
+    # )
+    executor = load_mapping(
         config_details.config_files,
-        'get_volumes',
-        'volumes',
-        config_details.working_dir
-    )
-    networks = load_mapping(
-        config_details.config_files,
-        'get_networks',
-        'networks',
+        'get_executor',
+        'run',
         config_details.working_dir
     )
 
-    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, volumes, networks)
+    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, executor)
 
 
 def load_yaml(filename, encoding=None, binary=True):

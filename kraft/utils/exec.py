@@ -33,12 +33,14 @@ import subprocess
 
 from kraft.logger import logger
 
-def execute(cmd=""):
+def execute(cmd="", env={}, dry_run=False):
     if type(cmd) is list:
         cmd = " ".join(cmd)
 
     logger.debug("Running: %s" % cmd)
-    cmd = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
-    for line in cmd.stdout:
-        logger.info(line.strip().decode('ascii'))
+    if not dry_run:
+        cmd = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, env=env)
+
+        for line in cmd.stdout:
+            logger.info(line.strip().decode('ascii'))

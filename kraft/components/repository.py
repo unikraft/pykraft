@@ -558,8 +558,10 @@ class RepositoryManager(object):
 
     def get(self, key, default=None):
         for repository in self._repositories:
-            if getattr(repository, key) == value:
+            if repository.name == key:
                 return repository
+    
+        return default
 
     def all(self):
         return self._repositories

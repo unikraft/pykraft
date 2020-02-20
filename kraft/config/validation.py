@@ -112,6 +112,13 @@ def validate_config_section(filename, config, section):
                     name=key,
                     type=anglicize_json_type(python_type_to_yaml_type(value))))
 
+def validate_executor_section(config_file, config):
+    if not isinstance(config, dict):
+        raise KraftError(
+            "Top level object in '{}' needs to be an object not '{}'.".format(
+                config_file.filename,
+                type(config)))
+
 def get_schema_path():
     return os.path.dirname(os.path.abspath(__file__))
 
