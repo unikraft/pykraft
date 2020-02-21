@@ -65,11 +65,7 @@ from .run import kraft_run
 @click.option('--cpu-cores', '-c',  help="Number of guest cores per socket.", type=int)
 @click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files in current working directory.')
 @click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
-@click.option('--with-dnsmasq', is_flag=True, help='Start a Dnsmasq server.')
-@click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254')
-@click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0')
-@click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h')
-def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force_create, fast, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
+def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force_create, fast):
     """
     Configures, builds and runs an application for a selected architecture and platform.
     """
@@ -108,10 +104,6 @@ def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, vir
         args=None,
         memory=memory,
         cpu_sockets=cpu_sockets,
-        cpu_cores=cpu_cores,
-        with_dnsmasq=with_dnsmasq,
-        ip_range=ip_range,
-        ip_netmask=ip_netmask,
-        ip_lease_time=ip_lease_time
+        cpu_cores=cpu_cores
     )
 
