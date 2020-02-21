@@ -44,7 +44,7 @@ from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
 @kraft_context
-def kraft_configure(ctx, target_plat, target_arch, menuconfig):
+def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
     """
     Populates the local .config with the default values for the target application.
     """
@@ -62,6 +62,14 @@ def kraft_configure(ctx, target_plat, target_arch, menuconfig):
     except KraftError as e:
         logger.error(str(e))
         sys.exit(1)
+
+    if project.is_configured() and force_configure is False:
+        if click.confirm('%s is already configured, would you like to overwrite configuration?' % ctx.workdir):
+            # It should be safe to set this now
+            force_configure = True
+        else:
+            logger.error('Cancelling!')
+            sys.exit(1)
 
     # Check if we have used "--arch" before.  This saves the user from having to
     # re-type it.  This means omission uses the settings.
@@ -101,6 +109,7 @@ def kraft_configure(ctx, target_plat, target_arch, menuconfig):
 @click.command('configure', short_help='Configure the application.')
 @click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
 @click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
+@click.option('--force', '-F', 'force_configure', is_flag=True, help='Force writing new configuration.')
 @click.option('--menuconfig', '-k', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
-def configure(target_plat, target_arch, menuconfig):
-    kraft_configure(target_plat=target_plat, target_arch=target_arch, menuconfig=menuconfig)
+def configure(target_plat, target_arch, force_configure,  menuconfig):
+    kraft_configure(target_plat=target_plat, target_arch=target_arch, force_configure=force_configure, menuconfig=menuconfig)

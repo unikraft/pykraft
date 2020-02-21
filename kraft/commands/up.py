@@ -63,9 +63,9 @@ from .run import kraft_run
 @click.option('--memory', '-M',  help="Assign MB memory to the guest.", type=int)
 @click.option('--cpu-sockets', '-s',  help="Number of guest CPU sockets.", type=int)
 @click.option('--cpu-cores', '-c',  help="Number of guest cores per socket.", type=int)
-@click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files in current working directory.')
+@click.option('--force', '-F', 'force', is_flag=True, help='Overwrite any existing files in current working directory.')
 @click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
-def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force_create, fast):
+def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force, fast):
     """
     Configures, builds and runs an application for a selected architecture and platform.
     """
@@ -76,12 +76,13 @@ def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, vir
         target_arch=target_arch,
         template_app=name,
         version=None,
-        force_create=force_create
+        force_create=force
     )
 
     kraft_configure(
         target_plat=target_plat,
         target_arch=target_arch,
+        force_configure=force,
         menuconfig=False
     )
     
