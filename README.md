@@ -1,6 +1,6 @@
-# kraft Tool
+# kraft
 
-To begin using [Unikraft](https://unikraft.org>) you can use the
+To begin using [Unikraft](https://unikraft.org) you can use the
 command-line utility `kraft`, which is a companion tool used for
 defining, configuring, building, and running Unikraft applications.
 With `kraft` you can seamlessly create a build environment for your
@@ -14,9 +14,7 @@ The `kraft` tool and Unikraft build system have a number of package requirements
 
 To install `kraft` simply run:
 
-    git clone https://github.com/unikraft/kraft
-    cd kraft
-    sudo python3 setup.py install
+    pip3 install git+https://github.com/unikraft/kraft.git
 	
 You can then type `kraft` to see its help menu
 
@@ -26,7 +24,7 @@ The simplest way to get the sources for, build and run an application
 is by running the following commands:
 
     kraft list
-    kraft up -p [platform] -m [architecture] [app name]
+    kraft up -p PLATFORM -m ARCHITECTURE -a APP
 
 For more information about that command type `kraft up -h`. For more information about `kraft` type ```kraft -h``` or read the documentation at [Unikraft's website](https://docs.unikraft.org). If you find any problems please [fill out an issue](https://github.com/unikraft/tools/issues/new/choose). Thank you!
 
