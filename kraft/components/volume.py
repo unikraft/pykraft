@@ -68,11 +68,13 @@ class Volume(object):
     _name = None
     _source = None
     _driver = None
+    _workdir = None
 
-    def __init__(self, name=None, driver=None, source=None):
+    def __init__(self, name=None, driver=None, source=None, workdir=None):
         self._name = name
         self._driver = driver
         self._source = source
+        self._workdir = workdir
 
     @property
     def name(self):
@@ -85,6 +87,10 @@ class Volume(object):
     @property
     def driver(self):
         return self._driver[1]
+
+    @property
+    def workdir(self):
+        return self._workdir
     
     @classmethod
     def from_config(cls, name, driver, config=None, workdir=None):
@@ -108,7 +114,8 @@ class Volume(object):
         return cls(
             name=name,
             driver=driver,
-            source=source
+            source=source,
+            workdir=workdir
         )
     
 class Volumes(object):
