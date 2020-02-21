@@ -32,6 +32,7 @@
 import os
 import six
 import tarfile
+import tempfile
 import platform
 import subprocess
 from enum import Enum
@@ -165,7 +166,7 @@ class Executor(object):
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
         raise ExecutorError('Using undefined executor driver')
     
-    def automount(self):
+    def automount(self, dry_run=False):
         for vol in self.volumes.all():
             if vol.driver is VolumeDriver.VOL_INITRD:
                 self.add_initrd(vol.source)
@@ -174,13 +175,12 @@ class Executor(object):
                 source = vol.source
 
                 # Extract tarball file systems
-                if vol.source.lower().endswith(('.tgz', '.tar.gz', '.tar')):
-                    source = os.path.join(vol.workdir, vol.name)
-                    if not os.path.exists(source):
-                        logger.debug('Extracting %s to %s...' % (vol.source, source))
-                        tarball = tarfile.open(vol.source)
-                        tarball.extractall()
-                        tarball.close()
+                if not dry_run and vol.source.lower().endswith(('.tgz', '.tar.gz', '.tar')):
+                    source = tempfile.mkdtemp()
+                    logger.debug('Extracting %s to %s...' % (vol.source, source))
+                    tarball = tarfile.open(vol.source)
+                    tarball.extractall(source)
+                    tarball.close()
 
                 self.add_virtio_9pfs(source)
 
@@ -380,7 +380,7 @@ class KVMExecutor(Executor):
         if extra_args:
             self._cmd.extend(('-a', ' '.join(extra_args)))
         
-        self.automount()
+        self.automount(dry_run)
         self.autoconnect(dry_run)
 
         if self.architecture == "x86_64":
@@ -436,7 +436,7 @@ class XenExecutor(Executor):
         if extra_args:
             self._cmd.extend(('-a', ' '.join(extra_args)))
         
-        self.automount()
+        self.automount(dry_run)
         self.autoconnect(dry_run)
         
         if self.arguments:
