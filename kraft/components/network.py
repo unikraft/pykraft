@@ -150,6 +150,8 @@ class LinuxBRCTLDriver(NetworkDriver):
         
         if err == b"can't get info No such device\n":
             return False
+        elif "does not exist!" in err.decode('ascii'):
+            return False
         
         return True
 
