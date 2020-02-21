@@ -46,6 +46,8 @@ from kraft.components.volume import VolumeDriver
 from kraft.components.network import Network
 from kraft.components.network import Networks
 
+from kraft.constants import UK_DBG_EXT
+
 class Executor(object):
     _base_cmd = ''
     _cmd = []
@@ -59,6 +61,7 @@ class Executor(object):
     _pre_up = []
     _post_down = []
     _arguments = None
+    _use_debug = False
 
     @property
     def volumes(self):
@@ -115,6 +118,14 @@ class Executor(object):
         if port and isinstance(port, int):
             self._cmd.extend(('-g', port))
 
+    @property
+    def use_debug(self):
+        return self._use_debug
+
+    @use_debug.setter
+    def use_debug(self, flag=True):
+        self._use_debug = flag
+
     def set_memory(self, memory=None):
         if memory and isinstance(memory, int):
             self._cmd.extend(('-m', memory))
@@ -129,7 +140,11 @@ class Executor(object):
 
     @property
     def unikernel(self):
-        return self._unikernel
+        unikernel = self._unikernel
+        if self._use_debug:
+            unikernel += UK_DBG_EXT
+        
+        return unikernel
     
     @unikernel.setter
     def unikernel(self, unikernel=None):
@@ -312,7 +327,7 @@ class LinuxExecutor(Executor):
         logger.debug("Executing on Linux...")
 
         cmd = [
-            self._unikernel
+            self.unikernel
         ]
 
         if self.arguments:
@@ -351,17 +366,10 @@ class LinuxExecutor(Executor):
 QEMU_GUEST='qemu-guest'
 
 class KVMExecutor(Executor):
-    @property
-    def unikernel(self):
-        return self._unikernel
-
-    @unikernel.setter
-    def unikernel(self, unikernel=None):
-        super(KVMExecutor, self.__class__).unikernel.fset(self, unikernel)
-        self._cmd.extend(('-k', unikernel))
-
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
         logger.debug("Executing on KVM...")
+
+        self._cmd.extend(('-k', self.unikernel))
 
         if background:
             self._cmd.append('-X')
@@ -414,17 +422,10 @@ class KVMExecutor(Executor):
         
 XEN_GUEST='xen-guest'
 class XenExecutor(Executor):
-    @property
-    def unikernel(self):
-        return self._unikernel
-
-    @unikernel.setter
-    def unikernel(self, unikernel=None):
-        super(KVMExecutor, self.__class__).unikernel.fset(self, unikernel)
-        self._cmd.extend(('-k', unikernel))
-
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
         logger.debug("Executing on Xen...")
+
+        self._cmd.extend(('-k', self.unikernel))
 
         if background:
             self._cmd.append('-X')

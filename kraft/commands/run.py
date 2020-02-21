@@ -47,7 +47,7 @@ from kraft.components import VolumeDriver
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 
 @kraft_context
-def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic, 
+def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic, 
     bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores):
     """
     Starts the unikraft application once it has been successfully
@@ -100,6 +100,7 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic,
 
     executor = target_platform.repository.executor
     executor.architecture = target_architecture.name
+    executor.use_debug = dbg
     
     if initrd:
         executor.add_initrd(initrd)
@@ -144,6 +145,7 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic,
 @click.option('--background', '-X', is_flag=True, help='Run in background.')
 @click.option('--paused', '-P', is_flag=True, help='Run the application in paused state.')
 @click.option('--gdb', '-g', help='Run a GDB server for the guest at PORT.', type=int)
+@click.option('--dbg', '-d', is_flag=True, help='Use unstriped unikernel')
 @click.option('--virtio-nic', '-n', help='Attach a NAT-ed virtio-NIC to the guest.')
 @click.option('--bridge', '-b', help='Attach a NAT-ed virtio-NIC an existing bridge.')
 @click.option('--interface', '-V', help='Assign host device interface directly as virtio-NIC to the guest.')
@@ -151,12 +153,8 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, virtio_nic,
 @click.option('--memory', '-M',  help="Assign MB memory to the guest.", type=int)
 @click.option('--cpu-sockets', '-s',  help="Number of guest CPU sockets.", type=int)
 @click.option('--cpu-cores', '-c',  help="Number of guest cores per socket.", type=int)
-# @click.option('--with-dnsmasq', is_flag=True, help='Start a Dnsmasq server.')
-# @click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254', show_default=True)
-# @click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0', show_default=True)
-# @click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h', show_default=True)
 @click.argument('args', nargs=-1)
-def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge,
+def run(plat, arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge,
     interface, dry_run, args, memory, cpu_sockets, cpu_cores):
     
     kraft_run(
@@ -165,6 +163,7 @@ def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge,
         initrd=initrd,
         background=background,
         paused=paused,
+        dbg=dbg,
         gdb=gdb,
         virtio_nic=virtio_nic,
         bridge=bridge,
@@ -174,7 +173,4 @@ def run(plat, arch, initrd, background, paused, gdb, virtio_nic, bridge,
         memory=memory,
         cpu_sockets=cpu_sockets,
         cpu_cores=cpu_cores,
-        # ip_range=ip_range,
-        # ip_netmask=ip_netmask,
-        # ip_lease_time=ip_lease_time
     )

@@ -55,6 +55,7 @@ from .run import kraft_run
 @click.option('--background', '-X', is_flag=True, help='Run in background.')
 @click.option('--paused', '-P', is_flag=True, help='Run the application in paused state.')
 @click.option('--gdb', '-g', help='Run a GDB server for the guest on specified port.', type=int)
+@click.option('--dbg', '-d', is_flag=True, help='Use unstriped unikernel')
 @click.option('--virtio-nic', '-n', help='Attach a NAT-ed virtio-NIC to the guest.')
 @click.option('--bridge', '-b', help='Attach a NAT-ed virtio-NIC an existing bridge.')
 @click.option('--interface', '-V', help='Assign host device interface directly as virtio-NIC to the guest.')
@@ -68,7 +69,7 @@ from .run import kraft_run
 @click.option('--ip-range', help='Set the IP range for Dnsmasq.', default='172.88.0.1,172.88.0.254')
 @click.option('--ip-netmask', help='Set the netmask for Dnsmasq.', default='255.255.0.0')
 @click.option('--ip-lease-time', help='Set the IP lease time for Dnsmasq.', default='12h')
-def up(name, target_plat, target_arch, initrd, background, paused, gdb, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force_create, fast, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
+def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force_create, fast, with_dnsmasq, ip_range, ip_netmask, ip_lease_time):
     """
     Configures, builds and runs an application for a selected architecture and platform.
     """
@@ -99,6 +100,7 @@ def up(name, target_plat, target_arch, initrd, background, paused, gdb, virtio_n
         background=background,
         paused=paused,
         gdb=gdb,
+        dbg=dbg,
         virtio_nic=virtio_nic,
         bridge=bridge,
         interface=interface,
