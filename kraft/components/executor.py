@@ -392,7 +392,7 @@ class KVMExecutor(Executor):
             self._cmd.append('-W')
 
         if self.arguments:
-            self._cmd.extend(('-a', '"%s"' % self.arguments.replace("\"", "\\\"")))
+            self._cmd.extend(('-a', self.arguments))
         
         cmd = [QEMU_GUEST]
 
@@ -440,7 +440,7 @@ class XenExecutor(Executor):
         self.autoconnect(dry_run)
         
         if self.arguments:
-            self._cmd.extend(('-a', '"%s"' % self.arguments.replace("\"", "\\\"")))
+            self._cmd.extend(('-a', self.arguments))
         
         cmd = [XEN_GUEST]
         cmd.extend(self._cmd)
