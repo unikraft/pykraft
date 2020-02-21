@@ -324,7 +324,7 @@ class LinuxExecutor(Executor):
         for pre_up_cmd in self._pre_up:
             utils.execute(pre_up_cmd, dry_run=dry_run)
 
-        logger.debug('Running: %s' % ' '.join(cmd))
+        logger.debug('Running: %s' % ' '.join(map(str, cmd)))
         if not dry_run:
             process = subprocess.Popen(cmd)
 
