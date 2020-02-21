@@ -31,6 +31,7 @@
 
 import os
 import six
+import tarfile
 import platform
 import subprocess
 from enum import Enum
@@ -155,7 +156,18 @@ class Executor(object):
                 self.add_initrd(vol.source)
 
             if vol.driver is VolumeDriver.VOL_9PFS:
-                self.add_virtio_9pfs(vol.source)
+                source = vol.source
+
+                # Extract tarball file systems
+                if vol.source.lower().endswith(('.tgz', '.tar.gz', '.tar')):
+                    source = os.path.join(vol.workdir, vol.name)
+                    if not os.path.exists(source):
+                        logger.debug('Extracting %s to %s...' % (vol.source, source))
+                        tarball = tarfile.open(vol.source)
+                        tarball.extractall()
+                        tarball.close()
+
+                self.add_virtio_9pfs(source)
 
             if vol.driver is VolumeDriver.VOL_RAW:
                 self.add_virtio_raw(vol.source)
