@@ -63,7 +63,7 @@ def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
         logger.error(str(e))
         sys.exit(1)
 
-    if project.is_configured() and force_configure is False:
+    if project.is_configured() and force_configure is False and menuconfig is False:
         if click.confirm('%s is already configured, would you like to overwrite configuration?' % ctx.workdir):
             # It should be safe to set this now
             force_configure = True
