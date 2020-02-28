@@ -107,7 +107,7 @@ def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
             sys.exit(1)
         
 @click.command('configure', short_help='Configure the application.')
-@click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
+@click.option('--plat', '-p', 'target_plat', help='Target platform.')
 @click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
 @click.option('--force', '-F', 'force_configure', is_flag=True, help='Force writing new configuration.')
 @click.option('--menuconfig', '-k', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
