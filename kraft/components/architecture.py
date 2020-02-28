@@ -47,7 +47,8 @@ from kraft.constants import KCONFIG_Y
     
 class Architecture(Repository):
     @classmethod
-    def from_config(cls, core=None, arch=None, config=None):
+    def from_config(cls, ctx, core=None, arch=None, config=None):
+        assert ctx is not None, "ctx is undefined"
 
         arch_dir = UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)
         

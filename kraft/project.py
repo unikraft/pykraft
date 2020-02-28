@@ -137,25 +137,25 @@ class Project(object):
             config.name = name_override
     
         try:
-            core = Core.from_config(config.unikraft)
-            executor_base = Executor.from_config(config.executor, ctx.workdir)
+            core = Core.from_config(ctx, config.unikraft)
+            executor_base = Executor.from_config(ctx, config.executor)
             logger.debug("Discovered %s" % core)
 
             architectures = Architectures([])
             for arch in config.architectures:
-                architecture = Architecture.from_config(core, arch, config.architectures[arch])
+                architecture = Architecture.from_config(ctx, core, arch, config.architectures[arch])
                 logger.debug("Discovered %s" % architecture)
                 architectures.add(arch,  architecture, config.architectures[arch])
 
             platforms = Platforms([])
             for plat in config.platforms:
-                platform = Platform.from_config(core, plat, config.platforms[plat], ctx.workdir, executor_base)
+                platform = Platform.from_config(ctx, core, plat, config.platforms[plat], executor_base)
                 logger.debug("Discovered %s" % platform)
                 platforms.add(plat, platform, config.platforms[plat])
 
             libraries = Libraries([])
             for lib in config.libraries:
-                library = Library.from_config(lib, config.libraries[lib])
+                library = Library.from_config(ctx, lib, config.libraries[lib])
                 logger.debug("Discovered %s" % library)
                 libraries.add(lib, library, config.libraries[lib])
 

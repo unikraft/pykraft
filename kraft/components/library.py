@@ -35,7 +35,9 @@ from kraft.components.repository import RepositoryManager
 
 class Library(Repository):
     @classmethod
-    def from_config(cls, name, config=None):
+    def from_config(cls, ctx, name, config=None):
+        assert ctx is not None, "ctx is undefined"
+
         source = None
         version = None
 

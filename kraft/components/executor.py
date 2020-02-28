@@ -247,7 +247,9 @@ class Executor(object):
             self._post_down.extend(cmds)
     
     @classmethod
-    def from_config(cls, config=None, workdir=None, executor_base=None):
+    def from_config(cls, ctx, config=None, executor_base=None):
+        assert ctx is not None, "ctx is undefined"
+        
         arguments = None
         if config and 'arguments' in config:
             arguments = config['arguments']
@@ -255,7 +257,7 @@ class Executor(object):
             arguments = executor_base.arguments
 
         if config and 'volumes' in config:
-            volumes = Volumes.from_config(workdir, config['volumes'])
+            volumes = Volumes.from_config(ctx.workdir, config['volumes'])
         else:
             volumes = Volumes([])
 

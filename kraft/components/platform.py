@@ -53,7 +53,9 @@ class Platform(Repository):
         self._executor = executor
 
     @classmethod
-    def from_config(cls, core=None, plat=None, config=None, workdir=None, executor_base=None):
+    def from_config(cls, ctx, core=None, plat=None, config=None, executor_base=None):
+        assert ctx is not None, "ctx is undefined"
+
         if not core.is_downloaded:
             core.update()
     
@@ -82,8 +84,8 @@ class Platform(Repository):
         for driver_name, member in ExecutorDriverEnum.__members__.items():
             if member.name == plat:
                 executor = member.cls.from_config(
+                    ctx=ctx,
                     config=executor_config,
-                    workdir=workdir,
                     executor_base=executor_base
                 )
                 break
