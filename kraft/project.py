@@ -61,6 +61,7 @@ from kraft.errors import MisconfiguredUnikraftProject
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
 
+from kraft.constants import UNIKRAFT_CORE
 from kraft.constants import KCONFIG_Y
 from kraft.constants import DOT_CONFIG
 from kraft.constants import DEFCONFIG
@@ -183,15 +184,22 @@ class Project(object):
             '-C', self.core.localdir,
             ('A=%s' % self.path)
         ]
-        paths = []
 
         if verbose:
             cmd.append('V=1')
-
+        
+        plat_paths = []
+        for plat in self.platforms.all():
+            if plat.repository.source != UNIKRAFT_CORE:
+                plat_paths.append(plat.repository.localdir)
+        
+        cmd.append('P=%s' % ":".join(plat_paths))
+        
+        lib_paths = []
         for lib in self.libraries.all():
-            paths.append(lib.repository.localdir)
+            lib_paths.append(lib.repository.localdir)
 
-        cmd.append('L=%s' % ":".join(paths))
+        cmd.append('L=%s' % ":".join(lib_paths))
 
         if type(extra) is list:
             for i in extra:
