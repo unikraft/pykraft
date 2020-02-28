@@ -305,7 +305,7 @@ class Project(object):
         if len(filenames) == 0 or force_create:
             kraft_yaml = os.path.join(self.path, SUPPORTED_FILENAMES[0])
             with open(kraft_yaml, 'w+') as file:
-                file.write(self.toYAML())
+                file.write(self.to_yaml())
 
     def is_configured(self):
         if os.path.exists(os.path.join(self.path, DOT_CONFIG)) is False:
@@ -374,7 +374,7 @@ class Project(object):
 
         return self.config
 
-    def toYAML(self):
+    def to_yaml(self):
         """Return a YAML with the serialized string of this object."""
         
         config = self.get_config()
