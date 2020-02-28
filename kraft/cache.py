@@ -75,6 +75,13 @@ class Cache(object):
         
         return None
     
+    def find_by_name(self, name=None):
+        for source in self._cache:
+            if self._cache[source].name == name:
+                return self._cache[source]
+        
+        return None
+    
     def all(self):
         return self._cache
 

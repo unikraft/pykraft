@@ -55,7 +55,7 @@ class Platform(Repository):
     @classmethod
     def from_config(cls, ctx, core=None, plat=None, config=None, executor_base=None):
         assert ctx is not None, "ctx is undefined"
-
+    
         if not core.is_downloaded:
             core.update()
     
@@ -70,15 +70,23 @@ class Platform(Repository):
 
             if 'source' in config:
                 platform = super(Platform, cls).from_source_string(config['source'], RepositoryType.PLAT)
-            
+        
         if platform is None:
-            platform = cls(
-                name = plat,
-                source = core.source,
-                version = core.version,
-                localdir = os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
-                repository_type = RepositoryType.PLAT
-            )
+            # Check if we have a cache hit for this platform name.   We do this
+            # here because we are unsure of its source address, which can be
+            # mis-interpretted as unikraft's core -- since we place the
+            # platform INTO the unikraft core. 
+            cached_plat = ctx.cache.find_by_name(plat)
+            if cached_plat is not None:
+                platform = cached_plat
+            else:
+                platform = cls(
+                    name = plat,
+                    source = core.source,
+                    version = core.version,
+                    localdir = os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
+                    repository_type = RepositoryType.PLAT
+                )
 
         # Determine executor driver
         for driver_name, member in ExecutorDriverEnum.__members__.items():
