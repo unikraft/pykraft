@@ -59,7 +59,7 @@ DIRTY               := $(shell git update-index -q --refresh && git diff-index -
 endif
 endif
 
-REPO                ?= https://github.com/unikraft/tools
+REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
 TAG                 ?= -$(HASH)$(DIRTY)
 
