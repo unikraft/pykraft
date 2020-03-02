@@ -54,7 +54,6 @@ PYTHON              ?= python3
 
 UK_ARCH             ?= x86_64
 GCC_VERSION         ?= 9.2.0
-QEMU_VERSION        ?= 4.2.0
 
 .PHONY: kraft
 kraft: IMAGE=$(ORG)/kraft:latest$(TAG)
@@ -63,7 +62,6 @@ kraft:
 		--tag $(IMAGE) \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
-		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
 		--cache-from $(IMAGE) \
 		--file $(WORKDIR)/docker/Dockerfile.kraft \
 		$(DOCKER_BUILD_EXTRA) \
