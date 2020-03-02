@@ -20,6 +20,8 @@ RUN set -ex; \
         liblzo2-dev \
         libpixman-1-dev \
         pkg-config \
+        flex \
+        bison \
         python \
         texinfo \
         vde2 \
