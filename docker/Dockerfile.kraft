@@ -37,6 +37,7 @@ RUN set -xe; \
 		flex \
 		git \
 		wget \
+		gawk \
 		socat \
 		bison \
 		unzip \

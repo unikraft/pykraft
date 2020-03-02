@@ -1,34 +1,37 @@
-FROM debian:stretch-20191224 AS gcc-build
+ARG DEBIAN_VERSION=stretch-20191224
+
+FROM debian:${DEBIAN_VERSION} AS gcc-build
 
 LABEL MAINTAINER="Alexander Jung <a.jung@lancs.ac.uk>"
 
-ARG BINUTILS_VERSION
-ARG GCC_VERSION
-ARG UK_ARCH
-ARG GLIB_VERSION
+ARG BINUTILS_VERSION=2.31.1
+ARG GCC_VERSION=4.2.0
+ARG UK_ARCH=x86_64
+ARG GLIB_VERSION=2.11
 ENV PREFIX=/out
 
 RUN set -ex; \
     apt-get update; \
     apt-get install -y \
-		wget \
-		gcc \
-		libgmp3-dev \
-		libmpfr-dev \
-		libisl-dev \
-		libcloog-isl-dev \
-		libmpc-dev \
-		texinfo \
-		bison \
-		flex \
-		make \
-		bzip2 \
-		patch \
-		file \
-		build-essential; \
+        wget \
+        curl \
+        gcc \
+        libgmp3-dev \
+        libmpfr-dev \
+        libisl-dev \
+        libcloog-isl-dev \
+        libmpc-dev \
+        texinfo \
+        bison \
+        flex \
+        make \
+        bzip2 \
+        patch \
+        file \
+        build-essential; \
     mkdir -p ${PREFIX}/src; \
     cd ${PREFIX}/src; \
-    wget -q https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz; \
+    curl -O https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz; \
     tar zxf binutils-${BINUTILS_VERSION}.tar.gz; \
     rm binutils-${BINUTILS_VERSION}.tar.gz; \
     chown -R root:root binutils-${BINUTILS_VERSION}; \
@@ -36,29 +39,29 @@ RUN set -ex; \
     mkdir -p ${PREFIX}/src/build-binutils; \
     cd ${PREFIX}/src/build-binutils; \
     BINUTILS_CONFIGURE_ARGS="\
-		--prefix=${PREFIX} \
-		--with-sysroot \
-		--disable-nls \
-		--disable-werror"; \
-	case ${UK_ARCH} in \
-		x86_64) \
-			BINUTILS_CONFIGURE_ARGS="$BINUTILS_CONFIGURE_ARGS \
-				--target=x86_64-linux-gnu" \
-			;; \
-		arm) \
-			BINUTILS_CONFIGURE_ARGS="$BINUTILS_CONFIGURE_ARGS \
-				--target=arm-linux-gnueabihf" \
-			;; \
-		arm64) \
-			BINUTILS_CONFIGURE_ARGS="$BINUTILS_CONFIGURE_ARGS \
-				--target=aarch64-linux-gnu" \
-			;; \
-		esac; \
+        --prefix=${PREFIX} \
+        --with-sysroot \
+        --disable-nls \
+        --disable-werror"; \
+    case ${UK_ARCH} in \
+        x86_64) \
+            BINUTILS_CONFIGURE_ARGS="$BINUTILS_CONFIGURE_ARGS \
+                --target=x86_64-linux-gnu" \
+            ;; \
+        arm) \
+            BINUTILS_CONFIGURE_ARGS="$BINUTILS_CONFIGURE_ARGS \
+                --target=arm-linux-gnueabihf" \
+            ;; \
+        arm64) \
+            BINUTILS_CONFIGURE_ARGS="$BINUTILS_CONFIGURE_ARGS \
+                --target=aarch64-linux-gnu" \
+            ;; \
+    esac; \
     ../binutils-${BINUTILS_VERSION}/configure ${BINUTILS_CONFIGURE_ARGS}; \
     make; \
     make install; \
     cd ${PREFIX}/src; \
-    wget -q https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz; \
+    curl -O https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz; \
     tar zxf gcc-${GCC_VERSION}.tar.gz; \
     rm gcc-${GCC_VERSION}.tar.gz; \
     chown -R root:root gcc-${GCC_VERSION}; \
@@ -66,39 +69,39 @@ RUN set -ex; \
     mkdir ${PREFIX}/src/build-gcc; \
     cd ${PREFIX}/src/build-gcc; \
     GCC_CONFIGURE_ARGS="\
-		--prefix=${PREFIX} \
-		--with-glibc-version=${GLIB_VERSION} \
-		--without-headers \
-		--disable-nls \
-		--disable-shared \
-		--disable-multilib \
-		--disable-decimal-float \
-		--disable-threads \
-		--disable-libatomic \
-		--disable-libgomp \
-		--disable-libmpx \
-		--disable-libquadmath \
-		--disable-libssp \
-		--disable-libvtv \
-		--disable-libstdcxx \
-		--disable-host-shared \
-		--with-boot-ldflags=-static \
-		--with-stage1-ldflags=-static \
-		--enable-languages=c,c++,go"; \
-	case ${UK_ARCH} in \
-		x86_64) \
-			GCC_CONFIGURE_ARGS="$GCC_CONFIGURE_ARGS \
-				--target=x86_64-linux-gnu" \
-			;; \
-		arm) \
-			GCC_CONFIGURE_ARGS="$GCC_CONFIGURE_ARGS \
-				--target=arm-linux-gnueabihf" \
-			;; \
-		arm64) \
-			GCC_CONFIGURE_ARGS="$GCC_CONFIGURE_ARGS \
-				--target=aarch64-linux-gnu" \
-			;; \
-		esac; \
+        --prefix=${PREFIX} \
+        --with-glibc-version=${GLIB_VERSION} \
+        --without-headers \
+        --disable-nls \
+        --disable-shared \
+        --disable-multilib \
+        --disable-decimal-float \
+        --disable-threads \
+        --disable-libatomic \
+        --disable-libgomp \
+        --disable-libmpx \
+        --disable-libquadmath \
+        --disable-libssp \
+        --disable-libvtv \
+        --disable-libstdcxx \
+        --disable-host-shared \
+        --with-boot-ldflags=-static \
+        --with-stage1-ldflags=-static \
+        --enable-languages=c,c++,go"; \
+    case ${UK_ARCH} in \
+        x86_64) \
+          GCC_CONFIGURE_ARGS="$GCC_CONFIGURE_ARGS \
+              --target=x86_64-linux-gnu" \
+          ;; \
+      arm) \
+          GCC_CONFIGURE_ARGS="$GCC_CONFIGURE_ARGS \
+              --target=arm-linux-gnueabihf" \
+          ;; \
+      arm64) \
+          GCC_CONFIGURE_ARGS="$GCC_CONFIGURE_ARGS \
+              --target=aarch64-linux-gnu" \
+          ;; \
+    esac; \
     ../gcc-${GCC_VERSION}/configure ${GCC_CONFIGURE_ARGS}; \
     make all-gcc; \
     make install-gcc; \

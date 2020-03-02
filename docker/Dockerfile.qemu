@@ -1,4 +1,6 @@
-FROM debian:stretch-20191224 AS qemu-build
+ARG DEBIAN_VERSION=stretch-20191224
+
+FROM debian:${DEBIAN_VERSION} AS qemu-build
 
 LABEL MAINTAINER="Alexander Jung <a.jung@lancs.ac.uk>"
 
@@ -24,7 +26,7 @@ RUN set -ex; \
         zlib1g-dev \
         xz-utils; \
     curl -O https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz; \
-    tar xvf qemu-${QEMU_VERSION}.tar.xz; \
+    tar xf qemu-${QEMU_VERSION}.tar.xz; \
     apt-get install -y; \
     cd qemu-${QEMU_VERSION}; \
     ./configure \
