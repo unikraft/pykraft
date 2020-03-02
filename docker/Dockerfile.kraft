@@ -23,6 +23,7 @@ RUN set -xe; \
 		flex \
 		git \
 		wget \
+		patch \
 		gawk \
 		socat \
 		bison \
