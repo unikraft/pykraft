@@ -31,8 +31,9 @@ WORKDIR /usr/src/unikraft/apps/app
 RUN set -xe; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
-		build-essential \
-		libncurses-dev \
+		make \
+		libncursesw5-dev \
+		libncursesw5 \
 		libyaml-dev \
 		flex \
 		git \
