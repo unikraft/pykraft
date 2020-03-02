@@ -67,20 +67,20 @@ _EMPTY              :=
 _SPACE              := $(_EMPTY) $(_EMPTY)
 
 DOCKER              ?= docker
-EXTRA_DOCKER        ?=
+DOCKER_BUILD_EXTRA  ?=
 
 # QEMU build targets
 QEMU_VERSION        ?= 4.2.0
 
 .PHONY: qemu
-qemu: IMAGE=$(ORG)/tools:qemu$(QEMU_VERSION)$(TAG)
+qemu: IMAGE=$(ORG)/qemu:$(QEMU_VERSION)$(TAG)
 qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
 		--tag $(IMAGE) \
 		--cache-from $(IMAGE) \
 		--file $(WORKDIR)/Dockerfile.qemu \
-		$(EXTRA_DOCKER) \
+		$(DOCKER_BUILD_EXTRA) \
 		.
 
 # GCC build targets
@@ -89,7 +89,7 @@ BINUTILS_VERSION    ?= 2.31.1
 GLIB_VERSION        ?= 2.11
 
 .PHONY: gcc
-gcc: IMAGE=$(ORG)/tools:gcc$(GCC_VERSION)-$(UK_ARCH)$(TAG)
+gcc: IMAGE=$(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)$(TAG)
 gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
@@ -99,7 +99,7 @@ gcc:
 		--tag $(IMAGE) \
 		--cache-from $(IMAGE) \
 		--file $(WORKDIR)/Dockerfile.gcc \
-		$(EXTRA_DOCKER) \
+		$(DOCKER_BUILD_EXTRA) \
 		.
 
 # kern-plat-arch populates a target image based on kernel, platform, and
@@ -133,7 +133,7 @@ linuxk$1-$3:
 		--tag $(ORG)/tools:linuxk$1-$3$(TAG) \
 		--cache-from $(ORG)/tools:linuxk$1-$3$(TAG) \
 		--file $(WORKDIR)/Dockerfile.linuxk \
-		$(EXTRA_DOCKER) \
+		$(DOCKER_BUILD_EXTRA) \
 		.
 
 $2-$3: linuxk$1-$3
@@ -146,7 +146,7 @@ $2-$3: linuxk$1-$3
 		--tag $(ORG)/$(if $(UK_LIB),lib-$(UK_LIB):$(LIB_VER),unikraft:$(UK_VER))-$(subst $(_SPACE),$(_DASH),$(strip $2 $3)) \
 		--cache-from $(ORG)/$(if $(UK_LIB),lib-$(UK_LIB):$(LIB_VER),unikraft:$(UK_VER))-$(subst $(_SPACE),$(_DASH),$(strip $2 $3)) \
 		--file $(WORKDIR)/$2/Dockerfile \
-		$(EXTRA_DOCKER) \
+		$(DOCKER_BUILD_EXTRA) \
 		$2
 endef
 

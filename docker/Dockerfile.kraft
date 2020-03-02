@@ -2,8 +2,8 @@ ARG UK_ARCH=x86_64
 ARG GCC_VERSION=9.2.0
 ARG QEMU_VERSION=4.2.0
 
-FROM unikraft/tools:gcc${GCC_VERSION}-${UK_ARCH} AS gcc
-FROM unikraft/tools:qemu${QEMU_VERSION} AS qemu
+FROM unikraft/gcc:${GCC_VERSION}-${UK_ARCH} AS gcc
+FROM unikraft/qemu:${QEMU_VERSION} AS qemu
 FROM python:3.6-slim
 
 COPY --from=gcc /bin/ /bin/
