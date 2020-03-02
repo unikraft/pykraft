@@ -11,19 +11,6 @@ COPY --from=gcc /lib/ /lib/
 COPY --from=gcc /include/ /include/
 COPY --from=gcc /libexec/ /libexec/
 
-COPY --from=qemu /bin/qemu-ga /bin/
-COPY --from=qemu /bin/qemu-img /bin/
-COPY --from=qemu /bin/qemu-io /bin/
-COPY --from=qemu /bin/qemu-nbd /bin/
-COPY --from=qemu /bin/qemu-pr-helper /bin/
-COPY --from=qemu /bin/qemu-system-aarch64 /bin/
-COPY --from=qemu /bin/qemu-system-arm /bin/
-COPY --from=qemu /bin/qemu-system-i386 /bin/
-COPY --from=qemu /bin/qemu-system-x86_64 /bin/
-COPY --from=qemu /share/qemu/ /share/qemu/
-# COPY --from=qemu /lib/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
-RUN ln -s /share/qemu /usr/share/qemu
-
 COPY / /usr/src/kraft
 
 WORKDIR /usr/src/unikraft/apps/app
