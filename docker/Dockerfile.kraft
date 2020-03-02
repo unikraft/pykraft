@@ -4,12 +4,12 @@ ARG GCC_VERSION=9.2.0
 FROM unikraft/gcc:${GCC_VERSION}-${UK_ARCH} AS gcc
 FROM python:3.6-slim
 
-COPY --from=gcc /bin/ /bin/
-COPY --from=gcc /lib/ /lib/
-COPY --from=gcc /include/ /include/
-COPY --from=gcc /libexec/ /libexec/
+COPY --from=gcc /bin/ /bin
+COPY --from=gcc /lib/ /lib
+COPY --from=gcc /include/ /include
+COPY --from=gcc /libexec/ /libexec
 
-COPY / /usr/src/kraft
+COPY . /usr/src/kraft
 
 WORKDIR /usr/src/unikraft/apps/app
 
