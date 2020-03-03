@@ -31,6 +31,8 @@
 
 import re
 
+DATE_FORMAT="%Y-%m-%d %H:%M:%S"
+
 BRANCH_MASTER="master"
 BRANCH_STAGING="staging"
 

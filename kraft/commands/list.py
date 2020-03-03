@@ -31,6 +31,7 @@
 
 import os
 import sys
+import json
 import click
 from enum import Enum
 from github import Github
@@ -42,6 +43,7 @@ from kraft.components import Repository
 from kraft.types import RepositoryType
 from kraft.context import kraft_context
 from kraft.constants import UK_GITHUB_ORG
+from kraft.constants import DATE_FORMAT
 
 @click.command('list', short_help='List architectures, platforms, libraries or applications.')
 @click.option('--core', '-c', is_flag=True, help='Display information about Unikraft\'s core repository.')
@@ -56,8 +58,9 @@ from kraft.constants import UK_GITHUB_ORG
 @click.option('--paginate', '-n', is_flag=True, help='Paginate output.')
 @click.option('--update', '-u', 'force_update', is_flag=True, help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.')
 @click.option('--flush', '-F', 'force_flush', is_flag=True, help='Cleans the cache and lists.')
+@click.option('--json', '-j', 'return_json', is_flag=True, help='Return output as JSON.')
 @kraft_context
-def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update, force_flush):
+def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update, force_flush, return_json):
     """
     Retrieves lists of available architectures, platforms, libraries and applications
     supported by unikraft.  Use this command if you wish to determine (and then
@@ -85,6 +88,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
     # Populate a matrix with all relevant columns and rows for each repository
     repos = {}
     data = []
+    data_json = {}
 
     for repo in ctx.cache.all():
         repo = ctx.cache.get(repo)
@@ -124,25 +128,46 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
             data.append(columns)
 
         for row in rows:
-            line = [
-                row.name,
-                row.latest_release,
-                # prettydate(row.last_updated),
-                prettydate(row.last_checked),
-            ]
+            if return_json:
+                if member.plural not in data_json:
+                    data_json[member.plural] = []
+    
+                row_json = {
+                    'name': row.name,
+                    'latest': row.latest_release,
+                    'last_checked': row.last_checked.strftime(DATE_FORMAT),
+                    'known_versions': row.known_versions
+                }
 
-            if show_local:
-                if hasattr(row, 'localdir'):
-                    line.append(row.localdir)
-                else:
-                    line.append('')
-            if show_origin:
-                if hasattr(row, 'source'):
-                    line.append(row.source)
-                else:
-                    line.append('')
+                if show_local:
+                    if hasattr(row, 'localdir'):
+                        row_json.update({'localdir': row.localdir})
+                    
+                if show_origin:
+                    if hasattr(row, 'source'):
+                        row_json.update({'source': row.source})
+                   
+                data_json[member.plural].append(row_json)
+            else:
+                line = [
+                    row.name,
+                    row.latest_release,
+                    # prettydate(row.last_updated),
+                    prettydate(row.last_checked),
+                ]
 
-            data.append(line)
+                if show_local:
+                    if hasattr(row, 'localdir'):
+                        line.append(row.localdir)
+                    else:
+                        line.append('')
+                if show_origin:
+                    if hasattr(row, 'source'):
+                        line.append(row.source)
+                    else:
+                        line.append('')
+
+                data.append(line)
 
         # Line break
         if len(rows) > 0:
@@ -154,12 +179,15 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
 
             data.append([" "] * colnum)
 
-    output = pretty_columns(data)
-
-    if paginate:
-        click.echo_via_pager(output)
+    if return_json:
+        print(json.dumps(data_json))
     else:
-        print(output)
+        output = pretty_columns(data)
+
+        if paginate:
+            click.echo_via_pager(output)
+        else:
+            print(output)
 
 def update():
     if 'UK_KRAFT_GITHUB_TOKEN' in os.environ:
