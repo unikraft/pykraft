@@ -60,6 +60,7 @@ from kraft.errors import InvalidRepositorySource
 from kraft.errors import MisconfiguredUnikraftProject
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
+from kraft.errors import KraftFileNotFound
 
 from kraft.constants import UNIKRAFT_CORE
 from kraft.constants import KCONFIG_Y
@@ -309,7 +310,11 @@ class Project(object):
         if os.path.exists(makefile_uk) is False or force_create:
             Path(makefile_uk).touch()
     
-        filenames = get_default_config_files(self.path)
+        try:
+            filenames = get_default_config_files(self.path)
+        except KraftFileNotFound:
+            filenames = []
+
         if len(filenames) == 0 or force_create:
             kraft_yaml = os.path.join(self.path, SUPPORTED_FILENAMES[0])
             with open(kraft_yaml, 'w+') as file:
