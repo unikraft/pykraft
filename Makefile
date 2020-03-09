@@ -29,14 +29,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-WORKDIR       ?= $(CURDIR)
+KRAFTDIR            ?= $(CURDIR)
+DOCKERDIR           ?= $(KRAFTDIR)/docker
 
 ifeq ($(HASH),)
 HASH_COMMIT         ?= HEAD # Setting this is only really useful with the show-tag target
-HASH                ?= $(shell git ls-tree --full-tree $(HASH_COMMIT) -- $(CURDIR) | awk '{print $$3}')
+HASH                ?= $(shell git update-index -q --refresh && git describe --tags)
 
 ifneq ($(HASH_COMMIT),HEAD) # Others can't be dirty by definition
-DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(CURDIR) || echo "-dirty")
+DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(KRAFTDIR) || echo "-dirty")
 endif
 endif
 
@@ -56,18 +57,19 @@ UK_ARCH             ?= x86_64
 GCC_VERSION         ?= 9.2.0
 
 .PHONY: kraft
-kraft: IMAGE=$(ORG)/kraft:latest$(TAG)
+kraft: IMAGE=$(ORG)/kraft:latest
 kraft:
 	$(DOCKER) build \
-		--tag $(IMAGE) \
+		--tag $(IMAGE)$(TAG) \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
 		--cache-from $(IMAGE) \
-		--file $(WORKDIR)/docker/Dockerfile.kraft \
+		--file $(DOCKERDIR)/Dockerfile.kraft \
 		$(DOCKER_BUILD_EXTRA) \
-		.
+		$(KRAFTDIR)
 
 .PHONY: install
 install:
 	$(PYTHON) setup.py install
 
+include $(KRAFTDIR)/docker/Makefile

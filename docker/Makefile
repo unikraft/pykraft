@@ -29,10 +29,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-WORKDIR             ?= $(CURDIR)
+DOCKERDIR             := $(dir $(lastword $(MAKEFILE_LIST)))
+
 UK_VER              ?= staging
 UK_PLAT             ?= linuxu # Default to userspace apps
-UK_PLAT_VER_LATEST  ?= $(shell cat $(CURDIR)/$(1))
+UK_PLAT_VER_LATEST  ?= $(shell cat $(DOCKERDIR)/$(1))
 UK_PLAT_VER         ?= $(call PLAT_VER_LATEST,$(PLAT))
 UK_PLATS            ?= linuxu
 UK_LIB              ?= # Specify a specific library build
@@ -52,10 +53,10 @@ UK_ARCHS            ?= x86_64 \
 
 ifeq ($(HASH),)
 HASH_COMMIT         ?= HEAD # Setting this is only really useful with the show-tag target
-HASH                ?= $(shell git ls-tree --full-tree $(HASH_COMMIT) -- $(CURDIR) | awk '{print $$3}')
+HASH                ?= $(shell git update-index -q --refresh && git describe --tags)
 
 ifneq ($(HASH_COMMIT),HEAD) # Others can't be dirty by definition
-DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(CURDIR) || echo "-dirty")
+DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(DOCKERDIR) || echo "-dirty")
 endif
 endif
 
@@ -73,15 +74,15 @@ DOCKER_BUILD_EXTRA  ?=
 QEMU_VERSION        ?= 4.2.0
 
 .PHONY: qemu
-qemu: IMAGE=$(ORG)/qemu:$(QEMU_VERSION)$(TAG)
+qemu: IMAGE=$(ORG)/qemu:$(QEMU_VERSION)
 qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
-		--tag $(IMAGE) \
+		--tag $(IMAGE)$(TAG) \
 		--cache-from $(IMAGE) \
-		--file $(WORKDIR)/Dockerfile.qemu \
+		--file $(DOCKERDIR)/Dockerfile.qemu \
 		$(DOCKER_BUILD_EXTRA) \
-		.
+		$(DOCKERDIR)
 
 # GCC build targets
 GCC_VERSION         ?= 9.2.0
@@ -89,7 +90,7 @@ BINUTILS_VERSION    ?= 2.31.1
 GLIB_VERSION        ?= 2.11
 
 .PHONY: gcc
-gcc: IMAGE=$(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)$(TAG)
+gcc: IMAGE=$(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)
 gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
@@ -97,10 +98,10 @@ gcc:
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
 		--tag $(IMAGE) \
-		--cache-from $(IMAGE) \
-		--file $(WORKDIR)/Dockerfile.gcc \
+		--cache-from $(IMAGE)$(TAG) \
+		--file $(DOCKERDIR)/Dockerfile.gcc \
 		$(DOCKER_BUILD_EXTRA) \
-		.
+		$(DOCKERDIR)
 
 # kern-plat-arch populates a target image based on kernel, platform, and
 # architecture in the format:
@@ -131,10 +132,10 @@ linuxk$1-$3:
 		--build-arg LINUXK_VERSION=$1 \
 		--build-arg UK_ARCH=$3 \
 		--tag $(ORG)/tools:linuxk$1-$3$(TAG) \
-		--cache-from $(ORG)/tools:linuxk$1-$3$(TAG) \
-		--file $(WORKDIR)/Dockerfile.linuxk \
+		--cache-from $(ORG)/tools:linuxk$1-$3 \
+		--file $(DOCKERDIR)/Dockerfile.linuxk \
 		$(DOCKER_BUILD_EXTRA) \
-		.
+		$(DOCKERDIR)
 
 $2-$3: linuxk$1-$3
 	$(DOCKER) build \
@@ -145,7 +146,7 @@ $2-$3: linuxk$1-$3
 		--build-arg UK_ARCH=$3 \
 		--tag $(ORG)/$(if $(UK_LIB),lib-$(UK_LIB):$(LIB_VER),unikraft:$(UK_VER))-$(subst $(_SPACE),$(_DASH),$(strip $2 $3)) \
 		--cache-from $(ORG)/$(if $(UK_LIB),lib-$(UK_LIB):$(LIB_VER),unikraft:$(UK_VER))-$(subst $(_SPACE),$(_DASH),$(strip $2 $3)) \
-		--file $(WORKDIR)/$2/Dockerfile \
+		--file $(DOCKERDIR)/$2/Dockerfile \
 		$(DOCKER_BUILD_EXTRA) \
 		$2
 endef
@@ -177,5 +178,5 @@ $(foreach K_V,$(KERNEL_VERSIONS), \
 endef
 
 $(foreach P,$(UK_PLATS), \
-	$(eval $(call include-plat,$(P))) \
+	$(eval $(call include-plat,$(DOCKERDIR)/$(P))) \
 )
