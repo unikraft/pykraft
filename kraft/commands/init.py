@@ -58,6 +58,9 @@ from kraft.config.interpolation import interpolate_source_version
 
 @kraft_context
 def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force_create):
+    if name is None:
+        name = os.path.basename(os.getcwd())
+
     # Pre-flight check determines if we are trying to work with nothing
     if ctx.cache.is_stale() and click.confirm('kraft caches are out-of-date.  Would you like to update?'):
         update()
@@ -182,7 +185,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             sys.exit(1)
 
 @click.command('init', short_help='Initialize a new unikraft application.')
-@click.argument('name', required=True)
+@click.argument('name', required=False)
 @click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
 @click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
 @click.option('--arch', '-m', 'target_arch', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
