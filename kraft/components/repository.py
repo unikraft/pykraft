@@ -115,14 +115,9 @@ class Repository(object):
 
         already_downloaded = False
 
-        if repository_type == RepositoryType.ARCH:
-            pass
-        elif repository_type == RepositoryType.PLAT and source == UNIKRAFT_CORE:
-            pass
-        elif len(self._known_versions) == 0 or force_update or download:
+        if len(self._known_versions) == 0 or force_update or download:
             self.update_known_versions(source=source)
-
-
+        
         # Determine how to set the version
         if version is not None:
             self._version = version
