@@ -56,9 +56,9 @@ PYTHON              ?= python3
 UK_ARCH             ?= x86_64
 GCC_VERSION         ?= 9.2.0
 
-.PHONY: kraft
-kraft: IMAGE=$(ORG)/kraft:latest
-kraft:
+.PHONY: docker-kraft
+docker-kraft: IMAGE=$(ORG)/kraft:latest
+docker-kraft:
 	$(DOCKER) build \
 		--tag $(IMAGE)$(TAG) \
 		--build-arg UK_ARCH=$(UK_ARCH) \

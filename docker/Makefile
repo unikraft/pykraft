@@ -73,9 +73,9 @@ DOCKER_BUILD_EXTRA  ?=
 # QEMU build targets
 QEMU_VERSION        ?= 4.2.0
 
-.PHONY: qemu
-qemu: IMAGE=$(ORG)/qemu:$(QEMU_VERSION)
-qemu:
+.PHONY: docker-qemu
+docker-qemu: IMAGE=$(ORG)/qemu:$(QEMU_VERSION)
+docker-qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
 		--tag $(IMAGE)$(TAG) \
@@ -89,9 +89,9 @@ GCC_VERSION         ?= 9.2.0
 BINUTILS_VERSION    ?= 2.31.1
 GLIB_VERSION        ?= 2.11
 
-.PHONY: gcc
-gcc: IMAGE=$(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)
-gcc:
+.PHONY: docker-gcc
+docker-gcc: IMAGE=$(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)
+docker-gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
