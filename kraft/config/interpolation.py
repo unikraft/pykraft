@@ -35,6 +35,7 @@ from __future__ import unicode_literals
 import re
 from string import Template
 
+from kraft.constants import BRANCH_MASTER
 from kraft.constants import UNIKRAFT_ORG
 from kraft.constants import UNIKRAFT_CORE
 from kraft.constants import GITHUB_ORIGIN
