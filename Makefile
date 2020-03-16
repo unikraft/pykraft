@@ -31,6 +31,7 @@
 
 KRAFTDIR            ?= $(CURDIR)
 DOCKERDIR           ?= $(KRAFTDIR)/docker
+DISTDIR             ?= $(KRAFTDIR)/dist
 
 ifeq ($(HASH),)
 HASH_COMMIT         ?= HEAD # Setting this is only really useful with the show-tag target
@@ -41,6 +42,8 @@ DIRTY               := $(shell git update-index -q --refresh && git diff-index -
 endif
 endif
 
+APP_NAME            ?= kraft
+VERSION             ?= 0.4.0
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
 TAG                 ?= -$(HASH)$(DIRTY)
@@ -50,26 +53,70 @@ _SPACE              := $(_EMPTY) $(_EMPTY)
 
 # Tools
 DOCKER              ?= docker
+DOCKER_RUN          ?= $(DOCKER) run -it --rm \
+                         -v $(KRAFTDIR):/usr/src/kraft \
+                         unikraft/$(1)
 DOCKER_BUILD_EXTRA  ?=
 PYTHON              ?= python3
+DCH                 ?= dch
+DCH_FLAGS           ?=
+MK_BUILD_DEPS       ?= mk-build-deps
+DEBUILD             ?= debuild
+DEB_BUILD_OPTIONS   ?= 'nocheck parallel=6'
+RM                  ?= rm
+RELEASE_NOTES       ?=
 
-UK_ARCH             ?= x86_64
-GCC_VERSION         ?= 9.2.0
+# If run with DOCKER=, unset DOCKER_RUN so all commands are not proxied
+ifeq ($(DOCKER),)
+DOCKER_RUN          :=
+else
+pkg-deb: DEBIAN_VERSION ?= stretch-20191224
+pkg-deb: docker-pkg-deb
+endif
 
-.PHONY: docker-kraft
-docker-kraft: IMAGE=$(ORG)/kraft:latest
-docker-kraft:
-	$(DOCKER) build \
-		--tag $(IMAGE)$(TAG) \
-		--build-arg UK_ARCH=$(UK_ARCH) \
-		--build-arg GCC_VERSION=$(GCC_VERSION) \
-		--cache-from $(IMAGE) \
-		--file $(DOCKERDIR)/Dockerfile.kraft \
-		$(DOCKER_BUILD_EXTRA) \
-		$(KRAFTDIR)
+.PHONY: pkg-deb
+pkg-deb: pkg-tar
+pkg-deb:
+	@echo "Building deb.."
+	
+.PHONY: pkg-tar
+pkg-tar: $(DISTDIR)/$(APP_NAME)-$(VERSION).tar.gz
+$(DISTDIR)/$(APP_NAME)-$(VERSION).3tar.gz: 
+	$(PYTHON) setup.py sdist -d $(DISTDIR)
 
+.PHONY: bump
+bump: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
+bump: changelog
+	sed -i --regexp-extended "s/__version__[ ='0-9\.]+/__version__ = '$(VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
+	sed -i --regexp-extended "s/^VERSION[ ?='0-9\.]+/$(shell grep -oP '(^VERSION\s+)' $(KRAFTDIR)/Makefile)?= $(VERSION)/g" $(KRAFTDIR)/Makefile
+	git add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
+	# git commit -s -m $(COMMIT_MESSAGE)
+	# git tag -a v$(VERSION) $(COMMIT_MESSAGE)
+
+.PHONY:
+changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
+changelog: DISTRIBUTION ?= stable
+ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
+changelog: DCH_FLAGS += --create
+endif
+changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
+changelog:
+	cd $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
+		-v $(VERSION) \
+		--package $(APP_NAME) \
+		--distribution $(DISTRIBUTION) \
+		"$(APP_NAME) v$(VERSION) released"
+	git log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
+		echo "Found change: $$line"; \
+		cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"; \
+	done
+	
 .PHONY: install
 install:
 	$(PYTHON) setup.py install
 
-include $(KRAFTDIR)/docker/Makefile
+.PHONY: clean
+clean:
+	@$(RM) -Rfv $(DISTDIR)/$(APP_NAME)-$(VERSION).tar.gz
+
+include $(KRAFTDIR)/package/docker/Makefile

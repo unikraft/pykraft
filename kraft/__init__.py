@@ -32,8 +32,7 @@
 __program__ = 'kraft'
 __version__ = '0.4.0'
 __description__ = '''
-A unikraft command line interface.  Download, configure, test and build unikraft
-appliances locally!
+Define, configure, build and run unikernel applications.
 '''
 __all__ = [
     'kraft'

@@ -1,0 +1,314 @@
+kraft (0.4.0) stable; urgency=medium
+
+  * kraft v0.4.0 released
+  * xen-guest: When debugging, do not exit on guest shutdown
+  * updated kraft config due to restructuring
+  * run/qemu-guest: Remove PMU option from CPU feature flags
+  * qemu-guest: When debugging, do not exit on guest shutdown
+  * make: Build from any directory.
+  * kraft: perform pre-initialisation of platform cache.
+  * kraft: Update README.md with information redirection.
+  * kraft: Update MAINTAINERS list
+  * kraft: Update Github URL.
+  * kraft: Set UK_APPS environment default
+  * kraft: Remove reference to volumes and networks (for now).
+  * kraft: Remove reference to volumes and networks (for now).
+  * kraft: Remove --workdir flag
+  * kraft: Provide specification file choice order.
+  * kraft: Provide more coherent build for Docker
+  * kraft: Provide full context subcomponents.
+  * kraft: Provide details on influential environmental variables.
+  * kraft: Provide ability to not checkout a repository.
+  * kraft: Provide a central constants file.
+  * kraft: Projet serialization
+  * kraft: Introduce `volume` and `network` directives and increase
+    stability.
+  * kraft: Introduce `run` directive in specification.
+  * kraft: Include full environment in all exec calls.
+  * kraft: Include MANIFEST.in to include specification JSON files.
+  * kraft: Fix setting defconf Kconfig value for non object directives.
+  * kraft: Fix missing gitdb dependency.
+  * kraft: Fix missing gitdb dependency with GitPython upgrade
+  * kraft: Fix missing constant in config.
+  * kraft: Fix missing Click option type for mutually exclusive types.
+  * kraft: Fix is_configured to return True.
+  * kraft: Consolidate project constants.
+  * kraft: Consolidate list/update.
+  * kraft:  Introduce YAML specification system.
+  * kraft/utils: Fix missing import.
+  * kraft/utils: Do not fail for file duplication on recursive copies.
+  * kraft/update: Re-introduce Kraft update command.
+  * kraft/update: Actually perform a forced update
+  * kraft/settings:  Introduce .kraftrc
+  * kraft/scripts:  Introduce new kraft-net network helper and dir
+    rename.
+  * kraft/repository: Turn logger warning into debug.
+  * kraft/repository: Sort version numbers before chosing latest
+    release.
+  * kraft/repository: Return the latest version of the repository.
+  * kraft/repository: Handle potentially corrupt Git repositories.
+  * kraft/repository: Handle inability to perform fetch.
+  * kraft/repository: Fix recursion error and pre-emptive checkout
+  * kraft/project: handle missing kraft.yaml file during init
+  * kraft/project: Provide Unikraft make P flag for alt platform builds.
+  * kraft/project: Idiomize method name.
+  * kraft/project: Force fetch and prepare for all builds.
+  * kraft/project: Fix ensure checkout before configure.
+  * kraft/executor: Use push arguments to platform executors.
+  * kraft/executor: Support qemu-guest architectures.
+  * kraft/executor: Only use -t flags for QEMU.
+  * kraft/executor: Fix executor extra arg appends.
+  * kraft/executor: Fix command variable mapping.
+  * kraft/executor: Extract archives into temp directories.
+  * kraft/executor: Enable guest acceleration if host architeture does
+    not match target architecture.
+  * kraft/errors: Anglicised target architecture/platform mismatch
+    errors.
+  * kraft/docs: Update README with kraft --help.
+  * kraft/docs: Accept current changes.
+  * kraft/context: Correct default apps directory.
+  * kraft/config: Fix infering library Kconfig name.
+  * kraft/components: Provide a mechanic to retrieve the shortest
+    version of a repository source.
+  * kraft/components/volume: Save workdir.
+  * kraft/components/repository: update known versions for all repo
+    types
+  * kraft/components/repository: Fix missing exception import.
+  * kraft/components/repository: Fix against listing truly empty
+    repositories.
+  * kraft/components/network: Account for varying brctl outputs.
+  * kraft/components/executor: Fix map final arguments into string.
+  * kraft/components/executor: Fix map final arguments into string.
+  * kraft/components/executor: Extract tarball 9pfs.
+  * kraft/components/executor: Do not escape xen/qemu-guest arguments.
+  * kraft/commands: Remove  command from source tree.
+  * kraft/commands: Re-introduce kraft-list command.
+  * kraft/commands: Prompt user for configuration override.
+  * kraft/commands: Pass --dbg or -d for non-stripped unikernel.
+  * kraft/commands: Introduce run command.
+  * kraft/commands: Import DHCP server initializer in correct file.
+  * kraft/commands: Fix broken subcommand invocation.
+  * kraft/commands: Exit on failure.
+  * kraft/commands/update: Update kraft repsitory location.
+  * kraft/commands/up: Remove old dnsmasq options.
+  * kraft/commands/up: Provide blank up command.
+  * kraft/commands/up: Introducing `kraft up`
+  * kraft/commands/up: Introduce template for  command.
+  * kraft/commands/up: Clean up comments.
+  * kraft/commands/run: Add help to platform option.
+  * kraft/commands/run: Add help to platform option.
+  * kraft/commands/run:  Provide choice listing for architecture and
+    platform.
+  * kraft/commands/list: Text and commenting.
+  * kraft/commands/list: Option to display list as JSON.
+  * kraft/commands/list: Fix wording.
+  * kraft/commands/list:  Prefer to update if cache is stale.
+  * kraft/commands/init: Intrduce init command.
+  * kraft/commands/init: Fix template app and usage.
+  * kraft/commands/init: Fix logic to determine preferred architecture
+    or platform.
+  * kraft/commands/init: Determine app name from directory if omitted.
+  * kraft/commands/configure: Validate architecture and platform.
+  * kraft/commands/configure: Rename menuconfig short flag to -k.
+  * kraft/commands/configure: Remove statically known platforms.
+  * kraft/commands/configure: Fix extra print.
+  * kraft/commands/configure: Fix architecture and platform selection.
+  * kraft/commands/configure: Do not prompt check for menuconfig.
+  * kraft/commands/clean: Fix missing import.
+  * kraft/commands/build: Prompt to configure.
+  * kraft/commands/build: Prefer to configure.
+  * kraft/commands/* : Clean help menus for sub-commands.
+  * kraft/commands/* : Clean help menu
+  * kraft/cache: Provide method to retrieve all cache.
+  * kraft/cache: Add debug messages to get set methods.
+  * docs: Update title of README
+  * docs: Emphasize python3 requirement.
+  * docker: Update copyright notice
+  * docker: Rename QEMU and GCC image names
+  * docker: Remove QEMU from kraft environment
+  * docker: Remove QEMU from kraft environment
+  * docker: Provide symbolic links to active gcc programs
+  * docker: Prepend docker targets with
+  * docker: Include missing patch
+  * docker: Include libyaml-dev dependency for kraft
+  * docker: Include copyright notice
+  * docker: Fix repository location
+  * docker: Fix default gcc version.
+  * docker: Fix COPYing of files recursively
+  * docker: Do not use apt repository gcc, include GNU Make and correct
+    ncurses library
+  * docker: Copyright notice and environmental variables.
+  * docker: Clean up Dockerfiles, include missing dependencies and
+    standardise file retrieving.
+  * docker: Add flex and bison to QEMU build
+  * doc: Update README with short install
+  * doc: Include supported applications.
+  * delete python cache
+  * config: Fix missing constant import
+  * WIP: implementation of a well-defined `deps.json` replacement.
+  * WIP: First occurance of bare-bones specification being parsable.
+  * Use start time app for background timer
+  * Use staging branch
+  * Use posix-user instead of ukunistd
+  * Use os separator instead of hardcoded value
+  * Use local arguments for build tool
+  * Use fullDeps var instead of v
+  * Use const declarations in arguments dictionnary
+  * Use const declarations in arguments dictionnary
+  * Use const declarations in arguments dictionnary
+  * Use badge for version number
+  * Use SprintFunc to manage colors
+  * Use START_TIME_APP constant
+  * Use SEP constant for path separator
+  * Use SEP constant for path separator
+  * Use SEP constant
+  * Use ReadLinesFile within lauchTests function
+  * Use CreateFolder method
+  * Use CreateFolder method
+  * Updated configure command
+  * Updated README to include requied python version
+  * Updated README to include requied python version
+  * Update dynamic dep analysis with background mode
+  * Update documentation.
+  * Update README.md to match current state of kraft tool.
+  * Update README.md
+  * Update README.md
+  * Update README.md
+  * Update README.md
+  * Ubuntu 19.10 base image
+  * Typo fix
+  * Take base path if absolute path is specified
+  * Split main build function to sub functions
+  * Sort impors in main.go
+  * Small fixes with comments
+  * Skip empty line in ReadLinesFile
+  * Set background argument value to false
+  * Run gofmt on project
+  * Review sqlite test
+  * Review dynamic analyser process
+  * Review createFolder method
+  * Review constants
+  * Review arguments management
+  * Review GenerateGraph method for better modularity
+  * Return error from matchLibs
+  * Return error from generateMake
+  * Reorganize the architecture
+  * Rename verbose and display arguments.
+  * Rename utils to common
+  * Rename microLibs to mapSymbols
+  * Rename gatherDynamicDataBackground to gatherDynamicData
+  * Rename gatherData functions
+  * Rename directories for go covention
+  * Rename const arguments for kconfig_parser.go
+  * Rename const arguments for dep tool
+  * Rename const arguments for crawler tool
+  * Rename const arguments for build tool
+  * Removing the creation of analyser folders
+  * Removed Windows part from readme
+  * Removed Golang tools from master branch.
+  * Remove xen4.12 platform target
+  * Remove version from file directory structure, use built in Docker
+    ARG
+  * Remove unused wrapper function CreateGraph
+  * Remove unused semicolons
+  * Remove unused parameter
+  * Remove tools from gitignore
+  * Remove printslice function
+  * Remove out folder creation in build tool
+  * Remove original Dockerfile which was tailored towards the
+    unikraft/tool toolchain itself
+  * Remove newline from test command
+  * Remove invalid dep. in Makefile
+  * Remove argparse return errors
+  * Re-enable support for Linux/Unix
+  * Print options and remove extra space
+  * Print option(s), config and test argument(s) fixed
+  * Print option(s), config and test argument(s)
+  * Merge pull request #9 from nderjung/docker-base-images
+  * Merge pull request #8 from unikraft/reorganize
+  * Merge pull request #1 from nderjung/dockerfile
+  * Merge branch 'master' of github.com:unikraft/kraft
+  * Make setup.py install run-time scripts.
+  * Introducing the `kraft` command-line utility for the Unikraft!
+  * Introduce a Dockerfile for fast adoption and isolated build
+    environment.
+  * Initial commit of the Docker build system including a simple alpine
+    3.10 base image.
+  * Include zlib Dockerfile
+  * Include python3 Dockerfile
+  * Include openssl Dockerfile
+  * Include newlib Dockerfile
+  * Include lightweight IP library Dockerfile
+  * Include libuuid Dockerfile
+  * Include QEMU binaries in Kraft's Dockerfile
+  * Include Docker images for reproducible builds.
+  * Include Click Modular Router library Dockerfile
+  * Ignore sources folder
+  * Fix wrong comments
+  * Fix wrong appFolder path
+  * Fix some warning of golint in dependtool
+  * Fix some warning of golint in crawlertool
+  * Fix some warning of golint in buildtool
+  * Fix error due to invalid return value
+  * Fix comments
+  * Fix build failure and set PWD environmental variable for unikernel
+    app's A var
+  * Fix bug with saveOutput argument
+  * Fix bug due to wrong logic operator
+  * Fix bug due to nilness
+  * Fix bug due to invalid program name
+  * Fix bug due to invalid output folder path
+  * Fix bug due to empty syscalls list
+  * Fix README.md indentation
+  * Fix README.md indentation
+  * Fix README.md
+  * Finish the dynamic analyser
+  * Download and set unikraft path
+  * Do not use dot import for argparse
+  * Detect Permission denied during dyn. analysis
+  * Delete old entrypoint
+  * Created a macro target to better consolidate iteration of
+    distributions
+  * Complete refactoring of the architecture
+  * Code refactoring
+  * Clone libs a second time if new libs are found
+  * Change the display of matched libs
+  * Change required arguments for build tool
+  * Change naming structure to follow the format unikraft/:---
+  * Centos 8 Dockerfile
+  * Adjust build to specify correct distribution version and target
+    architecture
+  * Added new commands
+  * Added initial version of kraft script
+  * Add uktime config
+  * Add tool to automatically apply all dep repos of an application.
+  * Add the unikraft crawler tool
+  * Add the command: go get unikraft/tools in Makefile
+  * Add searchConfigUK to run_crawlertool
+  * Add run tools xen-guest and qemu-guest
+  * Add processConfigUK to common folder
+  * Add print messages for unikraft folders creation
+  * Add posix-process micro-libs
+  * Add new config options for vfscore
+  * Add new config options for newlib
+  * Add license in tester.go
+  * Add internal matching deps between micro-libs
+  * Add internal create folder function
+  * Add go report and new version
+  * Add config files for nginx
+  * Add config files arguments
+  * Add comments for exported symbols in data.go
+  * Add comments for exported symbols in arguments.go
+  * Add CONFIG_XEN_BUILD_P2M
+  * Add .diff and .patch in .gitignore
+
+ -- Alexander Jung <alexander.jung@neclab.eu>  Mon, 16 Mar 2020 08:52:26 +0000
+
+kraft (0.1.0) stable; urgency=medium
+
+  * Introducing the `kraft` command-line utility for the Unikraft!
+
+    This tool is used to defining, configuring, building, and running
+    Unikraft unikernel applications.
+
+ -- Alexander Jung <alexander.jung@neclab.eu>  Sat, 1, Feb 2020 21:53:32 +0100
