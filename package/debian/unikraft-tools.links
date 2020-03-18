@@ -1,0 +1,4 @@
+opt/venvs/unikraft-tools/bin/kraft usr/bin/kraft
+opt/venvs/unikraft-tools/bin/kraft-net usr/bin/kraft-net
+opt/venvs/unikraft-tools/bin/qemu-guest usr/bin/qemu-guest
+opt/venvs/unikraft-tools/bin/kvm-guest usr/bin/kvm-guest

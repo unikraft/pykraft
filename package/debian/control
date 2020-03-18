@@ -1,0 +1,43 @@
+Source: unikraft-tools
+Section: devel
+Priority: optional
+Maintainer: Alexander Jung <a.jung@lancs.ac.uk>
+Build-Depends: debhelper (>= 9),
+  python3,
+  python3-venv,
+  python3-dev,
+  dh-virtualenv (>= 1.0),
+  tar
+Standards-Version: 3.9.5
+Homepage: http://unikraft.org
+
+Package: unikraft-tools
+Conflicts: kraft
+Architecture: all
+Pre-Depends: dpkg (>= 1.16.1), ${misc:Pre-Depends}
+Depends: ${misc:Depends},
+  python3,
+  python3-venv,
+  git,
+  make,
+  libncursesw5-dev,
+  libyaml-dev,
+  flex,
+  git,
+  wget,
+  patch,
+  gawk,
+  socat,
+  bison,
+  unzip,
+  uuid-runtime
+Recommends: dnsmasq,
+  qemu,
+  qemu-kvm,
+  sgabios
+Description: Define, configure, build and run unikernel applications.
+  To begin using Unikraft SDK you can use the command-line utility kraft, which
+  is a companion tool used for defining, configuring, building, and running
+  unikernel applications. With kraft you can seamlessly create a build
+  environment for your unikernel and painlessly manage dependencies for its
+  build.

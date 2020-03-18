@@ -43,6 +43,7 @@ endif
 endif
 
 APP_NAME            ?= kraft
+PKG_NAME            ?= unikraft-tools
 VERSION             ?= 0.4.0
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
@@ -62,54 +63,58 @@ DCH                 ?= dch
 DCH_FLAGS           ?=
 MK_BUILD_DEPS       ?= mk-build-deps
 DEBUILD             ?= debuild
+DEBUILD_FLAGS       ?= --preserve-envvar=HTTP_PROXY -b -us -uc
 DEB_BUILD_OPTIONS   ?= 'nocheck parallel=6'
 RM                  ?= rm
 RELEASE_NOTES       ?=
-
-# If run with DOCKER=, unset DOCKER_RUN so all commands are not proxied
-ifeq ($(DOCKER),)
-DOCKER_RUN          :=
+READ                ?= read
+NIGHTLY             ?= n
+SETUPPY_FLAGS       ?= -d $(DISTDIR)
+ifeq ($(NIGHTLY),y)
+NIGHTLY             := nightly
 else
-pkg-deb: DEBIAN_VERSION ?= stretch-20191224
-pkg-deb: docker-pkg-deb
-endif
+NIGHTLY             := 
+endif 
 
 .PHONY: pkg-deb
-pkg-deb: pkg-tar
-pkg-deb:
-	@echo "Building deb.."
-	
-.PHONY: pkg-tar
-pkg-tar: $(DISTDIR)/$(APP_NAME)-$(VERSION).tar.gz
-$(DISTDIR)/$(APP_NAME)-$(VERSION).3tar.gz: 
-	$(PYTHON) setup.py sdist -d $(DISTDIR)
+pkg-deb: changelog sdist
+	mkdir -p $(DISTDIR)/build
+	tar -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
+	cp -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
+	(cd $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
+
+.PHONY: sdist
+sdist:
+	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS) 
 
 .PHONY: bump
 bump: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
-bump: changelog
+bump:
 	sed -i --regexp-extended "s/__version__[ ='0-9\.]+/__version__ = '$(VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
 	sed -i --regexp-extended "s/^VERSION[ ?='0-9\.]+/$(shell grep -oP '(^VERSION\s+)' $(KRAFTDIR)/Makefile)?= $(VERSION)/g" $(KRAFTDIR)/Makefile
 	git add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
-	# git commit -s -m $(COMMIT_MESSAGE)
-	# git tag -a v$(VERSION) $(COMMIT_MESSAGE)
+	git commit -s -m $(COMMIT_MESSAGE)
+	git tag -a v$(VERSION) -m $(COMMIT_MESSAGE)
 
 .PHONY:
 changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
 changelog: DISTRIBUTION ?= stable
+changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
 changelog: DCH_FLAGS += --create
 endif
-changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 changelog:
+ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
 	cd $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
 		-v $(VERSION) \
-		--package $(APP_NAME) \
+		--package $(PKG_NAME) \
 		--distribution $(DISTRIBUTION) \
 		"$(APP_NAME) v$(VERSION) released"
 	git log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
 		echo "Found change: $$line"; \
-		cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"; \
-	done
+		(cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"); \
+	done;
+endif
 	
 .PHONY: install
 install:
@@ -117,6 +122,30 @@ install:
 
 .PHONY: clean
 clean:
-	@$(RM) -Rfv $(DISTDIR)/$(APP_NAME)-$(VERSION).tar.gz
+	@$(RM) -Rfv $(DISTDIR)/*
 
 include $(KRAFTDIR)/package/docker/Makefile
+
+# If run with DOCKER= or within a container, unset DOCKER_RUN so all commands
+# are not proxied via docker container.
+ifeq ($(DOCKER),)
+DOCKER_RUN          :=
+else ifneq ($(wildcard /.dockerenv),)
+DOCKER_RUN          :=
+else
+DEBIAN_VERSION      ?= stretch-20200224
+# $(MAKECMDGOALS): docker-pkg-deb
+$(info Building all targets via Docker environment!)
+pkg-tar:
+	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	@exit 0
+pkg-deb-deps:
+	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	@exit 0
+pkg-deb:
+	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	@exit 0
+changelog:
+	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	@exit 0
+endif

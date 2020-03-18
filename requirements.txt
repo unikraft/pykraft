@@ -1,19 +1,17 @@
-# Required modules
-click==7.0
-kconfiglib==13.7.1
-PyGithub==1.45
-fcache==0.4.7
-docker==4.1.0
-memorize.py==1.2
-click-log==0.3.2
-GitPython==3.1.0
-kconfiglib==13.7.1
-validators==0.14.2
-cached_property==1.5.1
-python-dotenv==0.10.5
-PyYAML==5.3
-jsonschema==3.2.0
-six==1.12.0
-tqdm==4.42.1
-toml==0.10.0
-dpath==2.0.1
+# Required pypi modules
+click >= 7.0
+kconfiglib >= 13.7.1
+PyGithub >= 1.26
+fcache >= 0.4.7
+memorize.py >= 1.2
+click-log >= 0.3.2
+GitPython >= 3.1.0
+kconfiglib >= 13.7.1
+validators >= 0.14.2
+cached_property >= 1.5.1
+python-dotenv >= 0.10.5, < 1
+PyYAML >= 3.10, < 6
+jsonschema >= 2.5.1, < 4
+six >= 1.3.0, < 2
+toml >= 0.10.0
+dpath >= 2.0.1

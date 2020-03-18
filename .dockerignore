@@ -1,0 +1,3 @@
+package/debian/changelog
+*.egg-info
+dist/

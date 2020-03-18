@@ -1,0 +1,51 @@
+#!/usr/bin/make -f
+#
+# Build Debian package using https://github.com/spotify/dh-virtualenv
+#
+# The below targets create a clean copy of the workdir via
+# using "sdist", else "pip" goes haywire when installing from
+# sourcedir ".", because that includes the debian build stage,
+# and a recursive explosion ensues when symlinks are followed.
+#
+# It also ensures your MANIFEST is complete and at least covers
+# all files needed for a release build.
+
+# Increase trace logging, see debhelper(7) (uncomment to enable)
+#DH_VERBOSE=1
+
+export PYBUILD_NAME=unikraft-tools
+export DH_VIRTUALENV_INSTALL_ROOT=/opt/venvs
+
+SNAKE = /usr/bin/python3
+
+EXTRA_REQUIREMENTS = --upgrade-pip --preinstall "setuptools>=38" --preinstall "wheel"
+DH_VENV_ARGS = -v --setuptools --builtin-venv --python=$(SNAKE) $(EXTRA_REQUIREMENTS)
+
+ifneq ($(HTTP_PROXY),)
+DH_VENV_ARGS += --extra-pip-arg=--proxy=$(HTTP_PROXY)
+endif
+
+PACKAGE = $(shell dh_listpackages)
+VERSION = $(shell $(SNAKE) setup.py --version)
+SDIST_DIR = $(CURDIR)
+
+.PHONY: clean build-arch override_dh_virtualenv override_dh_strip
+
+clean:
+	dh $@ $(DH_VENV_ARGS)
+
+build-arch:
+	dh $@ $(DH_VENV_ARGS) --sourcedir $(SDIST_DIR)
+
+%:
+	dh $@ --with python-virtualenv --sourcedir $(SDIST_DIR)
+
+override_dh_virtualenv:
+	dh_virtualenv $(DH_VENV_ARGS)
+
+override_dh_strip:
+	dh_strip --exclude=cffi --exclude=_imaging
+
+override_dh_python3:
+	dh_python3 --shebang=/usr/bin/python3
+

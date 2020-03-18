@@ -1,7 +1,23 @@
-include requirements.txt
+# Manifest syntax https://docs.python.org/2/distutils/sourcedist.html
+graft kraft
+
+recursive-exclude __pycache__  *.pyc *.pyo *.orig *.un~
+
+exclude *.js*
+exclude *.git*
+exclude *.coveragerc
+exclude *.sh
+exclude proc*
+exclude pylint*
+
 include *.md
 include README.md
+include requirements*.*
+exclude requirements-dev.*
+include *.py
+
 include kraft/config/*.json
-global-exclude *.pyc
-global-exclude *.pyo
-global-exclude *.un~
+
+prune .git
+prune venv
+prune test*
