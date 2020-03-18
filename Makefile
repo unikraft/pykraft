@@ -78,7 +78,7 @@ NIGHTLY             :=
 endif 
 
 .PHONY: pkg-deb
-pkg-deb: changelog sdist
+pkg-deb: sdist
 	mkdir -p $(DISTDIR)/build
 	tar -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
 	cp -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
