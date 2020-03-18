@@ -89,16 +89,18 @@ BINUTILS_VERSION    ?= 2.31.1
 GLIB_VERSION        ?= 2.11
 
 .PHONY: docker-gcc
-docker-gcc: IMAGE ?= $(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)
+docker-gcc: TARGET ?= gcc
+docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)$(TAG)
 docker-gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
-		--tag $(IMAGE)$(TAG) \
-		--cache-from $(IMAGE)$(TAG) \
+		--tag $(IMAGE) \
+		--cache-from $(ORG)/gcc-build:$(GCC_VERSION)-$(UK_ARCH)$(TAG) \
 		--file $(DOCKERDIR)/Dockerfile.gcc \
+		--target=$(TARGET) \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 
 # pkg-deb targets
