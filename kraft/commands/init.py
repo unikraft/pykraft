@@ -111,9 +111,9 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
     else:
         # Determine the version of unikraft that we should be using
         if version is None:
-            # This simply sets the "source" to the unikraft core repository which,
-            # once parsed through the internal cache, should pop out the latest
-            # version.
+            # This simply sets the "source" to the unikraft core repository 
+            # which, once parsed through the internal cache, should pop out the 
+            # latest version.
             unikraft_source = UNIKRAFT_CORE
             unikraft_version = None
         else:
@@ -127,7 +127,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
                 source=unikraft_source,
                 version=unikraft_version
             )
-
+            
             preferred_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
             if target_arch is None:
                 if preferred_arch:
@@ -187,7 +187,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
 @click.command('init', short_help='Initialize a new unikraft application.')
 @click.argument('name', required=False)
 @click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
-@click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
+@click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.')
 @click.option('--arch', '-m', 'target_arch', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
 @click.option('--version', '-V', help="Use specific Unikraft release version.")
 @click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files.')
