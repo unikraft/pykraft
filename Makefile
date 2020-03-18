@@ -64,7 +64,7 @@ DCH                 ?= dch
 DCH_FLAGS           ?=
 MK_BUILD_DEPS       ?= mk-build-deps
 DEBUILD             ?= debuild
-DEBUILD_FLAGS       ?= --preserve-envvar=HTTP_PROXY -b -us -uc
+DEBUILD_FLAGS       ?= -e HTTP_PROXY -e http_proxy -b -us -uc
 DEB_BUILD_OPTIONS   ?= 'nocheck parallel=6'
 RM                  ?= rm
 RELEASE_NOTES       ?=
