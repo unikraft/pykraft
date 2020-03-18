@@ -53,6 +53,7 @@ _EMPTY              :=
 _SPACE              := $(_EMPTY) $(_EMPTY)
 
 # Tools
+FORCE_DOCKER        ?= n
 DOCKER              ?= docker
 DOCKER_RUN          ?= $(DOCKER) run -it --rm \
                          -v $(KRAFTDIR):/usr/src/kraft \
@@ -128,18 +129,17 @@ include $(KRAFTDIR)/package/docker/Makefile
 
 # If run with DOCKER= or within a container, unset DOCKER_RUN so all commands
 # are not proxied via docker container.
-ifeq ($(DOCKER),)
+ifeq ($(FORCE_DOCKER),y)
+else ifeq ($(DOCKER),)
 DOCKER_RUN          :=
 else ifneq ($(wildcard /.dockerenv),)
 DOCKER_RUN          :=
-else
+endif
+
+ifneq ($(DOCKER_RUN),)
 DEBIAN_VERSION      ?= stretch-20200224
-# $(MAKECMDGOALS): docker-pkg-deb
 $(info Building all targets via Docker environment!)
-pkg-tar:
-	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
-	@exit 0
-pkg-deb-deps:
+sdist:
 	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
 	@exit 0
 pkg-deb:
