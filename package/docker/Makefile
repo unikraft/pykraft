@@ -74,11 +74,12 @@ DOCKER_BUILD_EXTRA  ?=
 QEMU_VERSION        ?= 4.2.0
 
 .PHONY: docker-qemu
-docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)
+docker-qemu: IMAGE ?= $(ORG)/qemu:latest$(TAG)
 docker-qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
-		--tag $(IMAGE)$(TAG) \
+		--tag $(IMAGE) \
+		--tag $(ORG)/qemu:$(QEMU_VERSION)$(TAG) \
 		--cache-from $(IMAGE) \
 		--file $(DOCKERDIR)/Dockerfile.qemu \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
@@ -90,7 +91,7 @@ GLIB_VERSION        ?= 2.11
 
 .PHONY: docker-gcc
 docker-gcc: TARGET ?= gcc
-docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)$(TAG)
+docker-gcc: IMAGE ?= $(ORG)/$(TARGET):latest-$(UK_ARCH)$(TAG)
 docker-gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
@@ -98,29 +99,29 @@ docker-gcc:
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
 		--tag $(IMAGE) \
+		--tag $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)$(TAG) \
 		--cache-from $(ORG)/gcc-build:$(GCC_VERSION)-$(UK_ARCH)$(TAG) \
 		--file $(DOCKERDIR)/Dockerfile.gcc \
 		--target=$(TARGET) \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 
-# pkg-deb targets
-DEBIAN_VERSION      ?= stretch-20200224
-
 .PHONY: docker-pkg-deb
-docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(DEBIAN_VERSION)
+docker-pkg-deb: DEBIAN_VERSION ?= stretch-20200224
+docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:latest$(TAG)
 docker-pkg-deb:
 	$(DOCKER) build \
 		--build-arg DEBIAN_VERSION=$(DEBIAN_VERSION) \
-		--tag $(IMAGE)$(TAG) \
-		--cache-from $(IMAGE)$(TAG) \
+		--tag $(IMAGE) \
+		--tag $(ORG)/pkg-deb:$(DEBIAN_VERSION)$(TAG)\
+		--cache-from $(IMAGE) \
 		--file $(DOCKERDIR)/Dockerfile.pkg-deb \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
 .PHONY: docker-kraft
-docker-kraft: IMAGE ?= $(ORG)/kraft:latest
+docker-kraft: IMAGE ?= $(ORG)/kraft:latest$(TAG)
 docker-kraft:
 	$(DOCKER) build \
-		--tag $(IMAGE)$(TAG) \
+		--tag $(IMAGE) \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
 		--cache-from $(IMAGE) \
