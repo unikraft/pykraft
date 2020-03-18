@@ -33,6 +33,9 @@ ARG UK_ARCH=x86_64
 ARG GCC_VERSION=9.2.0
 
 FROM unikraft/gcc:${GCC_VERSION}-${UK_ARCH} AS gcc
+
+LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
+
 FROM python:3.6-slim
 
 COPY --from=gcc /bin/ /bin

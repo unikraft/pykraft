@@ -74,15 +74,14 @@ DOCKER_BUILD_EXTRA  ?=
 QEMU_VERSION        ?= 4.2.0
 
 .PHONY: docker-qemu
-docker-qemu: IMAGE=$(ORG)/qemu:$(QEMU_VERSION)
+docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)
 docker-qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
 		--tag $(IMAGE)$(TAG) \
 		--cache-from $(IMAGE) \
 		--file $(DOCKERDIR)/Dockerfile.qemu \
-		$(DOCKER_BUILD_EXTRA) \
-		$(DOCKERDIR)
+		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 
 # GCC build targets
 GCC_VERSION         ?= 9.2.0
@@ -90,18 +89,41 @@ BINUTILS_VERSION    ?= 2.31.1
 GLIB_VERSION        ?= 2.11
 
 .PHONY: docker-gcc
-docker-gcc: IMAGE=$(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)
+docker-gcc: IMAGE ?= $(ORG)/gcc:$(GCC_VERSION)-$(UK_ARCH)
 docker-gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
-		--tag $(IMAGE) \
+		--tag $(IMAGE)$(TAG) \
 		--cache-from $(IMAGE)$(TAG) \
 		--file $(DOCKERDIR)/Dockerfile.gcc \
-		$(DOCKER_BUILD_EXTRA) \
-		$(DOCKERDIR)
+		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
+
+# pkg-deb targets
+DEBIAN_VERSION      ?= stretch-20200224
+
+.PHONY: docker-pkg-deb
+docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(DEBIAN_VERSION)
+docker-pkg-deb:
+	$(DOCKER) build \
+		--build-arg DEBIAN_VERSION=$(DEBIAN_VERSION) \
+		--tag $(IMAGE)$(TAG) \
+		--cache-from $(IMAGE)$(TAG) \
+		--file $(DOCKERDIR)/Dockerfile.pkg-deb \
+		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
+
+.PHONY: docker-kraft
+docker-kraft: IMAGE ?= $(ORG)/kraft:latest
+docker-kraft:
+	$(DOCKER) build \
+		--tag $(IMAGE)$(TAG) \
+		--build-arg UK_ARCH=$(UK_ARCH) \
+		--build-arg GCC_VERSION=$(GCC_VERSION) \
+		--cache-from $(IMAGE) \
+		--file $(DOCKERDIR)/Dockerfile.kraft \
+		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
 # kern-plat-arch populates a target image based on kernel, platform, and
 # architecture in the format:
@@ -134,8 +156,7 @@ linuxk$1-$3:
 		--tag $(ORG)/tools:linuxk$1-$3$(TAG) \
 		--cache-from $(ORG)/tools:linuxk$1-$3 \
 		--file $(DOCKERDIR)/Dockerfile.linuxk \
-		$(DOCKER_BUILD_EXTRA) \
-		$(DOCKERDIR)
+		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 
 $2-$3: linuxk$1-$3
 	$(DOCKER) build \
