@@ -23,6 +23,8 @@ DH_VENV_ARGS = -v --setuptools --builtin-venv --python=$(SNAKE) $(EXTRA_REQUIREM
 
 ifneq ($(HTTP_PROXY),)
 DH_VENV_ARGS += --extra-pip-arg=--proxy=$(HTTP_PROXY)
+else ifneq ($(http_proxy),)
+DH_VENV_ARGS += --extra-pip-arg=--proxy=$(http_proxy)
 endif
 
 PACKAGE = $(shell dh_listpackages)
