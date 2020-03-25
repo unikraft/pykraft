@@ -144,7 +144,7 @@ class Repository(object):
         # url set.  If so, we do not need to make an outbound connection to
         # determine whether the repository is "real".
         if localdir is None:
-            self._localdir = self.determine_localdir(repository_type=repository_type, name=name)
+            self._localdir = self.determine_localdir(source=source, repository_type=repository_type, name=name)
         else:
             self._localdir = localdir
 
@@ -189,9 +189,11 @@ class Repository(object):
         elif kwargs['repository_type'] == RepositoryType.PLAT and kwargs['source'] == UNIKRAFT_CORE:
             return super(Repository, cls).__new__(cls)
         
+        existing = None
         source = kwargs['source']
-        existing = cls.__get_cache(source)
-
+        if not source.startswith("file://"):
+            existing = cls.__get_cache(source)
+        
         if existing and isinstance(existing, Repository):
             return existing
         else:
@@ -212,7 +214,7 @@ class Repository(object):
 
         versions = {}
 
-        if source is None:
+        if source is None or source.startswith("file://"):
             return versions
 
         g = GitCmd()
@@ -280,7 +282,8 @@ class Repository(object):
 
         return None, None
 
-    def determine_localdir(self, repository_type=None, name=None):
+    @kraft_context
+    def determine_localdir(ctx, self, source=None, repository_type=None, name=None):
         """Sets the local directory for the repository based on the workspace
         setup which is detgermined by the environmental variables UK_WORKDIR,
         UK_ROOT, UK_LIBS or UK_APPS"""
@@ -289,8 +292,11 @@ class Repository(object):
         if repository_type is None or name is None:
             raise NoTypeAndNameRepo
             return False
+        
+        if source.startswith("file://"):
+            localdir = os.path.join(ctx.workdir, source[len("file://"):])
 
-        if repository_type is RepositoryType.CORE:
+        elif repository_type is RepositoryType.CORE:
             localdir = os.environ['UK_ROOT']
 
         elif repository_type is RepositoryType.APP:
