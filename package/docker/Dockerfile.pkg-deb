@@ -92,7 +92,7 @@ RUN set -xe; \
       bison \
       uuid-runtime; \
     cd /tmp; \
-    wget https://bootstrap.pypa.io/get-pip.py; \
+    curl -OL https://bootstrap.pypa.io/get-pip.py; \
     python get-pip.py; \
     pip install -r /tmp/requirements-pkg-deb.txt; \
     git clone https://github.com/spotify/dh-virtualenv.git /tmp/dh-virtualenv; \
