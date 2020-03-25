@@ -58,8 +58,9 @@ _SPACE              := $(_EMPTY) $(_EMPTY)
 # Tools
 FORCE_DOCKER        ?= n
 DOCKER              ?= docker
+DOCKER_RUN_EXTRA    ?=
 DOCKER_RUN          ?= $(DOCKER) run --rm \
-												 $(1) \
+												 $(1) $(DOCKER_RUN_EXTRA) \
                          -v $(KRAFTDIR):/usr/src/kraft \
                          unikraft/$(2)
 DOCKER_BUILD_EXTRA  ?=
