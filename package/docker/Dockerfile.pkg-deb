@@ -86,6 +86,7 @@ RUN set -xe; \
       flex \
       git \
       wget \
+      curl \
       socat \
       patch \
       gawk \
