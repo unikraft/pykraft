@@ -223,7 +223,7 @@ class Repository(object):
             remote = g.ls_remote(source) 
         except GitCommandError as e:
             logger.fatal("Could not connect to repository: %s" % str(e))
-            sys.exit(1)
+            return versions
 
         for refs in g.ls_remote(source).split('\n'):
             hash_ref_list = refs.split('\t')
