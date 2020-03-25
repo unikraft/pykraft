@@ -29,29 +29,58 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-ARG DEBIAN_VERSION=stretch-20200224
+ARG PKG_VENDOR=debian
+ARG PKG_DISTRIBUTION=stretch-20200224
 
-FROM debian:${DEBIAN_VERSION}
+FROM ${PKG_VENDOR}:${PKG_DISTRIBUTION}
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
-COPY . /usr/src/kraft
-
 WORKDIR /usr/src/kraft
+
+COPY requirements-pkg-deb.txt /tmp/requirements-pkg-deb.txt
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN set -xe; \
     apt-get update; \
     apt-get install -y \
+      lsb-release; \
+    RELEASE=$(lsb_release -cs); \
+    case ${RELEASE} in \
+      trusty) \
+        apt-get install -y \
+          python3.5; \
+        update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.5 1; \
+          ;; \
+      sid) \
+        apt-get install -y \
+          python3-all; \
+          ;; \
+      *) \
+        apt-get install -y \
+          python3-all \
+          python-pip; \
+          ;; \
+    esac; \
+    apt-get install -y \
       build-essential \
-      devscripts \
-      git-buildpackage \
       debhelper \
-      debmake \
+      devscripts \
+      equivs \
+      libparse-debianchangelog-perl \
+      python \
+      python-setuptools \
+      python-dev \
+      python-sphinx \
+      python-mock \
+      dh-exec \
+      dh-python \
+      devscripts \
+      debhelper \
       python3-pip \
-      python3-all \
-      python3-venv \
-      python3-dev \
-      dh-virtualenv \
+      python-setuptools \
+      python3-setuptools \
       libncursesw5-dev \
       libyaml-dev \
       flex \
@@ -62,6 +91,19 @@ RUN set -xe; \
       gawk \
       bison \
       uuid-runtime; \
-    pip3 install setuptools
+    cd /tmp; \
+    wget https://bootstrap.pypa.io/get-pip.py; \
+    python get-pip.py; \
+    pip install -r /tmp/requirements-pkg-deb.txt; \
+    git clone https://github.com/spotify/dh-virtualenv.git /tmp/dh-virtualenv; \
+    cd /tmp/dh-virtualenv; \
+    git checkout 98b4822; \
+    sed -i -e 's/ python-sphinx-rtd-theme/#/g' debian/control; \
+    sed -i -e 's/dh-python,//g' debian/control; \
+    sed -i -re "1s/..unstable/~$(lsb_release -cs)) $(lsb_release -cs)/" debian/changelog; \
+    DEB_BUILD_OPTIONS=nodoc dpkg-buildpackage -us -uc -b; \
+    dpkg -i ../dh-virtualenv_*.deb || apt-get install -yf; \
+    rm /usr/bin/virtualenv; \
+    ln -s /usr/local/bin/virtualenv /usr/bin/virtualenv
 
 ENV LC_ALL=C.UTF-8

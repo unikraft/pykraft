@@ -1,4 +1,4 @@
-unikraft-tools (0.4.0) stable; urgency=medium
+unikraft-tools (0.4.0) unstable; urgency=medium
 
   * kraft v0.4.0 released
   * xen-guest: When debugging, do not exit on guest shutdown
@@ -159,7 +159,7 @@ unikraft-tools (0.4.0) stable; urgency=medium
 
  -- Alexander Jung <a.jung@lancs.ac.uk>  Wed, 18 Mar 2020 08:55:46 +0000
 
-unikraft-tools (0.1.0) stable; urgency=medium
+unikraft-tools (0.1.0) unstable; urgency=medium
 
   * Introducing the `kraft` command-line utility for the Unikraft!
 

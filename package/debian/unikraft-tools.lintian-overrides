@@ -1,0 +1,9 @@
+# Don't lint executables installed by dependencies
+wrong-path-for-interpreter usr/share/unikraft-tools/bin/*
+python-script-but-no-python-dep usr/share/unikraft-tools/bin/*
+
+# Ignore pycache created when running code of dependencies
+package-installs-python-pycache-dir
+
+# Where else?
+arch-dependent-file-in-usr-share

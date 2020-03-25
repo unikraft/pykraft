@@ -14,12 +14,12 @@
 #DH_VERBOSE=1
 
 export PYBUILD_NAME=unikraft-tools
-export DH_VIRTUALENV_INSTALL_ROOT=/opt/venvs
+export DH_VIRTUALENV_INSTALL_ROOT=/usr/share
 
 SNAKE = /usr/bin/python3
 
-EXTRA_REQUIREMENTS = --upgrade-pip --preinstall "setuptools>=38" --preinstall "wheel"
-DH_VENV_ARGS = -v --setuptools --builtin-venv --python=$(SNAKE) $(EXTRA_REQUIREMENTS)
+DH_VENV_ARGS = -v --python=$(SNAKE) --upgrade-pip \
+	--preinstall "setuptools>=38" --preinstall "wheel"
 
 ifneq ($(HTTP_PROXY),)
 DH_VENV_ARGS += --extra-pip-arg=--proxy=$(HTTP_PROXY)
@@ -45,9 +45,6 @@ build-arch:
 override_dh_virtualenv:
 	dh_virtualenv $(DH_VENV_ARGS)
 
-override_dh_strip:
-	dh_strip --exclude=cffi --exclude=_imaging
-
 override_dh_python3:
-	dh_python3 --shebang=/usr/bin/python3
+	dh_python3 --shebang=$(SNAKE)
 

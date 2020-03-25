@@ -44,6 +44,9 @@ endif
 
 APP_NAME            ?= kraft
 PKG_NAME            ?= unikraft-tools
+PKG_ARCH            ?= amd64
+PKG_VENDOR          ?= debian
+PKG_DISTRIBUTION    ?= sid
 VERSION             ?= 0.4.0
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
@@ -56,15 +59,16 @@ _SPACE              := $(_EMPTY) $(_EMPTY)
 FORCE_DOCKER        ?= n
 DOCKER              ?= docker
 DOCKER_RUN          ?= $(DOCKER) run --rm \
+												 $(1) \
                          -v $(KRAFTDIR):/usr/src/kraft \
-                         unikraft/$(1)
+                         unikraft/$(2)
 DOCKER_BUILD_EXTRA  ?=
 PYTHON              ?= python3
 DCH                 ?= dch
 DCH_FLAGS           ?=
 MK_BUILD_DEPS       ?= mk-build-deps
 DEBUILD             ?= debuild
-DEBUILD_FLAGS       ?= -e HTTP_PROXY -e http_proxy -b -us -uc
+DEBUILD_FLAGS       ?= --preserve-env -b -us -uc
 DEB_BUILD_OPTIONS   ?= 'nocheck parallel=6'
 RM                  ?= rm
 RELEASE_NOTES       ?=
@@ -82,11 +86,12 @@ pkg-deb: sdist
 	mkdir -p $(DISTDIR)/build
 	tar -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
 	cp -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
+	sed -i -re "1s/..unstable/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
 	(cd $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
 
 .PHONY: sdist
 sdist:
-	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS) 
+	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
 
 .PHONY: bump
 bump: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
@@ -99,7 +104,6 @@ bump:
 
 .PHONY:
 changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
-changelog: DISTRIBUTION ?= stable
 changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
 changelog: DCH_FLAGS += --create
@@ -109,7 +113,7 @@ ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changel
 	cd $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
 		-v $(VERSION) \
 		--package $(PKG_NAME) \
-		--distribution $(DISTRIBUTION) \
+		--distribution $(PKG_DISTRIBUTION) \
 		"$(APP_NAME) v$(VERSION) released"
 	git log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
 		echo "Found change: $$line"; \
@@ -123,6 +127,10 @@ install:
 
 .PHONY: clean
 clean:
+	@$(RM) -Rfv $(DISTDIR)/build/*
+
+.PHONY: properclean
+properclean:
 	@$(RM) -Rfv $(DISTDIR)/*
 
 include $(KRAFTDIR)/package/docker/Makefile
@@ -137,15 +145,15 @@ DOCKER_RUN          :=
 endif
 
 ifneq ($(DOCKER_RUN),)
-DEBIAN_VERSION      ?= stretch-20200224
 $(info Building all targets via Docker environment!)
+VARS := $(foreach E, $(shell printenv), -e "$(E)")
 sdist:
-	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@
 	@exit 0
 pkg-deb:
-	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@
 	@exit 0
 changelog:
-	$(call DOCKER_RUN,pkg-deb:$(DEBIAN_VERSION)) $(MAKE) $@
+	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@
 	@exit 0
 endif
