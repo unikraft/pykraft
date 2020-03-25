@@ -55,7 +55,7 @@ REPO_VALID_URL_PREFIXES = (
     'https://',
     'git://',
     'git@',
-    'file:///'
+    'file://'
 )
 
 SUPPORTED_FILENAMES = [
