@@ -41,13 +41,13 @@ ifneq ($(HASH_COMMIT),HEAD) # Others can't be dirty by definition
 DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(KRAFTDIR) || echo "-dirty")
 endif
 endif
-
+	
 APP_NAME            ?= kraft
 PKG_NAME            ?= unikraft-tools
 PKG_ARCH            ?= amd64
 PKG_VENDOR          ?= debian
 PKG_DISTRIBUTION    ?= sid
-VERSION             ?= 0.4.0
+VERSION             ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
 TAG                 ?= -$(HASH)$(DIRTY)
@@ -60,7 +60,7 @@ FORCE_DOCKER        ?= n
 DOCKER              ?= docker
 DOCKER_RUN_EXTRA    ?=
 DOCKER_RUN          ?= $(DOCKER) run --rm \
-												 $(1) $(DOCKER_RUN_EXTRA) \
+                         $(1) $(DOCKER_RUN_EXTRA) \
                          -v $(KRAFTDIR):/usr/src/kraft \
                          unikraft/$(2)
 DOCKER_BUILD_EXTRA  ?=
@@ -72,6 +72,12 @@ DEBUILD             ?= debuild
 DEBUILD_FLAGS       ?= --preserve-env -b -us -uc
 DEB_BUILD_OPTIONS   ?= 'nocheck parallel=6'
 RM                  ?= rm
+GIT                 ?= git
+MKDIR               ?= mkdir
+SED                 ?= sed
+TAR                 ?= tar
+CP                  ?= cp
+CD                  ?= cd
 RELEASE_NOTES       ?=
 READ                ?= read
 NIGHTLY             ?= n
@@ -84,27 +90,26 @@ endif
 
 .PHONY: pkg-deb
 pkg-deb: sdist
-	mkdir -p $(DISTDIR)/build
-	tar -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
-	cp -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
-	sed -i -re "1s/..unstable/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
-	(cd $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
+	$(MKDIR) -p $(DISTDIR)/build
+	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
+	$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
+	$(SED) -i -re "1s/..unstable/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
+	($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
 
 .PHONY: sdist
 sdist:
 	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
 
 .PHONY: bump
-bump: changelog
-	sed -i --regexp-extended "s/__version__[ ='0-9\.]+/__version__ = '$(VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
-	sed -i --regexp-extended "s/^VERSION[ ?='0-9\.]+/$(shell grep -oP '(^VERSION\s+)' $(KRAFTDIR)/Makefile)?= $(VERSION)/g" $(KRAFTDIR)/Makefile
+bump:
+	$(SED) -i --regexp-extended "s/__version__[ ='0-9a-zA-Z\.\-]+/__version__ = '$(VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
 
 .PHONY: bump-commit
 bump-commit: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
 bump-commit:
-	git add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
-	git commit -s -m $(COMMIT_MESSAGE)
-	git tag -a v$(VERSION) -m $(COMMIT_MESSAGE)
+	$(GIT) add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
+	$(GIT) commit -s -m $(COMMIT_MESSAGE)
+	$(GIT) tag -a v$(VERSION) -m $(COMMIT_MESSAGE)
 
 .PHONY:
 changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
@@ -114,12 +119,12 @@ changelog: DCH_FLAGS += --create
 endif
 changelog:
 ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
-	cd $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
-		-v $(VERSION) \
+	$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
+		-v "$(VERSION)" \
 		--package $(PKG_NAME) \
 		--distribution $(PKG_DISTRIBUTION) \
 		"$(APP_NAME) v$(VERSION) released"
-	git log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
+	$(GIT) log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
 		echo "Found change: $$line"; \
 		(cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"); \
 	done;
