@@ -88,16 +88,35 @@ else
 NIGHTLY             := 
 endif 
 
-.PHONY: pkg-deb
-pkg-deb: sdist
+# If run with DOCKER= or within a container, unset DOCKER_RUN so all commands
+# are not proxied via docker container.
+ifeq ($(FORCE_DOCKER),y)
+else ifeq ($(DOCKER),)
+DOCKER_RUN          :=
+else ifneq ($(wildcard /.dockerenv),)
+DOCKER_RUN          :=
+endif
+
+.PRE :=
+ifneq ($(DOCKER_RUN),)
+VARS := $(foreach E, $(shell printenv), -e "$(E)")
+.PRE := docker-proxy-
+sdist pkg-deb changelog:
+	$(info Building all targets via Docker environment!)
+	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@;
+	@exit 0
+endif
+
+.PHONY: $(.PRE)pkg-deb
+$(.PRE)pkg-deb: $(.PRE)sdist
 	$(MKDIR) -p $(DISTDIR)/build
 	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
 	$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
 	$(SED) -i -re "1s/..unstable/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
 	($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
 
-.PHONY: sdist
-sdist:
+.PHONY: $(.PRE)sdist
+$(.PRE)sdist: bump
 	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
 
 .PHONY: bump
@@ -111,13 +130,13 @@ bump-commit:
 	$(GIT) commit -s -m $(COMMIT_MESSAGE)
 	$(GIT) tag -a v$(VERSION) -m $(COMMIT_MESSAGE)
 
-.PHONY:
-changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
-changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
+.PHONY: $(.PRE)changelog
+$(.PRE)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
+$(.PRE)changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
-changelog: DCH_FLAGS += --create
+$(.PRE)changelog: DCH_FLAGS += --create
 endif
-changelog:
+$(.PRE)changelog:
 ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
 	$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
 		-v "$(VERSION)" \
@@ -129,7 +148,7 @@ ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changel
 		(cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"); \
 	done;
 endif
-	
+
 .PHONY: install
 install:
 	$(PYTHON) setup.py install
@@ -143,26 +162,3 @@ properclean:
 	@$(RM) -Rfv $(DISTDIR)/*
 
 include $(KRAFTDIR)/package/docker/Makefile
-
-# If run with DOCKER= or within a container, unset DOCKER_RUN so all commands
-# are not proxied via docker container.
-ifeq ($(FORCE_DOCKER),y)
-else ifeq ($(DOCKER),)
-DOCKER_RUN          :=
-else ifneq ($(wildcard /.dockerenv),)
-DOCKER_RUN          :=
-endif
-
-ifneq ($(DOCKER_RUN),)
-$(info Building all targets via Docker environment!)
-VARS := $(foreach E, $(shell printenv), -e "$(E)")
-sdist:
-	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@
-	@exit 0
-pkg-deb:
-	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@
-	@exit 0
-changelog:
-	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@
-	@exit 0
-endif
