@@ -149,6 +149,10 @@ ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changel
 	done;
 endif
 
+.PHONY: get-version
+get-version:
+	@echo $(VERSION)
+
 .PHONY: install
 install:
 	$(PYTHON) setup.py install
