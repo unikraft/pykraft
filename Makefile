@@ -95,10 +95,13 @@ sdist:
 	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
 
 .PHONY: bump
-bump: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
-bump:
+bump: changelog
 	sed -i --regexp-extended "s/__version__[ ='0-9\.]+/__version__ = '$(VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
 	sed -i --regexp-extended "s/^VERSION[ ?='0-9\.]+/$(shell grep -oP '(^VERSION\s+)' $(KRAFTDIR)/Makefile)?= $(VERSION)/g" $(KRAFTDIR)/Makefile
+
+.PHONY: bump-commit
+bump-commit: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
+bump-commit:
 	git add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
 	git commit -s -m $(COMMIT_MESSAGE)
 	git tag -a v$(VERSION) -m $(COMMIT_MESSAGE)
