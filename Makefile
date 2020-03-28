@@ -132,7 +132,7 @@ bump-commit:
 
 .PHONY: $(.PRE)changelog
 $(.PRE)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
-$(.PRE)changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -2 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
+$(.PRE)changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -1 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
 $(.PRE)changelog: DCH_FLAGS += --create
 endif
