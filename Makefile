@@ -108,11 +108,11 @@ sdist pkg-deb changelog:
 endif
 
 .PHONY: $(.PRE)pkg-deb
-$(.PRE)pkg-deb: $(.PRE)sdist
+$(.PRE)pkg-deb: $(.PRE)sdist $(.PRE)changelog $(.PRE)bump
 	$(MKDIR) -p $(DISTDIR)/build
 	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
 	$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
-	$(SED) -i -re "1s/..unstable/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
+	$(SED) -i -re "1s/..UNRELEASED/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
 	($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
 
 .PHONY: $(.PRE)sdist
@@ -141,7 +141,7 @@ ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changel
 	$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
 		-v "$(VERSION)" \
 		--package $(PKG_NAME) \
-		--distribution $(PKG_DISTRIBUTION) \
+		--distribution UNRELEASED \
 		"$(APP_NAME) v$(VERSION) released"
 	$(GIT) log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
 		echo "Found change: $$line"; \
