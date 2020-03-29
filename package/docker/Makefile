@@ -78,13 +78,16 @@ DOCKER_BUILD_EXTRA  ?=
 QEMU_VERSION        ?= 4.2.0
 
 .PHONY: docker-qemu
+ifeq ($(TAG),)
+docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)
+else
 docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)-$(TAG)
+endif
 docker-qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
 		--tag $(IMAGE) \
-		--tag $(ORG)/qemu:$(QEMU_VERSION)$(TAG) \
-		--cache-from $(IMAGE) \
+		--cache-from $(ORG)/qemu:$(QEMU_VERSION) \
 		--file $(DOCKERDIR)/Dockerfile.qemu \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 
@@ -95,7 +98,11 @@ GLIB_VERSION        ?= 2.11
 
 .PHONY: docker-gcc
 docker-gcc: TARGET ?= gcc
-docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)$(TAG)
+ifeq ($(TAG),)
+docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)
+else
+docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)-$(TAG)
+endif
 docker-gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
@@ -103,7 +110,7 @@ docker-gcc:
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
 		--tag $(IMAGE) \
-		--cache-from $(ORG)/gcc-build:$(GCC_VERSION)-$(UK_ARCH)$(TAG) \
+		--cache-from $(ORG)/gcc-build:$(GCC_VERSION)-$(UK_ARCH) \
 		--file $(DOCKERDIR)/Dockerfile.gcc \
 		--target=$(TARGET) \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
@@ -130,7 +137,7 @@ docker-pkg-deb:
 		--build-arg PKG_VENDOR=$(PKG_VENDOR) \
 		--build-arg PKG_DISTRIBUTION=$(PKG_DISTRIBUTION) \
 		--tag $(IMAGE) \
-		--cache-from $(IMAGE) \
+		--cache-from $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION) \
 		--file $(DOCKERDIR)/Dockerfile.pkg-deb \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
@@ -153,7 +160,7 @@ docker-kraft:
 		--tag $(IMAGE) \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
-		--cache-from $(IMAGE) \
+		--cache-from $(ORG)/kraft:latest \
 		--file $(DOCKERDIR)/Dockerfile.kraft \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
