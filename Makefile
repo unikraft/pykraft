@@ -38,7 +38,7 @@ HASH_COMMIT         ?= HEAD # Setting this is only really useful with the show-t
 HASH                ?= $(shell git update-index -q --refresh && git describe --tags)
 
 ifneq ($(HASH_COMMIT),HEAD) # Others can't be dirty by definition
-DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(KRAFTDIR) || echo "-dirty")
+DIRTY               ?= $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(KRAFTDIR) || echo "-dirty")
 endif
 endif
 	
@@ -50,7 +50,6 @@ PKG_DISTRIBUTION    ?= sid
 VERSION             ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
-TAG                 ?= -$(HASH)$(DIRTY)
 
 _EMPTY              :=
 _SPACE              := $(_EMPTY) $(_EMPTY)

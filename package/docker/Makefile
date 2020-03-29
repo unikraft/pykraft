@@ -60,13 +60,13 @@ HASH_COMMIT         ?= HEAD # Setting this is only really useful with the show-t
 HASH                ?= $(shell git update-index -q --refresh && git describe --tags)
 
 ifneq ($(HASH_COMMIT),HEAD) # Others can't be dirty by definition
-DIRTY               := $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(DOCKERDIR) || echo "-dirty")
+DIRTY               ?= $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(DOCKERDIR) || echo "-dirty")
 endif
 endif
 
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
-TAG                 ?= -$(HASH)$(DIRTY)
+TAG                 ?= $(HASH)$(DIRTY)
 
 _EMPTY              :=
 _SPACE              := $(_EMPTY) $(_EMPTY)
@@ -78,7 +78,7 @@ DOCKER_BUILD_EXTRA  ?=
 QEMU_VERSION        ?= 4.2.0
 
 .PHONY: docker-qemu
-docker-qemu: IMAGE ?= $(ORG)/qemu:latest$(TAG)
+docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)-$(TAG)
 docker-qemu:
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
@@ -95,7 +95,7 @@ GLIB_VERSION        ?= 2.11
 
 .PHONY: docker-gcc
 docker-gcc: TARGET ?= gcc
-docker-gcc: IMAGE ?= $(ORG)/$(TARGET):latest-$(UK_ARCH)$(TAG)
+docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)$(TAG)
 docker-gcc:
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
@@ -103,7 +103,6 @@ docker-gcc:
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
 		--tag $(IMAGE) \
-		--tag $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)$(TAG) \
 		--cache-from $(ORG)/gcc-build:$(GCC_VERSION)-$(UK_ARCH)$(TAG) \
 		--file $(DOCKERDIR)/Dockerfile.gcc \
 		--target=$(TARGET) \
@@ -121,7 +120,11 @@ $(addsuffix -%,$(addprefix docker-pkg-,$(DEB_DISTS))):
 .PHONY: docker-pkg-deb
 docker-pkg-deb: PKG_VENDOR ?= debian
 docker-pkg-deb: PKG_DISTRIBUTION ?= stretch-20200224
-docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)$(TAG)
+ifeq ($(TAG),)
+docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)
+else
+docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)-$(TAG)
+endif
 docker-pkg-deb:
 	$(DOCKER) build \
 		--build-arg PKG_VENDOR=$(PKG_VENDOR) \
@@ -144,7 +147,7 @@ docker-pkg-deb-test:
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
 .PHONY: docker-kraft
-docker-kraft: IMAGE ?= $(ORG)/kraft:latest$(TAG)
+docker-kraft: IMAGE ?= $(ORG)/kraft:$(TAG)
 docker-kraft:
 	$(DOCKER) build \
 		--tag $(IMAGE) \
