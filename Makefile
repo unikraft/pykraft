@@ -47,7 +47,7 @@ PKG_NAME            ?= unikraft-tools
 PKG_ARCH            ?= amd64
 PKG_VENDOR          ?= debian
 PKG_DISTRIBUTION    ?= sid
-VERSION             ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
+APP_VERSION         ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
 
@@ -109,7 +109,7 @@ endif
 .PHONY: $(.PRE)pkg-deb
 $(.PRE)pkg-deb: $(.PRE)sdist $(.PRE)changelog $(.PRE)bump
 	$(MKDIR) -p $(DISTDIR)/build
-	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(VERSION).tar.gz
+	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(APP_VERSION).tar.gz
 	$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
 	$(SED) -i -re "1s/..UNRELEASED/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
 	($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
@@ -120,28 +120,28 @@ $(.PRE)sdist: bump
 
 .PHONY: bump
 bump:
-	$(SED) -i --regexp-extended "s/__version__[ ='0-9a-zA-Z\.\-]+/__version__ = '$(VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
+	$(SED) -i --regexp-extended "s/__version__[ ='0-9a-zA-Z\.\-]+/__version__ = '$(APP_VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
 
 .PHONY: bump-commit
-bump-commit: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
+bump-commit: COMMIT_MESSAGE ?= "$(APP_NAME) v$(APP_VERSION) released"
 bump-commit:
 	$(GIT) add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
 	$(GIT) commit -s -m $(COMMIT_MESSAGE)
-	$(GIT) tag -a v$(VERSION) -m $(COMMIT_MESSAGE)
+	$(GIT) tag -a v$(APP_VERSION) -m $(COMMIT_MESSAGE)
 
 .PHONY: $(.PRE)changelog
-$(.PRE)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(VERSION) released"
+$(.PRE)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(APP_VERSION) released"
 $(.PRE)changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -1 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
 $(.PRE)changelog: DCH_FLAGS += --create
 endif
 $(.PRE)changelog:
-ifeq ($(findstring $(VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
+ifeq ($(findstring $(APP_VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
 	$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
-		-v "$(VERSION)" \
+		-v "$(APP_VERSION)" \
 		--package $(PKG_NAME) \
 		--distribution UNRELEASED \
-		"$(APP_NAME) v$(VERSION) released"
+		"$(APP_NAME) v$(APP_VERSION) released"
 	$(GIT) log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
 		echo "Found change: $$line"; \
 		(cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"); \
@@ -150,7 +150,7 @@ endif
 
 .PHONY: get-version
 get-version:
-	@echo $(VERSION)
+	@echo $(APP_VERSION)
 
 .PHONY: install
 install:

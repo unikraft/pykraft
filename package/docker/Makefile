@@ -67,6 +67,7 @@ endif
 REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
 TAG                 ?= $(HASH)$(DIRTY)
+APP_VERSION         ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
 
 _EMPTY              :=
 _SPACE              := $(_EMPTY) $(_EMPTY)
@@ -142,19 +143,19 @@ docker-pkg-deb:
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
 .PHONY: docker-pkg-deb-test
-docker-pkg-deb-test: KRAFT_VERSION ?= 0.4.0
+docker-pkg-deb-test: APP_VERSION ?= 0.4.0
 docker-pkg-deb-test: PKG_VENDOR ?= debian
 docker-pkg-deb-test: PKG_DISTRIBUTION ?= stretch
 docker-pkg-deb-test:
 	$(DOCKER) build \
-		--build-arg KRAFT_VERSION=$(KRAFT_VERSION) \
+		--build-arg APP_VERSION=$(APP_VERSION) \
 		--build-arg PKG_VENDOR=$(PKG_VENDOR) \
 		--build-arg PKG_DISTRIBUTION=$(PKG_DISTRIBUTION) \
 		--file $(DOCKERDIR)/Dockerfile.pkg-deb-test \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
 
 .PHONY: docker-kraft
-docker-kraft: IMAGE ?= $(ORG)/kraft:$(TAG)
+docker-kraft: IMAGE ?= $(ORG)/kraft:$(APP_VERSION)
 docker-kraft:
 	$(DOCKER) build \
 		--tag $(IMAGE) \

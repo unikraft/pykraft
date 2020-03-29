@@ -34,7 +34,7 @@ ARG PKG_DISTRIBUTION=stretch
 
 FROM ${PKG_VENDOR}:${PKG_DISTRIBUTION}
 
-ARG KRAFT_VERSION=0.4.0
+ARG APP_VERSION=0.4.0
 ARG PKG_DISTRIBUTION=stretch
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
@@ -48,6 +48,6 @@ ENV LANG=C.UTF-8
 
 RUN set -xe; \
     apt-get update; \
-    dpkg -i ./dist/unikraft-tools_${KRAFT_VERSION}~${PKG_DISTRIBUTION}_all.deb || true; \
+    dpkg -i ./dist/unikraft-tools_${APP_VERSION}~${PKG_DISTRIBUTION}_all.deb || true; \
     apt-get install -yf; \
     kraft --version
