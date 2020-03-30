@@ -134,7 +134,7 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic,
             paused=paused,
             dry_run=dry_run,
         )
-    except ExecutorError as e:
+    except (ExecutorError, KraftError) as e:
         logger.error("Cannot execute: %s" % e)
         sys.exit(1)
 
