@@ -46,7 +46,7 @@ from kraft.constants import UNIKRAFT_LIBSDIR
 from kraft.constants import UNIKRAFT_APPSDIR
 from kraft.constants import KRAFTCONF
 
-class Context(object):
+class Context(click.Context):
     _verbose = False
     _dont_checkout = False
     ignore_checkout_errors = False
@@ -57,8 +57,10 @@ class Context(object):
         self._verbose = False
         self._workdir = os.getcwd()
         self.init_env()
+        self._depth = 0
+        self._close_callbacks = []
+        self.obj = self
         self._cache = Cache(self.env)
-
         self._settings = Settings(os.environ['KRAFTCONF'])
     
     def init_env(self):
@@ -143,5 +145,5 @@ class Context(object):
     @property
     def settings(self):
         return self._settings
-
+    
 kraft_context = click.make_pass_decorator(Context, ensure=True)

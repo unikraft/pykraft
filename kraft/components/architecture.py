@@ -34,7 +34,7 @@ import re
 
 from enum import Enum
 
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager

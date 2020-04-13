@@ -33,15 +33,17 @@ import os
 import sys
 import json
 import click
+import threading
 from enum import Enum
+from atpbar import flush
 from github import Github
 from datetime import datetime
 
 from kraft.logger import logger
 from kraft.errors import KraftError
-from kraft.components import Repository
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 from kraft.context import kraft_context
+from kraft.components import Repository
 from kraft.constants import UK_GITHUB_ORG
 from kraft.constants import DATE_FORMAT
 
@@ -189,13 +191,28 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
         else:
             print(output)
 
-def update():
+@kraft_context
+def update(ctx):
     if 'UK_KRAFT_GITHUB_TOKEN' in os.environ:
         github = Github(os.environ['UK_KRAFT_GITHUB_TOKEN'])
     else:
         github = Github()
 
     org = github.get_organization(UK_GITHUB_ORG)
+    threads = []
+
+    def clone_repo(ctx, clone_url=None):
+        with ctx:
+            logger.info("Probing %s..." % clone_url)
+            
+            try:
+                # logger.info("Found %s..." % repo.clone_url)
+                Repository.from_source_string(
+                    source=clone_url,
+                    force_update=True 
+                )
+            except KraftError as e:
+                logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))
 
     for repo in org.get_repos():
         # There is one repository which contains the codebase to kraft
@@ -205,14 +222,15 @@ def update():
         if repo.clone_url == 'https://github.com/unikraft/kraft.git':
             continue
 
-        try:
-            logger.info("Found %s..." % repo.clone_url)
-            Repository.from_source_string(
-                source=repo.clone_url,
-                force_update=True 
-            )
-        except KraftError as e:
-            logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))
+        # print(ctc.)
+        t = threading.Thread(target=clone_repo, args=(ctx, repo.clone_url, ))
+        threads.append(t)
+        t.start()
+        
+    for t in threads:
+        t.join()
+
+    flush()
 
 def pretty_columns(data = []):
     widths = [max(map(len, col)) for col in zip(*data)]

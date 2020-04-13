@@ -32,7 +32,7 @@
 import os
 from enum import Enum
 
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 
 from kraft.constants import UK_CORE_PLAT_DIR
 

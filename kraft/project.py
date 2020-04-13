@@ -43,7 +43,7 @@ from json.decoder import JSONDecodeError
 import kraft.utils as utils
 from kraft.logger import logger
 from kraft.kraft import kraft_context
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 
 from kraft.components import Core
 from kraft.components import Library

@@ -32,6 +32,7 @@
 import os
 import re
 import sys
+import uuid
 import functools
 import kconfiglib
 
@@ -49,7 +50,7 @@ from git.exc import GitCommandError
 
 from kraft.logger import logger
 
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 from kraft.kraft import kraft_context
 
 from kraft.errors import NoTypeAndNameRepo
@@ -68,6 +69,27 @@ from kraft.constants import CONFIG_UK_PLAT
 from kraft.constants import BRANCH_STAGING
 from kraft.constants import GIT_TAG_PATTERN
 from kraft.constants import GIT_BRANCH_PATTERN
+
+from atpbar import atpbar, find_reporter
+
+class GitProgressPrinter(RemoteProgress):
+  def __init__(self, max_lines=10, label=None):
+    RemoteProgress.__init__(self)
+
+    self.taskid = uuid.uuid4()
+    self.reporter = find_reporter()
+    self.pid = os.getpid()
+    self.label = label
+
+  def update(self, op_code, cur_count, max_count=None, message=''):
+    self.reporter.report(dict(
+        taskid=self.taskid, 
+        name=self.label, 
+        done=int(cur_count), 
+        total=int(max_count), 
+        pid=self.pid, 
+        in_main_thread=True
+    ))
 
 class Repository(object):
     _name = None
@@ -193,7 +215,7 @@ class Repository(object):
         source = kwargs['source']
         if not source.startswith("file://"):
             existing = cls.__get_cache(source)
-        
+
         if existing and isinstance(existing, Repository):
             return existing
         else:
@@ -326,8 +348,7 @@ class Repository(object):
             repo.create_remote('origin', self._source)
 
         try:
-            for fetch_info in repo.remotes.origin.fetch():
-                logger.debug("Updated %s %s to %s" % (self._source, fetch_info.ref, fetch_info.commit))
+            repo.remotes.origin.fetch(progress=GitProgressPrinter(label=self.longname))
             self._last_checked = datetime.now()
         except (GitCommandError, AttributeError) as e:
             logger.error("Could not fetch %s: %s" % (self._source, str(e)))
@@ -404,7 +425,7 @@ class Repository(object):
 
     @property
     def longname(self):
-        return '%s@%s' % (self._name, self._version)
+        return '%s/%s@%s' % (self._type.shortname, self._name, self.latest_release)
 
     @property
     def latest_release(self):

@@ -45,7 +45,7 @@ from kraft.components import Platform
 from kraft.components import Platforms
 from kraft.components import Architecture
 from kraft.components import Architectures
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 
 from kraft.commands.list import update
 from kraft.context import kraft_context

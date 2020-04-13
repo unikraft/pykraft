@@ -40,7 +40,7 @@ from kraft.constants import ORG_DELIMETERE
 from kraft.constants import REPO_VERSION_DELIMETERE
 from kraft.constants import REPO_VALID_URL_PREFIXES
 
-from kraft.types import RepositoryType
+from kraft.type import RepositoryType
 from kraft.errors import InvalidInterpolation
 from kraft.errors import InvalidRepositorySource
 
