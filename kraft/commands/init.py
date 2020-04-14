@@ -51,8 +51,6 @@ from kraft.commands.list import update
 from kraft.context import kraft_context
 
 from kraft.constants import UNIKRAFT_CORE
-from kraft.constants import KRAFTCONF_PREFERRED_PLATFORM
-from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
 
 from kraft.config.interpolation import interpolate_source_version
 

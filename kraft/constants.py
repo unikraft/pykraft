@@ -78,8 +78,8 @@ UNIKRAFT_APPSDIR = "apps"
 
 KRAFTCONF = ".kraftrc"
 KRAFTCONF_DELIMETER = "/"
-KRAFTCONF_PREFERRED_PLATFORM = "preferences/platform"
-KRAFTCONF_PREFERRED_ARCHITECTURE = "preferences/architecture"
+KRAFTCONF_CONFIGURE_PLATFORM = "configure/platform"
+KRAFTCONF_CONFIGURE_ARCHITECTURE = "configure/architecture"
 
 KCONFIG='CONFIG_%s'
 KCONFIG_Y='y'
