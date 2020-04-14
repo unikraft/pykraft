@@ -107,9 +107,9 @@ def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
             sys.exit(1)
         
 @click.command('configure', short_help='Configure the application.')
-@click.option('--plat', '-p', 'target_plat', help='Target platform.')
-@click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--force', '-F', 'force_configure', is_flag=True, help='Force writing new configuration.')
-@click.option('--menuconfig', '-k', is_flag=True, help='Use Unikraft\'s ncurses Kconfig editor.')
+@click.option('--plat',       '-p', 'target_plat',     help='Target platform.')
+@click.option('--arch',       '-m', 'target_arch',     help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
+@click.option('--force',      '-F', 'force_configure', help='Force writing new configuration.', is_flag=True)
+@click.option('--menuconfig', '-k', 'menuconfig',      help='Use Unikraft\'s ncurses Kconfig editor.', is_flag=True)
 def configure(target_plat, target_arch, force_configure,  menuconfig):
     kraft_configure(target_plat=target_plat, target_arch=target_arch, force_configure=force_configure, menuconfig=menuconfig)

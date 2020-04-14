@@ -49,22 +49,22 @@ from .run import kraft_run
 
 @click.command('up', short_help='Configure, build and run an application.')
 @click.argument('name', required=True)
-@click.option('--plat', '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
-@click.option('--arch', '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--initrd', '-i', help='Provide an init ramdisk.')
-@click.option('--background', '-X', is_flag=True, help='Run in background.')
-@click.option('--paused', '-P', is_flag=True, help='Run the application in paused state.')
-@click.option('--gdb', '-g', help='Run a GDB server for the guest on specified port.', type=int)
-@click.option('--dbg', '-d', is_flag=True, help='Use unstriped unikernel')
-@click.option('--virtio-nic', '-n', help='Attach a NAT-ed virtio-NIC to the guest.')
-@click.option('--bridge', '-b', help='Attach a NAT-ed virtio-NIC an existing bridge.')
-@click.option('--interface', '-V', help='Assign host device interface directly as virtio-NIC to the guest.')
-@click.option('--dry-run', '-D', is_flag=True, help='Perform a dry run.')
-@click.option('--memory', '-M',  help="Assign MB memory to the guest.", type=int)
-@click.option('--cpu-sockets', '-s',  help="Number of guest CPU sockets.", type=int)
-@click.option('--cpu-cores', '-c',  help="Number of guest cores per socket.", type=int)
-@click.option('--force', '-F', 'force', is_flag=True, help='Overwrite any existing files in current working directory.')
-@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
+@click.option('--plat',        '-p', 'target_plat', help='Target platform.', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True))
+@click.option('--arch',        '-m', 'target_arch', help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
+@click.option('--initrd',      '-i', 'initrd',      help='Provide an init ramdisk.')
+@click.option('--background',  '-B', 'background',  help='Run in background.', is_flag=True)
+@click.option('--paused',      '-P', 'paused',      help='Run the application in paused state.', is_flag=True)
+@click.option('--gdb',         '-g', 'gdb',         help='Run a GDB server for the guest on specified port.', type=int)
+@click.option('--dbg',         '-d', 'dbg',         help='Use unstriped unikernel', is_flag=True)
+@click.option('--virtio-nic',  '-n', 'virtio_nic',  help='Attach a NAT-ed virtio-NIC to the guest.')
+@click.option('--bridge',      '-b', 'brdige',      help='Attach a NAT-ed virtio-NIC an existing bridge.')
+@click.option('--interface',   '-V', 'interface',   help='Assign host device interface directly as virtio-NIC to the guest.')
+@click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.'), is_flag=True
+@click.option('--memory',      '-M', 'memory',      help="Assign MB memory to the guest.", type=int)
+@click.option('--cpu-sockets', '-s', 'cpu_sockets', help="Number of guest CPU sockets.", type=int)
+@click.option('--cpu-cores',   '-c', 'cpu_corers',  help="Number of guest cores per socket.", type=int)
+@click.option('--force',       '-F', 'force',       help='Overwrite any existing files in current working directory.', is_flag=True)
+@click.option('--fast',        '-j', 'fast',        help='Use all CPU cores to build the application.', is_flag=True)
 def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge, interface, dry_run, memory, cpu_sockets, cpu_cores, force, fast):
     """
     Configures, builds and runs an application for a selected architecture and platform.
@@ -87,6 +87,7 @@ def up(name, target_plat, target_arch, initrd, background, paused, gdb, dbg, vir
     )
     
     kraft_build(
+        libary=None,
         fast=fast
     )
     

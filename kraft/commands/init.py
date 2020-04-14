@@ -186,12 +186,12 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             sys.exit(1)
 
 @click.command('init', short_help='Initialize a new unikraft application.')
+@click.option('--app',     '-a', 'template_app', help='Use an existing application as a template.', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'])
+@click.option('--plat',    '-p', 'target_plat',  help='Target platform.', cls=ClickOptionMutex, not_required_if=['template_app'])
+@click.option('--arch',    '-m', 'target_arch',  help='Target architecture.', cls=ClickOptionMutex, not_required_if=['template_app'], type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
+@click.option('--version', '-V', 'version',      help="Use specific Unikraft release version.")
+@click.option('--force',   '-F', 'force_create', help='Overwrite any existing files.', is_flag=True)
 @click.argument('name', required=False)
-@click.option('--app', '-a', 'template_app', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'], help="Use an existing application as a template.")
-@click.option('--plat', '-p', 'target_plat', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target platform.')
-@click.option('--arch', '-m', 'target_arch', cls=ClickOptionMutex, not_required_if=['template_app'], help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--version', '-V', help="Use specific Unikraft release version.")
-@click.option('--force', '-F', 'force_create', is_flag=True, help='Overwrite any existing files.')
 def init(name, target_plat, target_arch, template_app, version, force_create):
     """
     Initializes a new unikraft application.

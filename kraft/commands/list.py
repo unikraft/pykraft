@@ -50,19 +50,19 @@ from kraft.components.types import RepositoryType
 from kraft.components.repository import Repository
 
 @click.command('list', short_help='List architectures, platforms, libraries or applications.')
-@click.option('--core', '-c', is_flag=True, help='Display information about Unikraft\'s core repository.')
-# @click.option('--archs', '-m', is_flag=True, help='List supported architectures.')
-@click.option('--plats', '-p', is_flag=True, help='List supported platforms.')
-@click.option('--libs', '-l', is_flag=True, help='List supported libraries.')
-@click.option('--apps', '-a', is_flag=True, help='List supported application runtime execution environments.')
-# @click.option('--json', '-j', is_flag=True, help='Return values in JSON format.')
-@click.option('--show-local', '-d', is_flag=True, help='Show local source path.')
-@click.option('--show-origin', '-r', is_flag=True, help='Show remote source location.')
-# @click.option('--import', '-i', '_import', help='Import a library from a specified path.')
-@click.option('--paginate', '-n', is_flag=True, help='Paginate output.')
-@click.option('--update', '-u', 'force_update', is_flag=True, help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.')
-@click.option('--flush', '-F', 'force_flush', is_flag=True, help='Cleans the cache and lists.')
-@click.option('--json', '-j', 'return_json', is_flag=True, help='Return output as JSON.')
+@click.option('--core',        '-c', 'core',         help='Display information about Unikraft\'s core repository.', is_flag=True)
+# @click.option('--archs',       '-m',                 help='List supported architectures.', is_flag=True)
+@click.option('--plats',       '-p', 'plats',        help='List supported platforms.', is_flag=True)
+@click.option('--libs',        '-l', 'libs',         help='List supported libraries.', is_flag=True)
+@click.option('--apps',        '-a', 'apps',         help='List supported application runtime execution environments.', is_flag=True)
+# @click.option('--json',        '-j', 'json',         help='Return values in JSON format.', is_flag=True)
+@click.option('--show-local',  '-d', 'show_local',   help='Show local source path.', is_flag=True)
+@click.option('--show-origin', '-r', 'show_origin',  help='Show remote source location.', is_flag=True)
+# @click.option('--import',      '-i', '_import',      help='Import a library from a specified path.')
+@click.option('--paginate',    '-n', 'paginate',     help='Paginate output.', is_flag=True)
+@click.option('--update',      '-u', 'force_update', help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.', is_flag=True)
+@click.option('--flush',       '-F', 'force_flush',  help='Cleans the cache and lists.', is_flag=True)
+@click.option('--json',        '-j', 'return_json',  help='Return output as JSON.', is_flag=True)
 @kraft_context
 def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update, force_flush, return_json):
     """
