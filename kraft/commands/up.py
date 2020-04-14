@@ -59,7 +59,7 @@ from .run import kraft_run
 @click.option('--virtio-nic',  '-n', 'virtio_nic',  help='Attach a NAT-ed virtio-NIC to the guest.')
 @click.option('--bridge',      '-b', 'brdige',      help='Attach a NAT-ed virtio-NIC an existing bridge.')
 @click.option('--interface',   '-V', 'interface',   help='Assign host device interface directly as virtio-NIC to the guest.')
-@click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.'), is_flag=True
+@click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.', is_flag=True)
 @click.option('--memory',      '-M', 'memory',      help="Assign MB memory to the guest.", type=int)
 @click.option('--cpu-sockets', '-s', 'cpu_sockets', help="Number of guest CPU sockets.", type=int)
 @click.option('--cpu-cores',   '-c', 'cpu_corers',  help="Number of guest cores per socket.", type=int)

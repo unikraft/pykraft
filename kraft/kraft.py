@@ -53,21 +53,9 @@ from kraft.commands import (
     configure,
 )
 
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables verbose mode.'
-)
-@click.option(
-    '-X', '--dont-checkout', 'dont_checkout',
-    is_flag=True,
-    help='Do not checkout repositories.'
-)
-@click.option(
-    '-C', '--ignore-git-checkout-errors', 'ignore_checkout_errors',
-    is_flag=True,
-    help='Ignore checkout errors.'
-)
+@click.option('--verbose',                    '-v', 'verbose',                help='Enables verbose mode.', is_flag=True)
+@click.option('--no-checkout',                '-X', 'dont_checkout',          help='Toggle checking-out repositories before any action.', is_flag=True)
+@click.option('--ignore-git-checkout-errors', '-C', 'ignore_checkout_errors', help='Ignore checkout errors.', is_flag=True)
 @click.group(cls=KraftHelpGroup, context_settings=CONTEXT_SETTINGS, epilog="""
 Influential Environmental Variables:
   env::UK_WORKDIR The working directory for all Unikraft
