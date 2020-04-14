@@ -40,7 +40,7 @@ from kraft.errors import KraftError
 from kraft.kraft import kraft_context
 
 @kraft_context
-def kraft_build(ctx, fast):
+def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
     logger.debug("Building %s..." % ctx.workdir)
 
     try:
@@ -64,12 +64,30 @@ def kraft_build(ctx, fast):
         # This simply set the `-j` flag which signals to make to use all cores.
         n_proc = ""
         
-    project.build(n_proc=n_proc)
+    project.build(
+        fetch=fetch,
+        prepare=prepare,
+        target=target,
+        n_proc=n_proc
+    )
 
 @click.command('build', short_help='Build the application.')
-@click.option('--fast', '-j', is_flag=True, help='Use all CPU cores to build the application.')
-def build(fast):
+@click.option('--fetch/--no-fetch',           'fetch',   help='Run fetch step before build.', default=True)
+@click.option('--prepare/--no-prepare',       'prepare', help='Run prepare step before build.',  default=True)
+@click.option('--fast',                 '-j', 'fast',    help='Use all CPU cores to build the application.', is_flag=True)
+@click.option('--noop',                 '-q', 'noop',    help='Do not run the build.', is_flag=True)
+@click.argument('target', required=False)
+def build(fetch=True, prepare=True, target=None, fast=False, noop=False):
     """
     Builds the Unikraft application for the target architecture and platform.
     """
-    kraft_build(fast=fast)
+
+    if noop:
+        target = False
+
+    kraft_build(
+        fetch=fetch,
+        prepare=prepare,
+        target=target,
+        fast=fast
+    )

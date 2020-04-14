@@ -329,7 +329,7 @@ class Project(object):
         
         return True
     
-    def build(self, n_proc=None):
+    def build(self, fetch=True, prepare=True, target=None, n_proc=None):
         """Checkout all the correct versions based on the current app instance
         and run the build command."""
 
@@ -337,8 +337,20 @@ class Project(object):
         if n_proc is not None:
             extra.append('-j%s' % str(n_proc))
         
-        self.make('fetch')
-        self.make('prepare')
+        if fetch:
+            self.make('fetch')
+    
+        if prepare:
+            self.make('prepare')
+    
+
+        # Create a no-op when target is False
+        if target is False:
+            return
+        
+        elif target is not None:
+            extra.append(target)
+        
         self.make(extra)
 
     def clean(self, proper=False):
