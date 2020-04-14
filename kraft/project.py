@@ -43,17 +43,17 @@ from json.decoder import JSONDecodeError
 import kraft.utils as utils
 from kraft.logger import logger
 from kraft.kraft import kraft_context
-from kraft.type import RepositoryType
+from kraft.components.types import RepositoryType
 
-from kraft.components import Core
-from kraft.components import Library
-from kraft.components import Libraries
-from kraft.components import Platform
-from kraft.components import Platforms
-from kraft.components import Executor
-from kraft.components import Architecture
-from kraft.components import Architectures
-from kraft.components import Repository
+from kraft.components.core import Core
+from kraft.components.library import Library
+from kraft.components.library import Libraries
+from kraft.components.platform import Platform
+from kraft.components.platform import Platforms
+from kraft.components.executor import Executor
+from kraft.components.architecture import Architecture
+from kraft.components.architecture import Architectures
+from kraft.components.repository import Repository
 
 from kraft.errors import CannotReadKraftfile
 from kraft.errors import InvalidRepositorySource
@@ -70,8 +70,8 @@ from kraft.constants import MAKEFILE_UK
 from kraft.constants import ENV_VAR_PATTERN
 from kraft.constants import KRAFT_SPEC_LATEST
 from kraft.constants import SUPPORTED_FILENAMES
-from kraft.constants import KRAFTCONF_PREFERRED_ARCHITECTURE
-from kraft.constants import KRAFTCONF_PREFERRED_PLATFORM
+from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
+from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
 
 from kraft.config.config import get_default_config_files
 from kraft.config.kconfig import infer_arch_config_name

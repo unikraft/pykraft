@@ -48,7 +48,7 @@ from .validation import validate_against_config_schema
 from .interpolation import interpolate_environment_variables
 from .interpolation import interpolate_source_version
 
-from kraft.type import RepositoryType
+from kraft.components.types import RepositoryType
 
 from kraft.errors import KraftError
 from kraft.errors import KraftFileNotFound

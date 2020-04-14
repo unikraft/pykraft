@@ -41,7 +41,7 @@ from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.errors import ExecutorError
 from kraft.kraft import kraft_context
-from kraft.components import VolumeDriver
+from kraft.components.volume import VolumeDriver
 # from kraft.components.executor import Executor
 # from kraft.components.network import start_dnsmasq_server
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT

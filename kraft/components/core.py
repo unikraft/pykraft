@@ -29,7 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from kraft.type import RepositoryType
+from kraft.components.types import RepositoryType
 from kraft.components.repository import Repository
 
 class Core(Repository):

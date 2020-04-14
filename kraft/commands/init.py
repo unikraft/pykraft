@@ -40,12 +40,12 @@ from kraft.logger import logger
 from kraft.project import Project
 from kraft.errors import KraftError
 
-from kraft.components import Core
-from kraft.components import Platform
-from kraft.components import Platforms
-from kraft.components import Architecture
-from kraft.components import Architectures
-from kraft.type import RepositoryType
+from kraft.components.core import Core
+from kraft.components.platform import Platform
+from kraft.components.platform import Platforms
+from kraft.components.architecture import Architecture
+from kraft.components.architecture import Architectures
+from kraft.components.types import RepositoryType
 
 from kraft.commands.list import update
 from kraft.context import kraft_context
@@ -73,6 +73,9 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
         else:
             logger.error('Cancelling!')
             sys.exit(1)
+
+    # if ctx.settings.get(KRAFTCONF_INIT_WORKDIR) == "local":
+    #   
     
     # If we are using a template application, we can simply copy from the source
     # repository

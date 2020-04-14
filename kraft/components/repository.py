@@ -50,7 +50,6 @@ from git.exc import GitCommandError
 
 from kraft.logger import logger
 
-from kraft.type import RepositoryType
 from kraft.kraft import kraft_context
 
 from kraft.errors import NoTypeAndNameRepo
@@ -69,6 +68,8 @@ from kraft.constants import CONFIG_UK_PLAT
 from kraft.constants import BRANCH_STAGING
 from kraft.constants import GIT_TAG_PATTERN
 from kraft.constants import GIT_BRANCH_PATTERN
+
+from kraft.components.types import RepositoryType
 
 from atpbar import atpbar, find_reporter
 

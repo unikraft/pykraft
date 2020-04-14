@@ -41,11 +41,13 @@ from datetime import datetime
 
 from kraft.logger import logger
 from kraft.errors import KraftError
-from kraft.type import RepositoryType
 from kraft.context import kraft_context
-from kraft.components import Repository
+
 from kraft.constants import UK_GITHUB_ORG
 from kraft.constants import DATE_FORMAT
+
+from kraft.components.types import RepositoryType
+from kraft.components.repository import Repository
 
 @click.command('list', short_help='List architectures, platforms, libraries or applications.')
 @click.option('--core', '-c', is_flag=True, help='Display information about Unikraft\'s core repository.')
@@ -226,7 +228,7 @@ def update(ctx):
         t = threading.Thread(target=clone_repo, args=(ctx, repo.clone_url, ))
         threads.append(t)
         t.start()
-        
+
     for t in threads:
         t.join()
 
