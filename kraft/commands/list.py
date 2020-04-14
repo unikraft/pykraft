@@ -208,7 +208,6 @@ def update(ctx):
             logger.info("Probing %s..." % clone_url)
             
             try:
-                # logger.info("Found %s..." % repo.clone_url)
                 Repository.from_source_string(
                     source=clone_url,
                     force_update=True 
@@ -224,7 +223,6 @@ def update(ctx):
         if repo.clone_url == 'https://github.com/unikraft/kraft.git':
             continue
 
-        # print(ctc.)
         t = threading.Thread(target=clone_repo, args=(ctx, repo.clone_url, ))
         threads.append(t)
         t.start()
@@ -232,7 +230,8 @@ def update(ctx):
     for t in threads:
         t.join()
 
-    flush()
+    if sys.stdout.isatty():
+        flush()
 
 def pretty_columns(data = []):
     widths = [max(map(len, col)) for col in zip(*data)]
