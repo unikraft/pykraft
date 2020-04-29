@@ -57,19 +57,29 @@ def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
     
     if not project.is_configured():
         if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):
-            project.configure()
+            try:
+                project.configure(force_configure=True)
+
+            except KraftError as e:
+                logger.error(str(e))
+                sys.exit(1)
 
     n_proc = None
     if fast:
         # This simply set the `-j` flag which signals to make to use all cores.
         n_proc = ""
-        
-    project.build(
-        fetch=fetch,
-        prepare=prepare,
-        target=target,
-        n_proc=n_proc
-    )
+    
+    try:
+        project.build(
+            fetch=fetch,
+            prepare=prepare,
+            target=target,
+            n_proc=n_proc
+        )
+    
+    except KraftError as e:
+        logger.error(str(e))
+        sys.exit(1)
 
 @click.command('build', short_help='Build the application.')
 @click.option('--fetch/--no-fetch',           'fetch',   help='Run fetch step before build.', default=True)
