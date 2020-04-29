@@ -70,8 +70,8 @@ from kraft.constants import MAKEFILE_UK
 from kraft.constants import ENV_VAR_PATTERN
 from kraft.constants import KRAFT_SPEC_LATEST
 from kraft.constants import SUPPORTED_FILENAMES
-from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
 from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
+from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
 
 from kraft.config.config import get_default_config_files
 from kraft.config.kconfig import infer_arch_config_name
@@ -219,13 +219,38 @@ class Project(object):
         utils.execute(cmd)
 
     @kraft_context
-    def configure(ctx, self, target_arch=None, target_plat=None):
+    def configure(ctx, self, target_arch=None, target_plat=None, force_configure=False):
         """Configure a Unikraft application."""
 
         if not self.is_configured():
             self.init()
 
         self.checkout()
+
+        if force_configure:
+            # Check if we have used "--arch" before.  This saves the user from having to
+            # re-type it.  This means omission uses the settings.
+            if target_arch is None and len(self.architectures.all()) > 1 and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE):
+                target_arch = ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE)
+            
+            elif target_arch is None and len(self.architectures.all()) == 1:
+                for arch in self.architectures.all():
+                    target_arch = arch.name
+
+            if target_arch is not None and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE) is None:
+                ctx.settings.set(KRAFTCONF_CONFIGURE_ARCHITECTURE, target_arch)
+
+            # Check if we have used "--plat" before.  This saves the user from having to
+            # re-type it.  This means omission uses the settings.
+            if target_plat is None and len(self.platforms.all()) > 1 and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM):
+                target_plat = ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM)
+            
+            elif target_plat is None and len(self.platforms.all()) == 1:
+                for plat in self.platforms.all():
+                    target_plat = plat.name
+            
+            if target_plat is not None and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM) is None:
+                ctx.settings.set(KRAFTCONF_CONFIGURE_PLATFORM, target_plat)
 
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.

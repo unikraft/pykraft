@@ -34,9 +34,6 @@ import sys
 import click
 import platform
 
-from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
-from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
-
 from kraft.config import config
 from kraft.logger import logger
 from kraft.project import Project
@@ -70,28 +67,6 @@ def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
         else:
             logger.error('Cancelling!')
             sys.exit(1)
-
-    # Check if we have used "--arch" before.  This saves the user from having to
-    # re-type it.  This means omission uses the settings.
-    if target_arch is None and len(project.architectures.all()) > 1 and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE):
-        target_arch = ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE)
-    elif target_arch is None and len(project.architectures.all()) == 1:
-        for arch in project.architectures.all():
-            target_arch = arch.name
-
-    if target_arch is not None and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE) is None:
-        ctx.settings.set(KRAFTCONF_CONFIGURE_ARCHITECTURE, target_arch)
-
-    # Check if we have used "--plat" before.  This saves the user from having to
-    # re-type it.  This means omission uses the settings.
-    if target_plat is None and len(project.platforms.all()) > 1 and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM):
-        target_plat = ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM)
-    elif target_plat is None and len(project.platforms.all()) == 1:
-        for plat in project.platforms.all():
-            target_plat = plat.name
-    
-    if target_plat is not None and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM) is None:
-        ctx.settings.set(KRAFTCONF_CONFIGURE_PLATFORM, target_plat)
 
     if menuconfig:
         project.menuconfig()
