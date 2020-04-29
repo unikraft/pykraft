@@ -146,7 +146,7 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic,
 @click.option('--paused',      '-P', 'paused',      help='Run the application in paused state.', is_flag=True)
 @click.option('--gdb',         '-g', 'gdb',         help='Run a GDB server for the guest at PORT.', type=int)
 @click.option('--dbg',         '-d', 'dbg',         help='Use unstriped unikernel', is_flag=True)
-@click.option('--virtio-nic',  '-n', 'virtio',      help='Attach a NAT-ed virtio-NIC to the guest.')
+@click.option('--virtio-nic',  '-n', 'virtio_nic',  help='Attach a NAT-ed virtio-NIC to the guest.')
 @click.option('--bridge',      '-b', 'bridge',      help='Attach a NAT-ed virtio-NIC an existing bridge.')
 @click.option('--interface',   '-V', 'interface',   help='Assign host device interface directly as virtio-NIC to the guest.')
 @click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.', is_flag=True)
