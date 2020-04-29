@@ -29,11 +29,71 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
+import yaml
+import shutil
+import datetime
+import urllib.request
+
+from git import Repo as GitRepo
+from git import GitCommandError
+
+from kraft.logger import logger
+from kraft.utils import recursively_copy
+from kraft.utils import delete_resource
+
+from kraft.errors import CannotConnectURLError
+from kraft.errors import UnknownSourceProvider
+
 from kraft.components.types import RepositoryType
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
+from kraft.components.provider import determine_provider
+
+from kraft.constants import TMPL_EXT
+from kraft.constants import PROJECT_CONFIG
+from kraft.constants import PROJECT_MANIFEST
+from kraft.constants import UK_VERSION_VARNAME
+
+from cookiecutter.prompt import prompt_for_config
+from cookiecutter.generate import generate_files
+from cookiecutter.generate import generate_context
+
+def get_templates_path():
+    return os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '../templates'
+    )
+
+def get_template_config():
+    return os.path.join(
+        get_templates_path(),
+        PROJECT_CONFIG
+    )
+
+def delete_resources_for_disabled_features(project_dir=None):
+    if project_dir is None:
+        return
+    
+    project_manifest = os.path.join(project_dir, PROJECT_MANIFEST)
+
+    if os.path.exists(project_manifest) is False:
+        return
+
+    with open(project_manifest) as manifest_file:
+        manifest = yaml.load(manifest_file, Loader=yaml.FullLoader)
+        
+        for feature in manifest['features']:
+            if not feature['enabled']:
+                for resource in feature['resources']:
+                    delete_resource(os.path.join(project_dir, resource))
+    
+    delete_resource(project_manifest)
 
 class Library(Repository):
+    _origin = None
+    _template_values = {}
+
     @classmethod
     def from_config(cls, ctx, name, config=None):
         assert ctx is not None, "ctx is undefined"
@@ -61,6 +121,132 @@ class Library(Repository):
             source = source,
             repository_type = RepositoryType.LIB
         )
+    
+    @classmethod
+    def from_origin(cls,
+        name=None,
+        origin=None,
+        source=None,
+        version=None):
+        """"""
+
+        try:
+            logger.debug("Pinging %s..." % origin)
+            status = urllib.request.urlopen(origin).getcode()
+        except OSError as e:
+            raise CannotConnectURLError(origin, e.msg)
+
+        if os.path.exists(os.path.join(source, '.git')) is False:
+            logger.debug("Initializing new git repository at: %s" % source)
+            repo = GitRepo.init(source)
+
+        provider = determine_provider(origin)
+        
+        if provider is None:
+            raise UnknownSourceProvider(source)
+
+        # Initialize the "repository"
+        library = cls(
+            name = name,
+            source = "file://%s" % source,
+            repository_type = RepositoryType.LIB,
+            provider = provider,
+            version = version,
+        )
+        
+        library.origin = origin
+        versions = library.provider.probe_remote_versions()
+        library.set_template_value('version', sorted(list(versions.keys()), reverse=True))
+        library.set_template_value('year', datetime.datetime.now().year)
+        library.set_template_value('project_name', name)
+        library.set_template_value('library_name', library.libname)
+        library.set_template_value('library_kname', library.kname)
+        library.set_template_value('commit', '')
+
+        return library
+    
+    @property
+    def origin(self):
+        return self._origin
+
+    @origin.setter
+    def origin(self, origin=None):
+        self._origin = origin
+
+    def save(self, outdir=None, additional_values={}, force_create=False, no_input=False):
+        context = generate_context(
+            context_file=get_template_config(),
+            default_context=self._template_values
+        )
+
+        # prompt the user to manually configure at the command line.
+        # except when 'no-input' flag is set
+        context['cookiecutter'] = prompt_for_config(context, no_input)
+
+        # Fix the starting "v" in the version string
+        if context['cookiecutter']['version'].startswith('v'):
+            context['cookiecutter']['version'] = context['cookiecutter']['version'][1:]
+            context['cookiecutter']['source_archive'] = self.version_source_archive('v%s' % (UK_VERSION_VARNAME % self.kname))
+        else:
+            context['cookiecutter']['source_archive'] = self.version_source_archive()
+
+        # include automatically generated content
+        context['cookiecutter']['kconfig_dependencies'] = self.determine_kconfig_dependencies()
+        context['cookiecutter']['source_files'] = self.determine_source_files()
+
+        # include template dir or url in the context dict
+        context['cookiecutter']['_template'] = get_templates_path()
+
+        # add all vars that were never prompted
+        for key in self._template_values:
+            if key not in context['cookiecutter']:
+                context['cookiecutter'][key] = self._template_values[key]
+
+        output_dir = self.source
+        if self.source.startswith("file://"): 
+            output_dir = self.source[len("file://"):]
+
+        logger.info("Generating files...")
+        project_dir = generate_files(
+            repo_dir=get_templates_path(),
+            context=context,
+            overwrite_if_exists=force_create,
+            skip_if_file_exists=not force_create,
+            output_dir=outdir,
+        )
+
+        recursively_copy(project_dir, outdir, overwrite=force_create)
+        delete_resources_for_disabled_features(outdir)
+        shutil.rmtree(project_dir, ignore_errors=True)
+
+        # Save initial commit
+        repo = GitRepo(output_dir)
+        repo.config_writer().set_value("user", "name", self.template_value['author_name']).release()
+        repo.config_writer().set_value("user", "email", self.template_value['author_email']).release()
+        repo.index.commit('Initial commit (blank)')
+
+    def set_template_value(self, key=None, val=None):
+        if key is not None:
+            self._template_values[key] = val
+        
+    @property
+    def template_value(self):
+        return self._template_values
+  
+    # TODO: Intrusively determine which additional unikraft librareis are
+    # needed for this library to run.
+    def determine_kconfig_dependencies(self):
+        return []
+
+    # TODO: Intrusively determine source files of the origin for the library
+    def determine_source_files(self):
+        return []
+
+    def version_source_archive(self, varname=None):
+        if varname is None:
+            varname = UK_VERSION_VARNAME % self.kname
+
+        return self.provider.version_source_archive(varname)
 
 class Libraries(RepositoryManager):
     pass

@@ -29,6 +29,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from kraft.components.provider import ProviderType
+
 SPECIFICATION_EXPLANATION = (
     'You might be seeing this error because you\'re using the wrong kraft file version.\n'
     'For more on the kraft file format versions, see: ttps://docs.unikraft.org/'
@@ -149,3 +151,16 @@ class DNSMASQCannotStartServer(KraftError):
 
 class ExecutorError(KraftError):
     pass
+
+class UnknownSourceProvider(KraftError):
+    def __init__(self, name):
+        super(UnknownSourceProvider, self).__init__(
+            "The provided origin provider is not known: %s\nValid providers include: %s" % (
+                name,
+                ", ".join([member.name for _, member in ProviderType.__members__.items()])
+            )
+        )
+
+class CannotConnectURLError(KraftError):
+    def __init__(self, url, msg):
+        super(CannotConnectURLError, self).__init__("Cannot connect to remote: %s: %s" % (url, msg))

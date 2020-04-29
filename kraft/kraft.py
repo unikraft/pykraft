@@ -49,7 +49,7 @@ from kraft.commands import (
     list,
     build,
     clean,
-    initlib,
+    libinit,
     configure,
 )
 
@@ -81,11 +81,11 @@ def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors):
     ctx.ignore_checkout_errors = ignore_checkout_errors
     ctx.cache.sync()
 
-@click.group(name='devel', short_help='Unikraft developer commands.')
+@click.group(name='lib', short_help='Unikraft library commands.')
 @kraft_context
-def devel(ctx):
-    """Unikraft developer sub-commands useful for maintaing and working
-    directly with Unikraft source code."""
+def lib(ctx):
+    """Unikraft library sub-commands useful for maintaing and working
+    directly with Unikraft libraries."""
     pass
 
 @click.group(name='measure', short_help='Unikraft measurement commands.')
@@ -94,7 +94,7 @@ def measure(ctx):
     """Unikraft measurement commands are ..."""
     pass
 
-devel.add_command(initlib)
+lib.add_command(libinit)
 
 kraft.add_command(up)
 kraft.add_command(run)
@@ -103,4 +103,4 @@ kraft.add_command(list)
 kraft.add_command(build)
 kraft.add_command(clean)
 kraft.add_command(configure)
-kraft.add_command(devel)
+kraft.add_command(lib)

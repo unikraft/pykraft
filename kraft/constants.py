@@ -40,12 +40,32 @@ UK_GITHUB_ORG='unikraft'
 
 # Match against dereferenced tags only
 # https://stackoverflow.com/a/15472310
-GIT_TAG_PATTERN=re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
+GIT_UNIKRAFT_TAG_PATTERN=re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
+GIT_TAG_PATTERN=re.compile(r'refs/tags/([\w\d\.-]+)[\^\{\}]?')
 GIT_BRANCH_PATTERN=re.compile(r'refs/heads/(.*)')
+SEMVER_PATTERN = re.compile(
+    r"""
+        (?P<major>0|[1-9]\d*)
+        \.
+        (?P<minor>0|[1-9]\d*)
+        \.
+        (?P<patch>0|[1-9]\d*)
+        (?:-(?P<prerelease>
+            (?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)
+            (?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*
+        ))?
+        (?:\+(?P<build>
+            [0-9a-zA-Z-]+
+            (?:\.[0-9a-zA-Z-]+)*
+        ))?
+    """,
+    re.VERBOSE,
+)
 
 GITHUB_ORIGIN="https://github.com"
 UNIKRAFT_ORG="unikraft"
 UNIKRAFT_CORE="%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, "unikraft.git")
+UNIKRAFT_ORIGIN="%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG)
 
 REPO_VERSION_DELIMETERE = "@"
 ORG_DELIMETERE = "/"
@@ -63,6 +83,12 @@ SUPPORTED_FILENAMES = [
     'kraft.yml',
 ]
 
+TARBALL_SUPPORTED_EXTENSIONS = [
+    '.zip',
+    '.tar.gz',
+    '.tar',
+]
+
 UNIKERNEL_IMAGE_FORMAT="%s/build/%s_%s-%s"
 UNIKERNEL_IMAGE_FORMAT_DGB="%s/build/%s_%s-%s.dbg"
 
@@ -76,8 +102,13 @@ UNIKRAFT_COREDIR = "unikraft"
 UNIKRAFT_LIBSDIR = "libs"
 UNIKRAFT_APPSDIR = "apps"
 
+GITCONFIG_GLOBAL = "~/.gitconfig"
+GITCONFIG_LOCAL = ".git/config"
+URL_VERSION = '$VERSION'
+
 KRAFTCONF = ".kraftrc"
 KRAFTCONF_DELIMETER = "/"
+KRAFTCONF_INIT_WORKDIR="init/workdir"
 KRAFTCONF_CONFIGURE_PLATFORM = "configure/platform"
 KRAFTCONF_CONFIGURE_ARCHITECTURE = "configure/architecture"
 
@@ -92,6 +123,7 @@ KCONFIG_LIB_NAME="CONFIG_LIB%s"
 UK_CONFIG_FILE='%s/Config.uk'
 UK_CORE_ARCH_DIR='%s/arch'
 UK_CORE_PLAT_DIR='%s/plat'
+UK_VERSION_VARNAME='$(%s_VERSION)'
 
 CONFIG_UK_ARCH=re.compile(r'if\s+\(([\w\_]+)\)[\n\s]+source\s+"\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"')
 CONFIG_UK_PLAT=re.compile(r'menuconfig\s+([\w\_]+)')
@@ -106,3 +138,7 @@ KRAFT_SPEC_V04='0.4'
 KRAFT_SPEC_LATEST=KRAFT_SPEC_V04
 
 UK_DBG_EXT='.dbg'
+TMPL_EXT='.tmpl'
+
+PROJECT_CONFIG='cookiecutter.json'
+PROJECT_MANIFEST='manifest.yaml'

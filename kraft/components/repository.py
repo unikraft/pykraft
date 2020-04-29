@@ -40,22 +40,27 @@ from enum import Enum
 from datetime import datetime
 from urllib.parse import urlparse
 
-from git import Repo as GitRepo
 from git import RemoteProgress
-from git import InvalidGitRepositoryError
 from git import NoSuchPathError
 from git import GitCommandError
+from git import Repo as GitRepo
 from git.cmd import Git as GitCmd
 from git.exc import GitCommandError
+from git import InvalidGitRepositoryError
+
+from kraft.components.provider import ProviderType
+from kraft.components.provider.git import GitProvider
+from kraft.components.provider import determine_provider
 
 from kraft.logger import logger
 
 from kraft.kraft import kraft_context
 
 from kraft.errors import NoTypeAndNameRepo
+from kraft.errors import NoSuchReferenceInRepo
+from kraft.errors import UnknownSourceProvider
 from kraft.errors import InvalidRepositoryFormat
 from kraft.errors import InvalidRepositorySource
-from kraft.errors import NoSuchReferenceInRepo
 
 from kraft.constants import KCONFIG
 from kraft.constants import KCONFIG_Y
@@ -66,8 +71,6 @@ from kraft.constants import UNIKRAFT_CORE
 from kraft.constants import UK_CONFIG_FILE
 from kraft.constants import CONFIG_UK_PLAT
 from kraft.constants import BRANCH_STAGING
-from kraft.constants import GIT_TAG_PATTERN
-from kraft.constants import GIT_BRANCH_PATTERN
 
 from kraft.components.types import RepositoryType
 
@@ -99,6 +102,7 @@ class Repository(object):
     _git = None
     _source = None
     _localdir = None
+    _provider = None
 
     _version = None
     _known_versions = {}
@@ -114,15 +118,16 @@ class Repository(object):
         source=None,
         version=None,
         localdir=None,
+        provider=None,
         repository_type=None,
         force_update=False,
         download=False,
         kconfig_extra={}):
         """Determine whether the provided URL is a Git repository and then
-        remotely retrieve the contents of said repository based on yjr
+        remotely retrieve the contents of said repository based on your
         particular url and branch.  Returns boolean for success state of
         initializing the Repo object."""
-        
+
         if source is None or len(source) == 0:
             raise InvalidRepositorySource(source)
 
@@ -138,18 +143,28 @@ class Repository(object):
 
         already_downloaded = False
 
-        if len(self._known_versions) == 0 or force_update or download:
-            self.update_known_versions(source=source)
-        
+        # Determine provider
+        if provider is None:
+            provider = determine_provider(source)
+            
+            if provider is None:
+                raise UnknownSourceProvider(source)
+
+        self.provider = provider
+    
+        if len(self.known_versions) == 0 or force_update or download:
+            self.known_versions = self.provider.probe_remote_versions()
+            self.last_checked = datetime.now()
+
         # Determine how to set the version
         if version is not None:
-            self._version = version
-        elif BRANCH_MASTER in self._known_versions:
-            self._version = BRANCH_MASTER
-        elif BRANCH_STAGING in self._known_versions:
-            self._version = BRANCH_STAGING
+            self.version = version
+        elif BRANCH_MASTER in self.known_versions:
+            self.version = BRANCH_MASTER
+        elif BRANCH_STAGING in self.known_versions:
+            self.version = BRANCH_STAGING
         else:
-            raise NoSuchReferenceInRepo
+            self.version = None
 
         # If we cannot determine the type passively, we must clone the
         # repository into a temporary location and manually introspect
@@ -167,26 +182,27 @@ class Repository(object):
         # url set.  If so, we do not need to make an outbound connection to
         # determine whether the repository is "real".
         if localdir is None:
-            self._localdir = self.determine_localdir(source=source, repository_type=repository_type, name=name)
+            self.localdir = self.determine_localdir(source=source, repository_type=repository_type, name=name)
         else:
-            self._localdir = localdir
+            self.localdir = localdir
 
         # Populate the repository information if we have made it this far, as it
         # means that the repository is valid and usable.
-        self._name = name
-        self._type = repository_type
-        self._source = source
-        self._kconfig_extra = kconfig_extra
+        self.name = name
+        self.type = repository_type
+        self.source = source
+        self.kconfig_extra = kconfig_extra
 
         if download or force_update:
             self.update()
         
-        if self._type == RepositoryType.ARCH:
-            return
-        elif self._type == RepositoryType.PLAT and self._source == UNIKRAFT_CORE:
+        if self.type == RepositoryType.ARCH:
             return
         
-        self.__set_cache(source, self)
+        elif self.type == RepositoryType.PLAT and self.source == UNIKRAFT_CORE:
+            return
+        
+        # self._set_cache(source, self)
         
     @classmethod
     @kraft_context
@@ -207,10 +223,10 @@ class Repository(object):
 
         if 'repository_type' not in kwargs:
             return super(Repository, cls).__new__(cls)
-        elif kwargs['repository_type'] == RepositoryType.ARCH:
-            return super(Repository, cls).__new__(cls)
-        elif kwargs['repository_type'] == RepositoryType.PLAT and kwargs['source'] == UNIKRAFT_CORE:
-            return super(Repository, cls).__new__(cls)
+        # elif kwargs['repository_type'] == RepositoryType.ARCH:
+        #     return super(Repository, cls).__new__(cls)
+        # elif kwargs['repository_type'] == RepositoryType.PLAT and kwargs['source'] == UNIKRAFT_CORE:
+        #     return super(Repository, cls).__new__(cls)
         
         existing = None
         source = kwargs['source']
@@ -231,45 +247,6 @@ class Repository(object):
             repository_type=repository_type,
             force_update=force_update,
         )
-
-    def update_known_versions(self, source=None):
-        """List references in a remote repository"""
-
-        versions = {}
-
-        if source is None or source.startswith("file://"):
-            return versions
-
-        g = GitCmd()
-
-        logger.debug("Probing %s..." % source)
-
-        try:
-            remote = g.ls_remote(source) 
-        except GitCommandError as e:
-            logger.fatal("Could not connect to repository: %s" % str(e))
-            return versions
-
-        for refs in g.ls_remote(source).split('\n'):
-            hash_ref_list = refs.split('\t')
-
-            # Empty repository
-            if len(hash_ref_list) == 0 or hash_ref_list[0] == '':
-                continue
-
-            # Check if branch
-            ref = GIT_BRANCH_PATTERN.search(hash_ref_list[1])
-            if ref:
-                versions[ref.group(1)] = hash_ref_list[0]
-                continue
-
-            # Check if version tag
-            ref = GIT_TAG_PATTERN.search(hash_ref_list[1])
-            if ref:
-                versions[ref.group(1)] = hash_ref_list[0]
-
-        self._known_versions = versions
-        self._last_checked = datetime.now()
 
     def passively_determine_type_and_name(self, name):
         """Determine the name and type of the repository by checking the name of
@@ -341,26 +318,26 @@ class Repository(object):
         repo = None
 
         try:
-            repo = GitRepo(self._localdir)
+            repo = GitRepo(self.localdir)
         
         # Not a repository? No problem, let's clone it:
         except (InvalidGitRepositoryError, NoSuchPathError) as e:
-            repo = GitRepo.init(self._localdir)
-            repo.create_remote('origin', self._source)
+            repo = GitRepo.init(self.localdir)
+            repo.create_remote('origin', self.source)
 
         try:
             if sys.stdout.isatty():
                 repo.remotes.origin.fetch(progress=GitProgressPrinter(label=self.longname))
             else:
                 for fetch_info in repo.remotes.origin.fetch():
-                    logger.debug("Updated %s %s to %s" % (self._source, fetch_info.ref, fetch_info.commit))
+                    logger.debug("Updated %s %s to %s" % (self.source, fetch_info.ref, fetch_info.commit))
             
-            self._last_checked = datetime.now()
+            self.last_checked = datetime.now()
         except (GitCommandError, AttributeError) as e:
-            logger.error("Could not fetch %s: %s" % (self._source, str(e)))
+            logger.error("Could not fetch %s: %s" % (self.source, str(e)))
         
-        # self.checkout(self._version)
-        # self._last_updated = datetime.fromtimestamp(repo.head.commit.committed_date)
+        # self.checkout(self.version)
+        # self.last_updated = datetime.fromtimestamp(repo.head.commit.committed_date)
 
     @kraft_context
     def checkout(ctx, self, version=None, retry=False):
@@ -372,13 +349,13 @@ class Repository(object):
         if version is None:
             version = self.version
 
-        if self._type == RepositoryType.ARCH:
+        if self.type == RepositoryType.ARCH:
             return
-        elif self._type == RepositoryType.PLAT and self._source == UNIKRAFT_CORE:
+        elif self.type == RepositoryType.PLAT and self.source == UNIKRAFT_CORE:
             return
         elif version is not None:
             try:
-                repo = GitRepo(self._localdir)
+                repo = GitRepo(self.localdir)
             
             except (NoSuchPathError, InvalidGitRepositoryError):
                 logger.debug("Attempting to checkout %s before update!" % self)
@@ -397,13 +374,13 @@ class Repository(object):
                 # Determine if the repository has already been checked out at
                 # this version
                 if commit_hash.startswith(version) \
-                or version in self._known_versions.keys() and self._known_versions[version] == commit_hash:
-                    logger.debug("%s already at %s" % (self._name, version))
+                or version in self.known_versions.keys() and self.known_versions[version] == commit_hash:
+                    logger.debug("%s already at %s" % (self.name, version))
                     return
             except ValueError as e:
                 pass
 
-            logger.debug("Checking-out %s@%s..." % (self._name, version))
+            logger.debug("Checking-out %s@%s..." % (self.name, version))
 
             # First simply attempting what was specified
             try:
@@ -415,23 +392,125 @@ class Repository(object):
                         repo.git.checkout('RELEASE-%s' % version)
                     except GitCommandError as e2:
                         if not ctx.ignore_checkout_errors:
-                            logger.error("Could not checkout %s@%s: %s" % (self._name, version, str(e2)))
+                            logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e2)))
                             sys.exit(1)
                 elif not ctx.ignore_checkout_errors:
-                    logger.error("Could not checkout %s@%s: %s" % (self._name, version, str(e1)))
+                    logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e1)))
                     sys.exit(1)
 
     @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
     
     @property
     def shortname(self):
-        return '%s/%s' % (self._type.shortname, self._name)
+        return '%s/%s' % (self.type.shortname, self.name)
+
+    @property 
+    def libname(self):
+        name = self.name.lower()
+
+        if name.startswith('lib-'):
+            return name
+        
+        return 'lib-%s' % name 
+    
+    @property 
+    def kname(self):
+        name = self.name.upper()
+
+        if name.startswith('LIB'):
+            return name
+        
+        return 'LIB%s' % name 
 
     @property
+    def type(self):
+        return self._type
+        
+    @type.setter
+    def type(self, type):
+        self._type = type
+    
+    @property
+    def git(self):
+        return self._git
+
+    @git.setter
+    def git(self, git):
+        self._git = git
+    
+    @property
     def longname(self):
-        return '%s/%s@%s' % (self._type.shortname, self._name, self.latest_release)
+        return '%s/%s@%s' % (self.type.shortname, self.name, self.latest_release)
+    
+    @property
+    def source(self):
+        return self._source
+    
+    @source.setter
+    def source(self, source):
+        self._source = source
+    
+    @property
+    def localdir(self):
+        return self._localdir
+    
+    @localdir.setter
+    def localdir(self, localdir):
+        self._localdir = localdir
+    
+    @property
+    def provider(self):
+        return self._provider
+    
+    @provider.setter
+    def provider(self, provider):
+        self._provider = provider
+    
+    @property
+    def version(self):
+        return self._version
+
+    @version.setter
+    def version(self, version):
+        self._version = version
+    
+    @property
+    def known_versions(self):
+        return self._known_versions
+    
+    @known_versions.setter
+    def known_versions(self, known_versions):
+        self._known_versions = known_versions
+    
+    @property
+    def version_head(self):
+        return self._version_head
+    
+    @version_head.setter
+    def version_head(self, version_head):
+        self._version_head = version_head
+    
+    @property
+    def last_updated(self):
+        return self._last_updated
+    
+    @last_updated.setter
+    def last_updated(self, last_updated):
+        self._last_updated = last_updated
+    
+    @property
+    def last_checked(self):
+        return self._last_checked
+    
+    @last_checked.setter
+    def last_checked(self, last_checked):
+        self._last_checked = last_checked
 
     @property
     def latest_release(self):
@@ -439,7 +518,7 @@ class Repository(object):
         removing the staging and master branches.  If no version number is
         available, return 'master' since this is usually the latest stable
         version."""
-        versions = list(self._known_versions.keys())
+        versions = list(self.known_versions.keys())
 
         if BRANCH_MASTER in versions:
             versions.remove(BRANCH_MASTER)
@@ -450,16 +529,16 @@ class Repository(object):
             versions = sorted(versions)
             return versions[-1]
         
-        if BRANCH_MASTER in self._known_versions:
+        if BRANCH_MASTER in self.known_versions:
             return BRANCH_MASTER
-        if BRANCH_STAGING in self._known_versions:
+        if BRANCH_STAGING in self.known_versions:
             return BRANCH_STAGING
         
         return self.version
 
     def is_downloaded(self):
         try:
-            GitRepo(self._localdir)
+            GitRepo(self.localdir)
             return True
         except InvalidGitRepositoryError:
             return False
@@ -471,47 +550,12 @@ class Repository(object):
         are 'minified'."""
 
         # TODO: This.  For now return the full source;
-        return self._source
-
-    @property
-    def type(self):
-        return self._type
-    
-    @property
-    def git(self):
-        return self._git
-    
-    @property
-    def source(self):
-        return self._source
-    
-    @property
-    def localdir(self):
-        return self._localdir
-    
-    @property
-    def version(self):
-        return self._version
-    
-    @property
-    def known_versions(self):
-        return self._known_versions
-    
-    @property
-    def version_head(self):
-        return self._version_head
-    
-    @property
-    def last_updated(self):
-        return self._last_updated
-    
-    @property
-    def last_checked(self):
-        return self._last_checked
+        return self.source
 
     def intrusively_determine_kconfig(self):
         kconfig = None
-        config_uk = UK_CONFIG_FILE % self._localdir
+        config_uk = UK_CONFIG_FILE % self.localdir
+        
         if os.path.exists(config_uk):
             logger.debug("Reading: %s..." % config_uk)
             kconfig = kconfiglib.Kconfig(filename=config_uk)
@@ -520,7 +564,7 @@ class Repository(object):
     
     def kconfig_enabled_flag(self):
         # No need to do anything for architecture, this one is weird
-        if not (self._type is RepositoryType.ARCH or self._type is RepositoryType.CORE):
+        if not (self.type is RepositoryType.ARCH or self.type is RepositoryType.CORE):
             kconfig = self.intrusively_determine_kconfig()
 
             # Retrieve the top-most item which enables the feature
@@ -544,10 +588,14 @@ class Repository(object):
             flatten.append(KCONFIG_EQ % (kconfig, self._kconfig_extra[kconfig]))
 
         return flatten
+    
+    @kconfig_extra.setter
+    def kconfig_extra(self, kconfig_extra={}):
+        self._kconfig_extra = kconfig_extra
 
     def __repr__(self):
         """Python representation"""
-        return '<Repo %r>' % self._source
+        return '<Repo %r>' % self.source
 
     def __str__(self):
         """String representation"""

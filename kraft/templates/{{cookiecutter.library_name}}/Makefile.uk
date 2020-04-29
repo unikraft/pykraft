@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: BSD-3-Clause
+#
+{%- if cookiecutter.description == "" %}
+# {{ cookiecutter.project_name }} Unikraft library
+{%- else %}
+# {{ cookiecutter.description }}
+{%- endif %}
+#
+# Authors: {{ cookiecutter.author_name }} <{{ cookiecutter.author_email }}>
+#
+# Copyright (c) {{ cookiecutter.year }}, {{ cookiecutter.copyright_holder }}. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+################################################################################
+# Library registration
+################################################################################
+$(eval $(call addlib_s,{{ cookiecutter.library_kname|lower }},$(CONFIG_{{ cookiecutter.library_kname|upper }})))
+
+################################################################################
+# Sources
+################################################################################]
+{%- if cookiecutter.commit != "" %}
+{{ cookiecutter.library_kname|upper }}_COMMIT = {{ cookiecutter.commit }}
+{%- endif %}
+{%- if cookiecutter.version != "" %}
+{{ cookiecutter.library_kname|upper }}_VERSION = {{ cookiecutter.version }}
+{%- endif %}
+{{ cookiecutter.library_kname|upper }}_URL = {{ cookiecutter.source_archive }}
+{{ cookiecutter.library_kname|upper }}_SUBDIR = {{ cookiecutter.project_name }}-$({{ cookiecutter.library_kname|upper }}_VERSION)
+{%- if cookiecutter.with_patchedir %}
+{{ cookiecutter.library_kname|upper }}_PATCHDIR = $({{ cookiecutter.library_kname|upper }}_BASE)/patches
+$(eval $(call patch,{{ cookiecutter.library_kname|lower }},$({{ cookiecutter.library_kname|upper }}_PATCHDIR),$({{ cookiecutter.library_kname|upper }}_SUBDIR)))
+{%- endif %}
+$(eval $(call fetch,{{ cookiecutter.library_kname|lower }},$({{ cookiecutter.library_kname|upper }}_URL)))
+
+################################################################################
+# Helpers
+################################################################################
+{{ cookiecutter.library_kname|upper }}_SRC = $({{ cookiecutter.library_kname|upper }}_ORIGIN)/$({{ cookiecutter.library_kname|upper }}_SUBDIR)
+
+################################################################################
+# Library includes
+################################################################################
+CINCLUDES-y += -I$({{ cookiecutter.library_kname|upper }}_BASE)/include
+
+################################################################################
+# Flags
+################################################################################
+{{ cookiecutter.library_kname|upper }}_FLAGS =
+
+# Suppress some warnings to make the build process look neater
+{{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS = 
+
+{{ cookiecutter.library_kname|upper }}_CFLAGS-y += $({{ cookiecutter.library_kname|upper }}_FLAGS)
+{{ cookiecutter.library_kname|upper }}_CFLAGS-y += $({{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS)
+
+################################################################################
+# Glue code
+################################################################################
+# Include paths
+# {{ cookiecutter.library_kname|upper }}_CINCLUDES-y   += $({{ cookiecutter.library_kname|upper }}_COMMON_INCLUDES-y)
+# {{ cookiecutter.library_kname|upper }}_CXXINCLUDES-y += $({{ cookiecutter.library_kname|upper }}_COMMON_INCLUDES-y)
+
+{%- if cookiecutter.provide_main %}
+{{ cookiecutter.library_kname|upper }}SRCS-$(CONFIG_{{ cookiecutter.library_kname|upper }}_MAIN_FUNCTION) += $({{ cookiecutter.library_kname|upper }}_BASE)/main.c|unikraft
+{%- endif %}
+
+################################################################################
+# Library sources
+################################################################################
+# {{ cookiecutter.library_kname|upper }}_SRCS-y += # Include source files here
+
+{%- for source_file in cookiecutter.source_files %}
+{{ cookiecutter.library_kname|upper }}_SRCS-y += {{ source_file }}
+{%- endfor %}

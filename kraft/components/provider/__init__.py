@@ -29,21 +29,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import click
-
-from kraft.logger import logger
-from kraft.kraft import kraft_context
-
-@click.command('initlib', short_help='Initialize a new Unikraft library.')
-@click.argument('name')
-@click.option('--github', '-g', 'from_github', help='The remote repository is from GitHub.')
-@click.option('--github-version', '-v', 'github_version', help='Set the version to use from GitHub.')
-@click.option('--provide-main', '-m', 'provide_main', help='Provide a main function override.')
-@click.option('--author-name', '-a', 'author_name', help='The author\'s name for library.')
-@click.option('--author-email', '-e', 'author_email', help='The author\'s email for library.')
-@click.option('--dependencies', '-d', 'dependencies', help='Include known dependencies', multiple=True)
-@kraft_context
-def initlib(ctx, name, from_github, github_version, provide_main, author_name, author_email, dependencies):
-    """Initialize a new Unikraft library."""
-    
-    logger.info("Initializing new library %s..." % name)
+from .provider import Provider
+from .git import GitProvider
+from .github import GitHubProvider
+from .tarball import TarballProvider
+from .type import ProviderType
+from .type import determine_provider

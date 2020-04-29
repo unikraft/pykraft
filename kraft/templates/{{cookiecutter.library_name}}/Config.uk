@@ -1,0 +1,21 @@
+menuconfig {{ cookiecutter.library_kname|upper }}
+{%- if cookiecutter.description == "" %}
+	bool "{{ cookiecutter.project_name }} Unikraft library"
+{%- else %}
+	bool "{{ cookiecutter.description }}"
+{%- endif %}
+	default n
+
+{%- for dependency in cookiecutter.kconfig_dependencies %}
+	select {{ dependency|upper }}
+{%- endfor %}
+
+if {{ cookiecutter.library_kname|upper }}
+
+{%- if cookiecutter.provide_main %}
+config {{ cookiecutter.library_kname|upper }}_MAIN_FUNCTION
+	bool "Provide main function"
+	default n
+{%- endif %}
+
+endif

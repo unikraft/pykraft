@@ -1,0 +1,14 @@
+{
+  "project_name": "",
+  "library_name": "lib-template",
+  "library_kname": "LIBTEMPLATE",
+  "version": "",
+  "description": "",
+  "author_name": "",
+  "author_email": "",
+  "provide_main": true,
+  "with_gitignore": true,
+  "with_docs": true,
+  "with_patchedir": false,
+  "copyright_holder": "NEC Laboratories Europe GmbH"
+}

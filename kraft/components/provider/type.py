@@ -29,12 +29,40 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from .up import up
-from .run import run
-from .init import init
-from .list import list
-from .build import build
-from .clean import clean
-from .configure import configure
+from enum import Enum
 
-from .lib.init import init as libinit
+from .git import GitProvider
+from .github import GitHubProvider
+from .tarball import TarballProvider
+
+def determine_provider(source=None):
+    provider = None
+    
+    if source is None:
+        return provider
+    
+    for source_provider, member in ProviderType.__members__.items():
+        if member.is_type(source):
+            provider = member.cls(source=source)
+            return provider
+
+    return provider
+
+class ProviderType(Enum):
+    GITHUB  = ("github" , GitHubProvider)
+    GIT     = ("git"    , GitProvider)
+    TARBALL = ("tarball", TarballProvider)
+
+    @property
+    def name(self):
+        return self.value[0]
+    
+    @property
+    def cls(self):
+        return self.value[1]
+    
+    def is_type(self, origin=None):
+        return self.value[1].is_type(origin)
+    
+    def probe_remote_versions(self, origin=None):
+        return self.value[1].probe_remote_versions(origin)
