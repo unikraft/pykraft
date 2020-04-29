@@ -60,6 +60,7 @@ RUN set -xe; \
       *) \
         apt-get install -y \
           python3-all \
+          python-mock \
           python-pip; \
           ;; \
     esac; \
@@ -73,7 +74,6 @@ RUN set -xe; \
       python-setuptools \
       python-dev \
       docutils-common \
-      python-mock \
       dh-exec \
       dh-python \
       devscripts \
@@ -102,6 +102,7 @@ RUN set -xe; \
     git checkout 98b4822; \
     sed -i -e 's/ python-sphinx-rtd-theme/#/g' debian/control; \
     sed -i -e 's/, python-sphinx//g' debian/control; \
+    sed -i -e 's/, python-mock//g' debian/control; \
     sed -i -e 's/dh-python,//g' debian/control; \
     sed -i -re "1s/..unstable/~$(lsb_release -cs)) $(lsb_release -cs)/" debian/changelog; \
     DEB_BUILD_OPTIONS=nodoc dpkg-buildpackage -us -uc -b; \
