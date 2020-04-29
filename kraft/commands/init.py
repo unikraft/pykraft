@@ -51,6 +51,8 @@ from kraft.commands.list import update
 from kraft.context import kraft_context
 
 from kraft.constants import UNIKRAFT_CORE
+from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
+from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
 
 from kraft.config.interpolation import interpolate_source_version
 
@@ -129,7 +131,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
                 version=unikraft_version
             )
             
-            preferred_arch = ctx.settings.get(KRAFTCONF_PREFERRED_ARCHITECTURE)
+            preferred_arch = ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE)
             if target_arch is None:
                 if preferred_arch:
                     target_arch = preferred_arch
@@ -148,7 +150,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
                 source = arch_source,
             ), {})
 
-            preferred_plat = ctx.settings.get(KRAFTCONF_PREFERRED_PLATFORM)
+            preferred_plat = ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM)
             if target_plat is None:
                 if preferred_plat:
                     target_plat = preferred_plat
