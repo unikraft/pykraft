@@ -58,6 +58,7 @@ class Cache(object):
 
         self._cachedir = os.path.join(environment.get('UK_WORKDIR'), 'kraft.cache')
 
+        # Initiaize a cache instance
         self._cache = FileCache(
             app_cache_dir = self._cachedir,
             appname = __program__,
@@ -68,7 +69,7 @@ class Cache(object):
     def cache(self):
         return self._cache
 
-    def get(self, source):
+    def get(self, source=None):
         if isinstance(source, six.string_types) and source in self._cache:
             logger.debug("Retrieving %s from cache..."  % source)
             return self._cache[source]
