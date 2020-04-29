@@ -30,6 +30,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import shutil
 from kraft.logger import logger
 from shutil import copyfile
 from shutil import ignore_patterns
@@ -39,7 +40,7 @@ def is_dir_empty(path=None):
     """Return a boolean of whether the provided directory `dir` is empty."""
     return os.path.isdir(path) is False or len([f for f in os.listdir(path) if not f.startswith('.')]) == 0
 
-def recursively_copy(src, dest, overwrite=False, ignore=None):
+def recursively_copy(src, dest, overwrite=False, ignore=[]):
     if os.path.basename(src) in ignore:
         pass
     elif os.path.isdir(src) :
@@ -54,8 +55,16 @@ def recursively_copy(src, dest, overwrite=False, ignore=None):
                             overwrite,
                             ignore)
     elif (os.path.exists(dest) and overwrite) or os.path.exists(dest) is False:
-        logger.debug('Copying %s => %s' % (src, dest))
         try:
             copyfile(src, dest)
         except SameFileError:
             pass
+
+def delete_resource(resource):
+    if os.path.isfile(resource):
+        logger.debug("Removing file: %s" % resource)
+        os.remove(resource)
+
+    elif os.path.isdir(resource):
+        logger.debug("Removing directory: %s" % resource)
+        shutil.rmtree(resource)

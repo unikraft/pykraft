@@ -35,5 +35,6 @@ from .cli import KraftHelpCommand
 
 from .dir import is_dir_empty
 from .dir import recursively_copy
+from .dir import delete_resource
 
 from .exec import execute
