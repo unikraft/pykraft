@@ -47,4 +47,3 @@ override_dh_virtualenv:
 
 override_dh_python3:
 	dh_python3 --shebang=$(SNAKE)
-

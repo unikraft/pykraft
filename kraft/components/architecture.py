@@ -28,30 +28,28 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
-import re
-
-from enum import Enum
-
-from kraft.components.types import RepositoryType
 
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
-
-from kraft.constants import UK_CONFIG_FILE
-from kraft.constants import UK_CORE_ARCH_DIR
+from kraft.components.types import RepositoryType
 from kraft.constants import CONFIG_UK_ARCH
 from kraft.constants import KCONFIG
 from kraft.constants import KCONFIG_Y
-    
+from kraft.constants import UK_CONFIG_FILE
+from kraft.constants import UK_CORE_ARCH_DIR
+
+
 class Architecture(Repository):
     @classmethod
     def from_config(cls, ctx, core=None, arch=None, config=None):
         assert ctx is not None, "ctx is undefined"
 
         arch_dir = UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)
-        
+
         if not os.path.isfile(arch_dir):
             core.checkout()
 
@@ -71,10 +69,10 @@ class Architecture(Repository):
 
         if arch in known_archs:
             return cls(
-                name = arch,
-                source = core.source,
-                version = core.version,
-                localdir = known_archs[arch]['localdir'],
+                name=arch,
+                source=core.source,
+                version=core.version,
+                localdir=known_archs[arch]['localdir'],
                 repository_type=RepositoryType.ARCH,
                 kconfig_extra=known_archs[arch]['kconfig']
             )
@@ -84,10 +82,11 @@ class Architecture(Repository):
     @classmethod
     def from_source_string(cls, name, source=None):
         return super(Architecture, cls).from_source_string(
-            name = name,
-            source = source, 
-            repository_type = RepositoryType.ARCH
+            name=name,
+            source=source,
+            repository_type=RepositoryType.ARCH
         )
+
 
 class Architectures(RepositoryManager):
     pass

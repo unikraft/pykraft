@@ -28,20 +28,26 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
 import sys
+
 import click
-import platform
 
 from kraft.config import config
-from kraft.logger import logger
-from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
+from kraft.logger import logger
+from kraft.project import Project
+
 
 @kraft_context
-def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
+def kraft_configure(ctx,
+                    target_plat,
+                    target_arch,
+                    force_configure,
+                    menuconfig):
     """
     Populates the local .config with the default values for the target application.
     """
@@ -60,10 +66,12 @@ def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
         logger.error(str(e))
         sys.exit(1)
 
-    if project.is_configured() and force_configure is False and menuconfig is False:
-        if click.confirm('%s is already configured, would you like to overwrite configuration?' % ctx.workdir):
-            # It should be safe to set this now
+    if project.is_configured() \
+        and force_configure is False \
+            and menuconfig is False:
+        if click.confirm('%s is already configured, would you like to overwrite configuration?' % ctx.workdir): # noqa
             force_configure = True
+
         else:
             logger.error('Cancelling!')
             sys.exit(1)
@@ -80,11 +88,17 @@ def kraft_configure(ctx, target_plat, target_arch, force_configure, menuconfig):
         except KraftError as e:
             logger.error(str(e))
             sys.exit(1)
-        
+
+
 @click.command('configure', short_help='Configure the application.')
-@click.option('--plat',       '-p', 'target_plat',     help='Target platform.')
-@click.option('--arch',       '-m', 'target_arch',     help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--force',      '-F', 'force_configure', help='Force writing new configuration.', is_flag=True)
-@click.option('--menuconfig', '-k', 'menuconfig',      help='Use Unikraft\'s ncurses Kconfig editor.', is_flag=True)
+@click.option('--plat',       '-p', 'target_plat',     help='Target platform.')  # noqa: E501
+@click.option('--arch',       '-m', 'target_arch',     help='Target architecture.', type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))  # noqa: E501
+@click.option('--force',      '-F', 'force_configure', help='Force writing new configuration.', is_flag=True)  # noqa: E501
+@click.option('--menuconfig', '-k', 'menuconfig',      help='Use Unikraft\'s ncurses Kconfig editor.', is_flag=True)  # noqa: E501
 def configure(target_plat, target_arch, force_configure,  menuconfig):
-    kraft_configure(target_plat=target_plat, target_arch=target_arch, force_configure=force_configure, menuconfig=menuconfig)
+    kraft_configure(
+        target_plat=target_plat,
+        target_arch=target_arch,
+        force_configure=force_configure,
+        menuconfig=menuconfig
+    )

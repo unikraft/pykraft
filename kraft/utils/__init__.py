@@ -28,13 +28,15 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+# flake8: noqa
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from .cli import KraftHelpGroup
 from .cli import ClickOptionMutex
 from .cli import KraftHelpCommand
-
+from .cli import KraftHelpGroup
+from .dir import delete_resource
 from .dir import is_dir_empty
 from .dir import recursively_copy
-from .dir import delete_resource
-
-from .exec import execute
+from .op import execute
+from .op import merge_dicts

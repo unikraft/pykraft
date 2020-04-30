@@ -28,10 +28,13 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+# flake8: noqa
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from .provider import Provider
 from .git import GitProvider
 from .github import GitHubProvider
+from .provider import Provider
 from .tarball import TarballProvider
-from .type import ProviderType
 from .type import determine_provider
+from .type import ProviderType

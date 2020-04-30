@@ -28,25 +28,27 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import six
-import ipaddress
 import subprocess
-
-from enum import Enum
 from shutil import which
 
+import six
+from enum import Enum
+
 import kraft.utils as utils
+from kraft.errors import InvalidBridgeName
+from kraft.errors import KraftError
+from kraft.errors import NetworkBridgeUnsupported
+from kraft.errors import NetworkDriverError
 from kraft.logger import logger
 
-from kraft.errors import NetworkDriverError
-from kraft.errors import InvalidBridgeName
-from kraft.errors import DNSMASQCannotStartServer
-from kraft.errors import NetworkBridgeUnsupported
 
 BRCTL = "brctl"
 # DNSMASQ = "dnsmasq"
 DEFAULT_NETWORK_BRIDGE_DRIVER = "brctl"
+
 
 class NetworkDriver(object):
     _name = None
@@ -59,33 +61,43 @@ class NetworkDriver(object):
     @property
     def type(self):
         return self._type
-    
+
     def __init__(self, name=None, type=None):
         if name is not None:
             self._name = name
         else:
             self._name = NetworkDriver.generate_bridge_name()
-        
+
         self._type = type
-    
+
     def integrity_ok(self):
         return False
 
     def create_bridge(self, name=None, dry_run=False):
-        raise NetworkDriverError("Creating a bridge is not possible with driver %s" % self.type)
-    
+        raise NetworkDriverError(
+            "Creating a bridge is not possible with driver %s" % self.type
+        )
+
     def add_vif(self, name=None):
-        raise NetworkDriverError("Adding an interface is not possible with driver %s" % self.type)
-    
+        raise NetworkDriverError(
+            "Adding an interface is not possible with driver %s" % self.type
+        )
+
     def remove_vif(self, name=None):
-        raise NetworkDriverError("Removing an interface is not possible with driver %s" % self.type)
-    
+        raise NetworkDriverError(
+            "Removing an interface is not possible with driver %s" % self.type
+        )
+
     def destroy_bridge(self, name=None):
-        raise NetworkDriverError("Removing a bridge is not possible with driver %s" % self.type)
-    
+        raise NetworkDriverError(
+            "Removing a bridge is not possible with driver %s" % self.type
+        )
+
     def bridge_exists(self, name=None):
-        raise NetworkDriverError("Checking for a bridge is not possible with driver %s" % self.type)
-    
+        raise NetworkDriverError(
+            "Checking for a bridge is not possible with driver %s" % self.type
+        )
+
     def generate_bridge_name(self, prefix='virbr', max_tries=1024):
         suffix_i = 0
         new_name = None
@@ -100,17 +112,18 @@ class NetworkDriver(object):
 
         raise KraftError("Max tries for bridge creation reached!")
 
+
 class LinuxBRCTLDriver(NetworkDriver):
     def __init__(self, name, type):
         super(LinuxBRCTLDriver, self).__init__(name, type)
-    
+
     def integrity_ok(self):
         return which(BRCTL) is not None
 
     def create_bridge(self, name=None, dry_run=False):
         if not self.integrity_ok():
             raise NetworkBridgeUnsupported(self.type.name)
-        
+
         if name is None:
             name = self._name
 
@@ -124,13 +137,13 @@ class LinuxBRCTLDriver(NetworkDriver):
             ], dry_run=dry_run)
         else:
             raise InvalidBridgeName(name)
-        
+
         return True
 
     def destroy_bridge(self, name=None):
         if not self.integrity_ok():
             raise NetworkBridgeUnsupported(self.type.name)
-        
+
         if name is None:
             name = self.name
 
@@ -145,38 +158,41 @@ class LinuxBRCTLDriver(NetworkDriver):
         if not self.integrity_ok():
             raise NetworkBridgeUnsupported(self.type.name)
 
-        process = subprocess.Popen([BRCTL, "show", name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            [BRCTL, "show", name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
         out, err = process.communicate()
-        
+
         if err == b"can't get info No such device\n":
             return False
         elif "does not exist!" in err.decode('ascii'):
             return False
-        
+
         return True
 
-        
 
 # class OVSDriver(NetworkDriver):
 
 #     def __init__(self, name, type):
 #         super(OVSDriver, self).__init__(name, type)
-    
+
 #     def integrity_ok(self):
 #         return False
-    
+
 #     def create_bridge(self, name=None, dry_run=False):
 #         pass
-    
+
 #     def add_vif(self, name=None):
 #         pass
-    
+
 #     def remove_vif(self, name=None):
 #         pass
-    
+
 #     def destroy_bridge(self, name=None):
 #         pass
-    
+
 #     def bridge_exists(self, name=None):
 #         pass
 
@@ -184,37 +200,38 @@ class LinuxBRCTLDriver(NetworkDriver):
 
 #     def __init__(self, name, type):
 #         super(NetmapDriver, self).__init__(name, type)
-    
+
 #     def integrity_ok(self):
 #         return False
-    
+
 #     def create_bridge(self, name=None, dry_run=False):
 #         pass
-    
+
 #     def add_vif(self, name=None):
 #         pass
-    
+
 #     def remove_vif(self, name=None):
 #         pass
-    
+
 #     def destroy_bridge(self, name=None):
 #         pass
-    
+
 #     def bridge_exists(self, name=None):
 #         pass
 
 class NetworkDriverEnum(Enum):
-    BRCTL   = ("brctl"  , LinuxBRCTLDriver)
-    # OVS     = ("ovs"    , OVSDriver)
-    # NETMAP  = ("netmap" , NetmapDriver)
+    BRCTL   = ("brctl"  , LinuxBRCTLDriver)  # noqa
+    # OVS     = ("ovs"    , OVSDriver)         # noqa
+    # NETMAP  = ("netmap" , NetmapDriver)      # noqa
 
     @property
     def name(self):
         return self.value[0]
-    
+
     @property
     def cls(self):
         return self.value[1]
+
 
 class Network(object):
     _name = None
@@ -301,15 +318,22 @@ class Network(object):
         elif isinstance(cmds, list):
             self._post_down.extend(cmds)
 
-    def __init__(self, name, ip, mac, gateway, driver, bridge_name, pre_up,
-        post_down):
+    def __init__(self,  # noqa: C901
+                 name,
+                 ip,
+                 mac,
+                 gateway,
+                 driver,
+                 bridge_name,
+                 pre_up,
+                 post_down):
         self._name = name
         self._ip = ip
         self._mac = mac
         self._gateway = gateway
         self._driver = driver
         self._bridge_name = bridge_name
-        
+
         if isinstance(pre_up, six.string_types):
             pre_up = [pre_up]
         if isinstance(post_down, six.string_types):
@@ -317,8 +341,8 @@ class Network(object):
 
         self._pre_up = pre_up
         self._post_down = post_down
-    
-    @classmethod
+
+    @classmethod  # noqa: C901
     def from_config(cls, name=None, config={}):
         interface = None
         ip = None
@@ -335,35 +359,34 @@ class Network(object):
 
             if 'interface' in config:
                 interface = config['interface']
-            
+
             if 'ip' in config:
                 ip = config['ip']
-            
+
             if 'mac' in config:
                 mac = config['mac']
-            
+
             if 'gateway' in config:
                 gateway = config['gateway']
-            
+
             if 'driver' in config \
                 and config['driver'] in [
-                    member.name for _, member in NetworkDriverEnum.__members__.items()
-                ]:
+                    member.name for _, member in NetworkDriverEnum.__members__.items()]:
                 driver = config['driver']
 
             if 'bridge_name' in config:
                 bridge_name = config['bridge_name']
-            
+
             if 'pre_up' in config:
                 pre_up = config['pre_up']
-            
+
             if 'post_down' in config:
                 post_down = config['post_down']
-    
+
         # Instantiate the driver
         for driver_name, member in NetworkDriverEnum.__members__.items():
             if member.name == driver:
-                if interface == None:
+                if interface is None:
                     interface = name
 
                 driver = member.cls(
@@ -371,21 +394,21 @@ class Network(object):
                     type=member
                 )
                 break
-        
+
         if bridge_name is None:
             bridge_name = name
-        
+
         return cls(
-            name = name,
-            ip = ip,
-            mac = mac,
-            gateway = gateway,
-            driver = driver,
-            bridge_name = bridge_name,
-            pre_up = pre_up,
-            post_down = post_down,
+            name=name,
+            ip=ip,
+            mac=mac,
+            gateway=gateway,
+            driver=driver,
+            bridge_name=bridge_name,
+            pre_up=pre_up,
+            post_down=post_down,
         )
-    
+
     def __str__(self):
         text = "name:        %s\n" % self.name \
              + "pre_up:      %s\n" % (' '.join(self.pre_up)) \
@@ -393,6 +416,7 @@ class Network(object):
              + "bridge_name: %s\n" % self.bridge_name
 
         return text
+
 
 class Networks(object):
     _networks = []
@@ -402,7 +426,7 @@ class Networks(object):
 
     def add(self, network):
         if isinstance(network, Network):
-            # Remove existing network with the same name so as to override 
+            # Remove existing network with the same name so as to override
             for net in self._networks:
                 if net.name == network.name:
                     logger.warning('Overriding existing network %s' % net.name)
@@ -410,7 +434,7 @@ class Networks(object):
                     break
 
             self._networks.append(network)
-            
+
         elif isinstance(network, Networks):
             for net in network.all():
                 self.add(net)
@@ -420,9 +444,11 @@ class Networks(object):
             if network.name == key:
                 return network
 
+        return default
+
     def all(self):
         return self._networks
-    
+
     @classmethod
     def from_config(cls, config=None):
         networks = cls([])
@@ -437,7 +463,7 @@ class Networks(object):
 
 #     if ip_range is None:
 #         raise DNSMASQCannotStartServer("No IP range provided")
-    
+
 #     if netmask is None:
 #         netmask = "255.255.0.0"
 
@@ -445,7 +471,7 @@ class Networks(object):
 
 #     if ip_range_start is None or ip_range_end is None:
 #         raise DNSMASQCannotStartServer("Could not parse IP range, format is: a.b.c.d,w.x.y.z")
-    
+
 #     # We can figure out the listen address and increase the start IP.  This
 #     # logic may not work in all circumstances, particularly if the netmask
 #     # does not correspond to the IP range start.
@@ -455,11 +481,13 @@ class Networks(object):
 #         if new_start.num_addresses > 3:
 #             ip_range_start = new_start[2]
 #         else:
-#             raise DNSMASQCannotStartServer("Could not assign a listen address based on provided netmask")
+#             raise DNSMASQCannotStartServer(
+#                 "Could not assign a listen address based on provided netmask"
+#             )
 
 #     if lease_time is None:
 #         lease_time = "12h"
-    
+
 #     cmd = [
 #         DNSMASQ,
 #         # "-d",

@@ -28,20 +28,28 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
+
 import click
-from click.termui import _ansi_colors, _ansi_reset_all
 from click.formatting import wrap_text
+from click.termui import _ansi_colors
+from click.termui import _ansi_reset_all
+
+import kraft.utils as utils
 
 CONTEXT_SETTINGS = dict(
     auto_envvar_prefix='UK',
     help_option_names=['-h', '--help'],
 )
-UNKNOWN_OPTIONS = {
-    'ignore_unknown_options': True,
-    **CONTEXT_SETTINGS
-}
+
+UNKNOWN_OPTIONS = utils.merge_dicts(
+    {'ignore_unknown_options': True},
+    CONTEXT_SETTINGS
+)
+
 
 def _colorize(text, color=None):
     if not color:
@@ -50,6 +58,7 @@ def _colorize(text, color=None):
         return '\033[%dm' % (_ansi_colors[color]) + text + _ansi_reset_all
     except KeyError:
         raise TypeError('Unknown color %r' % color)
+
 
 class KraftHelpFormatter(click.HelpFormatter):
     def __init__(self, headers_color=None, options_color=None,
@@ -94,7 +103,7 @@ class KraftHelpFormatter(click.HelpFormatter):
                              subsequent_indent=indent,
                              preserve_paragraphs=True))
         self.write('\n')
-    
+
     def write(self, text):
         if self.help_bash_color:
             text = re.sub(r'cmd\:\:(.*)', _colorize(r'\1', color=self.help_bash_color), text)
@@ -106,6 +115,7 @@ class KraftHelpFormatter(click.HelpFormatter):
         colorized_rows = [(_colorize(row[0], self._pick_color(row[0])), row[1])
                           for row in rows]
         super(KraftHelpFormatter, self).write_dl(colorized_rows, **kwargs)
+
 
 class KraftHelpMixin(object):
     def __init__(self, help_headers_color=None, help_options_color=None,
@@ -128,6 +138,7 @@ class KraftHelpMixin(object):
             help_bash_color=self.help_bash_color)
         self.format_help(ctx, formatter)
         return formatter.getvalue().rstrip('\n')
+
 
 class KraftHelpGroup(KraftHelpMixin, click.Group):
     def __init__(self, *args, **kwargs):
@@ -154,15 +165,17 @@ class KraftHelpGroup(KraftHelpMixin, click.Group):
                           self.help_options_custom_colors)
         kwargs.setdefault('help_bash_color', self.help_bash_color)
         return super(KraftHelpGroup, self).group(*args, **kwargs)
-    
+
     def format_epilog(self, ctx, formatter):
         """Writes the epilog into the formatter if it exists."""
         if self.epilog:
             formatter.write(self.epilog)
 
+
 class KraftHelpCommand(KraftHelpMixin, click.Command):
     def __init__(self, *args, **kwargs):
         super(KraftHelpCommand, self).__init__(*args, **kwargs)
+
 
 class ClickOptionMutex(click.Option):
     def __init__(self, *args, **kwargs):
@@ -175,7 +188,12 @@ class ClickOptionMutex(click.Option):
         for mutex_opt in self.not_required_if:
             if mutex_opt in opts:
                 if current_opt:
-                    raise click.UsageError("Illegal usage: '" + str(self.name) + "' is mutually exclusive with " + str(mutex_opt) + ".")
+                    raise click.UsageError(
+                        "Illegal usage: '" +
+                        str(self.name) +
+                        "' is mutually exclusive with " +
+                        str(mutex_opt) + "."
+                    )
                 else:
                     self.prompt = None
         return super(ClickOptionMutex, self).handle_parse_result(ctx, opts, args)

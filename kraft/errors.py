@@ -28,6 +28,8 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from kraft.components.provider import ProviderType
 
@@ -36,32 +38,44 @@ SPECIFICATION_EXPLANATION = (
     'For more on the kraft file format versions, see: ttps://docs.unikraft.org/'
 )
 
+
 class KraftError(Exception):
     msg = None
+
     def __init__(self, msg):
         self.msg = msg
 
     def __str__(self):
         return self.msg
 
+
 class KconfigFileNotFound(KraftError):
     pass
 
+
+class ConfigurationError(KraftError):
+    pass
+
+
 class EnvFileNotFound(KraftError):
     pass
+
+
+class UnsetRequiredSubstitution(KraftError):
+    pass
+
 
 class MisconfiguredUnikraftProject(KraftError):
     """Parameterization of the UnikraftApp was incorrect."""
     pass
 
+
 class KraftFileNotFound(KraftError):
     def __init__(self, supported_filenames):
-        super(KraftFileNotFound, self).__init__("""
-Can't find a suitable configuration file in this directory or any
-parent. Are you in the right directory?
-
-Supported filenames: %s
-""" % ", ".join(supported_filenames))
+        super(KraftFileNotFound, self).__init__(
+            "Can't find a suitable configuration file in this directory or any "
+            + "parent. Are you in the right directory?\n\n"
+            + "Supported filenames: %s" % ", ".join(supported_filenames))
 
 
 class IncompatibleKconfig(KraftError):
@@ -70,87 +84,136 @@ class IncompatibleKconfig(KraftError):
             "The provided KConfig was not compatible."
         )
 
+
 class NonExistentLibrary(KraftError):
     def __init__(self):
-        super(NonExistentLibrary, self).__init__("The referred library does not exist.")
+        super(NonExistentLibrary, self).__init__(
+            "The referred library does not exist."
+        )
+
 
 class CannotReadKraftfile(KraftError):
     def __init__(self, file):
-        super(CannotReadKraftfile, self).__init__("The provided file does not exist, is empty or is corrupt: %s" % file)
+        super(CannotReadKraftfile, self).__init__(
+            "The provided file does not exist, is empty or is corrupt: %s" % file
+        )
+
 
 class InvalidInterpolation(KraftError):
     pass
 
+
 class InvalidRepositoryFormat(KraftError):
     def __init__(self, repository):
-        super(InvalidRepositoryFormat, self).__init__("The provided repository was not retrievable: %s" % repository)
+        super(InvalidRepositoryFormat, self).__init__(
+            "The provided repository was not retrievable: %s" % repository
+        )
+
 
 class NoSuchReferenceInRepo(KraftError):
     def __init__(self):
-        super(NoSuchReferenceInRepo, self).__init__("The provided repository does not have the specified branch.")
+        super(NoSuchReferenceInRepo, self).__init__(
+            "The provided repository does not have the specified branch."
+        )
+
 
 class NoTypeAndNameRepo(KraftError):
     def __init__(self):
-        super(NoTypeAndNameRepo, self).__init__("No type and name has been provided for this repository.")
+        super(NoTypeAndNameRepo, self).__init__(
+            "No type and name has been provided for this repository."
+        )
+
 
 class MismatchOriginRepo(KraftError):
     def __init__(self):
-        super(MismatchOriginRepo, self).__init__("A repository with a different origin has been provided")
+        super(MismatchOriginRepo, self).__init__(
+            "A repository with a different origin has been provided"
+        )
+
 
 class MismatchVersionRepo(KraftError):
     def __init__(self):
-        super(MismatchVersionRepo, self).__init__("A repository with a different version has been provided")
+        super(MismatchVersionRepo, self).__init__(
+            "A repository with a different version has been provided"
+        )
+
 
 class MismatchTargetArchitecture(KraftError):
     def __init__(self, target_arch=None, supported_archs=[]):
         if target_arch is None:
             super(MismatchTargetArchitecture, self).__init__(
-                "Target architecture not set!  Supported architectures for this application include: %s" % ", ".join(supported_archs)
+                "Target architecture not set!  Supported architectures for this application include: %s"
+                % ", ".join(supported_archs)
             )
         else:
             super(MismatchTargetArchitecture, self).__init__(
-                "Target architecture (%s) set does not match the supported architectures (%s).\nPlease check your configuration." % (target_arch, ", ".join(supported_archs))
+                "Target architecture (%s) set does not match the supported architectures (%s).\n"
+                + "Please check your configuration."
+                % (target_arch, ", ".join(supported_archs))
             )
+
 
 class MismatchTargetPlatform(KraftError):
     def __init__(self, target_plat=None, supported_plats=[]):
         if target_plat is None:
             super(MismatchTargetPlatform, self).__init__(
-                "Target platform not set!  Supported platforms for this application include: %s" % ", ".join(supported_plats)
+                "Target platform not set!  Supported platforms for this application include: %s"
+                % ", ".join(supported_plats)
             )
         else:
             super(MismatchTargetPlatform, self).__init__(
-                "The target platform (%s) does not match the supported platforms (%s).\nPlease check your configuration." % (target_plat, ", ".join(supported_plats))
+                "The target platform (%s) does not match the supported platforms (%s).\n"
+                + "Please check your configuration."
+                % (target_plat, ", ".join(supported_plats))
             )
+
 
 class InvalidRepositorySource(KraftError):
     def __init__(self, source):
-        super(InvalidRepositorySource, self).__init__("The source repository is invalid: %s" % source)
+        super(InvalidRepositorySource, self).__init__(
+            "The source repository is invalid: %s" % source
+        )
+
 
 class InvalidVolumeDriver(KraftError):
     def __init__(self, name):
-        super(InvalidVolumeDriver, self).__init__("The provided volume driver was unknown: %s" % name)
+        super(InvalidVolumeDriver, self).__init__(
+            "The provided volume driver was unknown: %s" % name
+        )
+
 
 class NetworkError(KraftError):
     pass
 
+
 class NetworkDriverError(NetworkError):
     pass
 
+
 class NetworkBridgeUnsupported(NetworkDriverError):
     def __init__(self, driver):
-        super(NetworkBridgeUnsupported, self).__init__("bridge driver '%s' is not supported" % driver)
+        super(NetworkBridgeUnsupported, self).__init__(
+            "bridge driver '%s' is not supported" % driver
+        )
+
 
 class InvalidBridgeName(KraftError):
     def __init__(self, name):
-        super(InvalidBridgeName, self).__init__("Invalid network bridge name %s" % name)
+        super(InvalidBridgeName, self).__init__(
+            "Invalid network bridge name %s" % name
+        )
+
 
 class DNSMASQCannotStartServer(KraftError):
     def __init__(self, message):
-        super(DNSMASQCannotStartServer, self).__init__("Cannot start Dnsmasq  server: %s" % message)
+        super(DNSMASQCannotStartServer, self).__init__(
+            "Cannot start Dnsmasq  server: %s" % message
+        )
+
 
 class ExecutorError(KraftError):
     pass
+
 
 class UnknownSourceProvider(KraftError):
     def __init__(self, name):
@@ -161,6 +224,9 @@ class UnknownSourceProvider(KraftError):
             )
         )
 
+
 class CannotConnectURLError(KraftError):
     def __init__(self, url, msg):
-        super(CannotConnectURLError, self).__init__("Cannot connect to remote: %s: %s" % (url, msg))
+        super(CannotConnectURLError, self).__init__(
+            "Cannot connect to remote: %s: %s" % (url, msg)
+        )

@@ -28,46 +28,57 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
 import sys
-import click
 
-from git import GitConfigParser
+import click
 from configparser import NoOptionError
+from git import GitConfigParser
 
 import kraft.utils as utils
-from kraft.logger import logger
-from kraft.kraft import kraft_context
 from kraft.components.library import Library
-
-from kraft.errors import UnknownSourceProvider
-from kraft.errors import CannotConnectURLError
-
-from kraft.constants import URL_VERSION
-from kraft.constants import GITCONFIG_LOCAL
 from kraft.constants import GITCONFIG_GLOBAL
+from kraft.constants import GITCONFIG_LOCAL
+from kraft.constants import URL_VERSION
+from kraft.errors import CannotConnectURLError
+from kraft.errors import UnknownSourceProvider
+from kraft.kraft import kraft_context
+from kraft.logger import logger
 
-@click.command('init', short_help='Initialize a new Unikraft library.')
+
+@click.command('init', short_help='Initialize a new Unikraft library.')  # noqa: C901
 @click.argument('name', required=False)
-@click.option('--author-name',  '-a', 'author_name',    help='The author\'s name for library.')
-@click.option('--author-email', '-e', 'author_email',   help='The author\'s email for library.')
-@click.option('--github',       '-g', 'from_github',    help='The remote repository is from GitHub.', is_flag=True)
-@click.option('--version',      '-v', 'version',        help='Set the version to use from GitHub.')
-@click.option('--origin',       '-s', 'origin',         help='Source code origin URL.  Use the semantic %s for automatic versioning.' % URL_VERSION)
-@click.option('--provide-main', '-m', 'provide_main',   help='Provide a main function override.', is_flag=True)
-@click.option('--dependencies', '-d', 'dependencies',   help='Select known library dependencies', multiple=True)
-@click.option('--force',        '-F', 'force_create',   help='Overwrite any existing files.', is_flag=True)
-@click.option('--no-input',     '-A', 'no_input',       help='Do not prompt the user at command line configuration', is_flag=True)
+@click.option('--author-name',  '-a', 'author_name',    help='The author\'s name for library.')  # noqa: E501
+@click.option('--author-email', '-e', 'author_email',   help='The author\'s email for library.')  # noqa: E501
+@click.option('--github',       '-g', 'from_github',    help='The remote repository is from GitHub.', is_flag=True)  # noqa: E501
+@click.option('--version',      '-v', 'version',        help='Set the version to use from GitHub.')  # noqa: E501
+@click.option('--origin',       '-s', 'origin',         help='Source code origin URL.  Use the semantic %s for automatic versioning.' % URL_VERSION)  # noqa: E501
+@click.option('--provide-main', '-m', 'provide_main',   help='Provide a main function override.', is_flag=True)  # noqa: E501
+@click.option('--dependencies', '-d', 'dependencies',   help='Select known library dependencies', multiple=True)  # noqa: E501
+@click.option('--force',        '-F', 'force_create',   help='Overwrite any existing files.', is_flag=True)  # noqa: E501
+@click.option('--no-input',     '-A', 'no_input',       help='Do not prompt the user at command line configuration', is_flag=True)  # noqa: E501
 @kraft_context
-def init(ctx, name, author_name, author_email, from_github, version, origin, provide_main, dependencies, force_create, no_input):
+def init(ctx,
+         name,
+         author_name,
+         author_email,
+         from_github,
+         version,
+         origin,
+         provide_main,
+         dependencies,
+         force_create,
+         no_input):
     """Initialize a new Unikraft library."""
 
     libdir = ctx.workdir
 
     if name is None:
         name = os.path.basename(os.getcwd())
-    
+
     else:
         libdir = os.path.join(libdir, name)
 
@@ -79,7 +90,7 @@ def init(ctx, name, author_name, author_email, from_github, version, origin, pro
         if click.confirm('%s is a non-empty directory, would you like to continue?' % libdir):
             # It should be safe to set this now
             force_create = True
-        
+
         else:
             logger.fatal('Cancelling!')
             sys.exit(1)
@@ -93,7 +104,7 @@ def init(ctx, name, author_name, author_email, from_github, version, origin, pro
                 [os.path.normpath(os.path.join(libdir, GITCONFIG_LOCAL))],
                 read_only=True
             )
-    
+
         # Attempt reading default author and email from ~/.gitconfig
         else:
             gitconfig = GitConfigParser(
@@ -104,10 +115,10 @@ def init(ctx, name, author_name, author_email, from_github, version, origin, pro
     try:
         if author_name is None:
             author_name = gitconfig.get("user", "name")
-        
+
         if author_email is None:
             author_email = gitconfig.get("user", "email")
-        
+
     except NoOptionError:
         pass
 
@@ -116,12 +127,12 @@ def init(ctx, name, author_name, author_email, from_github, version, origin, pro
 
     try:
         library = Library.from_origin(
-            name = name,
-            origin = origin,
-            source = libdir,
-            version = version,
+            name=name,
+            origin=origin,
+            source=libdir,
+            version=version,
         )
-    
+
     except (UnknownSourceProvider, CannotConnectURLError) as e:
         logger.fatal(e)
         sys.exit(1)
@@ -132,7 +143,7 @@ def init(ctx, name, author_name, author_email, from_github, version, origin, pro
 
     if dependencies is not None:
         library.set_template_value('kconfig_dependencies', dependencies)
-    
+
     library.save(
         outdir=libdir,
         no_input=no_input,

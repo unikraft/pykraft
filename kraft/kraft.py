@@ -28,34 +28,27 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
-import sys
 import click
-import logging
 
-from kraft import __version__, __description__, __program__
-
-from kraft.logger import logger
-from kraft.config import config
+from kraft.commands import build
+from kraft.commands import clean
+from kraft.commands import configure
+from kraft.commands import init
+from kraft.commands import libinit
+from kraft.commands import list
+from kraft.commands import run
+from kraft.commands import up
 from kraft.context import kraft_context
-from kraft.utils.cli import KraftHelpGroup
 from kraft.utils.cli import CONTEXT_SETTINGS
+from kraft.utils.cli import KraftHelpGroup
 
-from kraft.commands import (
-    up,
-    run,
-    init,
-    list,
-    build,
-    clean,
-    libinit,
-    configure,
-)
 
-@click.option('--verbose',                    '-v', 'verbose',                help='Enables verbose mode.', is_flag=True)
-@click.option('--no-checkout',                '-X', 'dont_checkout',          help='Toggle checking-out repositories before any action.', is_flag=True)
-@click.option('--ignore-git-checkout-errors', '-C', 'ignore_checkout_errors', help='Ignore checkout errors.', is_flag=True)
+@click.option('--verbose',                    '-v', 'verbose',                help='Enables verbose mode.', is_flag=True) # noqa: E501,E261
+@click.option('--no-checkout',                '-X', 'dont_checkout',          help='Toggle checking-out repositories before any action.', is_flag=True) # noqa: E501,E261
+@click.option('--ignore-git-checkout-errors', '-C', 'ignore_checkout_errors', help='Ignore checkout errors.', is_flag=True) # noqa: E501,E261
 @click.group(cls=KraftHelpGroup, context_settings=CONTEXT_SETTINGS, epilog="""
 Influential Environmental Variables:
   env::UK_WORKDIR The working directory for all Unikraft
@@ -81,6 +74,7 @@ def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors):
     ctx.ignore_checkout_errors = ignore_checkout_errors
     ctx.cache.sync()
 
+
 @click.group(name='lib', short_help='Unikraft library commands.')
 @kraft_context
 def lib(ctx):
@@ -88,11 +82,13 @@ def lib(ctx):
     directly with Unikraft libraries."""
     pass
 
+
 @click.group(name='measure', short_help='Unikraft measurement commands.')
 @kraft_context
 def measure(ctx):
     """Unikraft measurement commands are ..."""
     pass
+
 
 lib.add_command(libinit)
 

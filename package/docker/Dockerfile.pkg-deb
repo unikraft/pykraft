@@ -38,6 +38,7 @@ LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
 WORKDIR /usr/src/kraft
 
+COPY requirements-dev.txt /tmp/requirements-dev.txt
 COPY requirements-pkg-deb.txt /tmp/requirements-pkg-deb.txt
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -96,6 +97,7 @@ RUN set -xe; \
     curl -OL https://bootstrap.pypa.io/get-pip.py; \
     python get-pip.py; \
     pip install --upgrade --force-reinstall pip==9.0.3; \
+    pip install -r /tmp/requirements-dev.txt; \
     pip install -r /tmp/requirements-pkg-deb.txt; \
     git clone https://github.com/spotify/dh-virtualenv.git /tmp/dh-virtualenv; \
     cd /tmp/dh-virtualenv; \

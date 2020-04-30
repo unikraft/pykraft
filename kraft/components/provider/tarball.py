@@ -28,21 +28,22 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import sys
 import htmllistparse
 
 from .provider import Provider
-
 from kraft.constants import SEMVER_PATTERN
 from kraft.constants import TARBALL_SUPPORTED_EXTENSIONS
+
 
 def tarball_probe_remote_versions(source=None):
     versions = {}
 
     if source is None:
         return versions
-    
+
     # Remove last filename in URL in attempt to retrieve the index of the
     # directory
     for ext in TARBALL_SUPPORTED_EXTENSIONS:
@@ -60,30 +61,31 @@ def tarball_probe_remote_versions(source=None):
                 if ver is not None and ver.group(0) not in versions.keys():
                     versions[ver.group(0)] = listing.name
 
-    except Exception as e:
+    except Exception:
         pass
 
     return versions
 
+
 class TarballProvider(Provider):
-    
+
     @classmethod
     def is_type(cls, origin=None):
         if origin is None:
             return False
-        
+
         for ext in TARBALL_SUPPORTED_EXTENSIONS:
             if origin.endswith(ext):
                 return True
 
         return False
-    
+
     def probe_remote_versions(self, source=None):
         if source is None:
             source = self.source
-        
+
         return tarball_probe_remote_versions(source)
-    
+
     def version_source_archive(self, varname=None):
         ver = SEMVER_PATTERN.search(self.source)
         source_archive = self.source.replace(ver.group(0), varname)

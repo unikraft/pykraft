@@ -100,4 +100,3 @@ COPY --from=qemu-build /bin/qemu-system-i386 /bin/
 COPY --from=qemu-build /bin/qemu-system-x86_64 /bin/
 COPY --from=qemu-build /share/qemu/ /share/qemu/
 COPY --from=qemu-build /lib/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
-

@@ -28,36 +28,33 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
-import yaml
-import shutil
 import datetime
+import os
+import shutil
 import urllib.request
 
+import yaml
+from cookiecutter.generate import generate_context
+from cookiecutter.generate import generate_files
+from cookiecutter.prompt import prompt_for_config
 from git import Repo as GitRepo
-from git import GitCommandError
 
-from kraft.logger import logger
-from kraft.utils import recursively_copy
-from kraft.utils import delete_resource
-
-from kraft.errors import CannotConnectURLError
-from kraft.errors import UnknownSourceProvider
-
-from kraft.components.types import RepositoryType
+from kraft.components.provider import determine_provider
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
-from kraft.components.provider import determine_provider
-
-from kraft.constants import TMPL_EXT
+from kraft.components.types import RepositoryType
 from kraft.constants import PROJECT_CONFIG
 from kraft.constants import PROJECT_MANIFEST
 from kraft.constants import UK_VERSION_VARNAME
+from kraft.errors import CannotConnectURLError
+from kraft.errors import UnknownSourceProvider
+from kraft.logger import logger
+from kraft.utils import delete_resource
+from kraft.utils import recursively_copy
 
-from cookiecutter.prompt import prompt_for_config
-from cookiecutter.generate import generate_files
-from cookiecutter.generate import generate_context
 
 def get_templates_path():
     return os.path.join(
@@ -65,16 +62,18 @@ def get_templates_path():
         '../templates'
     )
 
+
 def get_template_config():
     return os.path.join(
         get_templates_path(),
         PROJECT_CONFIG
     )
 
+
 def delete_resources_for_disabled_features(project_dir=None):
     if project_dir is None:
         return
-    
+
     project_manifest = os.path.join(project_dir, PROJECT_MANIFEST)
 
     if os.path.exists(project_manifest) is False:
@@ -82,13 +81,14 @@ def delete_resources_for_disabled_features(project_dir=None):
 
     with open(project_manifest) as manifest_file:
         manifest = yaml.load(manifest_file, Loader=yaml.FullLoader)
-        
+
         for feature in manifest['features']:
             if not feature['enabled']:
                 for resource in feature['resources']:
                     delete_resource(os.path.join(project_dir, resource))
-    
+
     delete_resource(project_manifest)
+
 
 class Library(Repository):
     _origin = None
@@ -108,52 +108,53 @@ class Library(Repository):
             version = config['version']
 
         return super(Library, cls).from_source_string(
-            name = name,
-            source = source,
-            version = version,
-            repository_type = RepositoryType.LIB
+            name=name,
+            source=source,
+            version=version,
+            repository_type=RepositoryType.LIB
         )
 
     @classmethod
     def from_source_string(cls, name, source):
         return super(Library, cls).from_source_string(
-            name = name,
-            source = source,
-            repository_type = RepositoryType.LIB
+            name=name,
+            source=source,
+            repository_type=RepositoryType.LIB
         )
-    
+
     @classmethod
     def from_origin(cls,
-        name=None,
-        origin=None,
-        source=None,
-        version=None):
+                    name=None,
+                    origin=None,
+                    source=None,
+                    version=None):
         """"""
 
         try:
             logger.debug("Pinging %s..." % origin)
-            status = urllib.request.urlopen(origin).getcode()
+            urllib.request.urlopen(origin).getcode()
+
         except OSError as e:
             raise CannotConnectURLError(origin, e.msg)
 
         if os.path.exists(os.path.join(source, '.git')) is False:
             logger.debug("Initializing new git repository at: %s" % source)
-            repo = GitRepo.init(source)
+            GitRepo.init(source)
 
         provider = determine_provider(origin)
-        
+
         if provider is None:
             raise UnknownSourceProvider(source)
 
         # Initialize the "repository"
         library = cls(
-            name = name,
-            source = "file://%s" % source,
-            repository_type = RepositoryType.LIB,
-            provider = provider,
-            version = version,
+            name=name,
+            source="file://%s" % source,
+            repository_type=RepositoryType.LIB,
+            provider=provider,
+            version=version,
         )
-        
+
         library.origin = origin
         versions = library.provider.probe_remote_versions()
         library.set_template_value('version', sorted(list(versions.keys()), reverse=True))
@@ -164,7 +165,7 @@ class Library(Repository):
         library.set_template_value('commit', '')
 
         return library
-    
+
     @property
     def origin(self):
         return self._origin
@@ -173,7 +174,11 @@ class Library(Repository):
     def origin(self, origin=None):
         self._origin = origin
 
-    def save(self, outdir=None, additional_values={}, force_create=False, no_input=False):
+    def save(self,
+             outdir=None,
+             additional_values={},
+             force_create=False,
+             no_input=False):
         context = generate_context(
             context_file=get_template_config(),
             default_context=self._template_values
@@ -186,7 +191,9 @@ class Library(Repository):
         # Fix the starting "v" in the version string
         if context['cookiecutter']['version'].startswith('v'):
             context['cookiecutter']['version'] = context['cookiecutter']['version'][1:]
-            context['cookiecutter']['source_archive'] = self.version_source_archive('v%s' % (UK_VERSION_VARNAME % self.kname))
+            context['cookiecutter']['source_archive'] = self.version_source_archive(
+                'v%s' % (UK_VERSION_VARNAME % self.kname)
+            )
         else:
             context['cookiecutter']['source_archive'] = self.version_source_archive()
 
@@ -203,7 +210,7 @@ class Library(Repository):
                 context['cookiecutter'][key] = self._template_values[key]
 
         output_dir = self.source
-        if self.source.startswith("file://"): 
+        if self.source.startswith("file://"):
             output_dir = self.source[len("file://"):]
 
         logger.info("Generating files...")
@@ -228,11 +235,11 @@ class Library(Repository):
     def set_template_value(self, key=None, val=None):
         if key is not None:
             self._template_values[key] = val
-        
+
     @property
     def template_value(self):
         return self._template_values
-  
+
     # TODO: Intrusively determine which additional unikraft librareis are
     # needed for this library to run.
     def determine_kconfig_dependencies(self):
@@ -247,6 +254,7 @@ class Library(Repository):
             varname = UK_VERSION_VARNAME % self.kname
 
         return self.provider.version_source_archive(varname)
+
 
 class Libraries(RepositoryManager):
     pass

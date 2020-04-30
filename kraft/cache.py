@@ -28,69 +28,62 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
-import re
-import six
-import click
 
-from datetime import datetime
+import six
 from fcache.cache import FileCache
 
 from kraft import __program__
 from kraft.logger import logger
 
-from kraft.errors import InvalidRepositoryFormat
-from kraft.errors import NoSuchReferenceInRepo
-from kraft.errors import NoTypeAndNameRepo
-from kraft.errors import MismatchVersionRepo
-
-STALE_TIMEOUT=604800 # 7 days
 
 class Cache(object):
     _cache = {}
     _cachedir = []
-    
+
     def __init__(self, environment):
         """Initializes the cache so that kraft does not have to constantly
-        retrieve informational lists about unikraft, its available architectures,
-        platforms, libraries and supported applications."""
+        retrieve informational lists about unikraft, its available
+        architectures, platforms, libraries and supported applications."""
 
         self._cachedir = os.path.join(environment.get('UK_WORKDIR'), 'kraft.cache')
 
         # Initiaize a cache instance
         self._cache = FileCache(
-            app_cache_dir = self._cachedir,
-            appname = __program__,
+            app_cache_dir=self._cachedir,
+            appname=__program__,
             flag='cs'
         )
-    
+
     @property
     def cache(self):
         return self._cache
 
     def get(self, source=None):
         if isinstance(source, six.string_types) and source in self._cache:
-            logger.debug("Retrieving %s from cache..."  % source)
+            logger.debug("Retrieving %s from cache..." % source)
             return self._cache[source]
-        
+
         return None
-    
+
     def find_by_name(self, name=None):
         for source in self._cache:
             if self._cache[source].name == name:
                 return self._cache[source]
-        
+
         return None
-    
+
     def all(self):
         return self._cache
 
     def set(self, source, repository):
         if isinstance(source, six.string_types):
-            logger.debug("Saving %s into cache..."  % repository)
+            logger.debug("Saving %s into cache..." % repository)
             self._cache[source] = repository
-    
+
     def sync(self):
         logger.debug("Synchronizing cache with filesystem...")
         pass
@@ -103,24 +96,5 @@ class Cache(object):
 
         if len(self.all()) == 0:
             return True
-
-        # biggest_timeout = 0
-        # repos = self.repos()
-
-        # # If there is nothing cached, this is also stale
-        # if len(repos) == 0:
-        #     return True
-
-        # for repo in repos:
-        #     # If we have never checked, this is stale
-        #     if repos[repo].last_checked is None:
-        #         return True
-
-        #     diff = (datetime.now() - repos[repo].last_checked).total_seconds()
-        #     if diff > biggest_timeout:
-        #         biggest_timeout = diff
-
-        # if biggest_timeout > STALE_TIMEOUT:
-        #     return True
 
         return False

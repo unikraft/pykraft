@@ -28,26 +28,25 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
-from enum import Enum
 
-from kraft.components.types import RepositoryType
-
-from kraft.constants import UK_CORE_PLAT_DIR
-
-from kraft.components.executor import Executor
 from kraft.components.executor import ExecutorDriverEnum
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
+from kraft.components.types import RepositoryType
+from kraft.constants import UK_CORE_PLAT_DIR
+
 
 class Platform(Repository):
     _executor = None
-    
+
     @property
     def executor(self):
         return self._executor
-    
+
     @executor.setter
     def executor(self, executor):
         self._executor = executor
@@ -55,37 +54,37 @@ class Platform(Repository):
     @classmethod
     def from_config(cls, ctx, core=None, plat=None, config=None, executor_base=None):
         assert ctx is not None, "ctx is undefined"
-    
+
         if not core.is_downloaded:
             core.update()
-    
+
         # Set the executor to the base in case we cannot later determine
         executor = executor_base
         executor_config = None
         platform = None
-        
+
         if not isinstance(config, bool):
             if 'run' in config:
                 executor_config = config['run']
 
             if 'source' in config:
                 platform = super(Platform, cls).from_source_string(config['source'], RepositoryType.PLAT)
-        
+
         if platform is None:
             # Check if we have a cache hit for this platform name.   We do this
             # here because we are unsure of its source address, which can be
             # mis-interpretted as unikraft's core -- since we place the
-            # platform INTO the unikraft core. 
+            # platform INTO the unikraft core.
             cached_plat = ctx.cache.find_by_name(plat)
             if cached_plat is not None:
                 platform = cached_plat
             else:
                 platform = cls(
-                    name = plat,
-                    source = core.source,
-                    version = core.version,
-                    localdir = os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
-                    repository_type = RepositoryType.PLAT
+                    name=plat,
+                    source=core.source,
+                    version=core.version,
+                    localdir=os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
+                    repository_type=RepositoryType.PLAT
                 )
 
         # Determine executor driver
@@ -104,10 +103,11 @@ class Platform(Repository):
     @classmethod
     def from_source_string(cls, name, source=None):
         return super(Platform, cls).from_source_string(
-            name = name,
-            source = source,
-            repository_type = RepositoryType.PLAT
+            name=name,
+            source=source,
+            repository_type=RepositoryType.PLAT
         )
+
 
 class Platforms(RepositoryManager):
     pass

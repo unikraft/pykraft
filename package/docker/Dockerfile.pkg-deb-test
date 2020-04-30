@@ -39,15 +39,15 @@ ARG PKG_DISTRIBUTION=stretch
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
-COPY . /usr/src/kraft
+COPY dist /usr/src/kraft/dist
 
-WORKDIR /usr/src/kraft
+WORKDIR /usr/src/kraft/dist
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
 RUN set -xe; \
     apt-get update; \
-    dpkg -i ./dist/unikraft-tools_${APP_VERSION}~${PKG_DISTRIBUTION}_all.deb || true; \
+    dpkg -i ./unikraft-tools_*~${PKG_DISTRIBUTION}_all.deb || true; \
     apt-get install -yf; \
     kraft --version

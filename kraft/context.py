@@ -28,30 +28,33 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
-import click
 import logging
+import os
+
+import click
 from pathlib import Path
 
 from kraft.cache import Cache
-from kraft.settings import Settings
-from kraft.environment import Environment
-from kraft.logger import logger
-from kraft.config import config
-
-from kraft.constants import UNIKRAFT_WORKDIR
+from kraft.constants import KRAFTCONF
+from kraft.constants import UNIKRAFT_APPSDIR
 from kraft.constants import UNIKRAFT_COREDIR
 from kraft.constants import UNIKRAFT_LIBSDIR
-from kraft.constants import UNIKRAFT_APPSDIR
-from kraft.constants import KRAFTCONF
+from kraft.constants import UNIKRAFT_WORKDIR
+from kraft.environment import Environment
+from kraft.logger import logger
+from kraft.settings import Settings
+
 
 class Context(click.Context):
     _verbose = False
     _dont_checkout = False
+    _timestamps = True
     ignore_checkout_errors = False
 
-    """Context manager acts as a decorator and helps initialize and persist and 
+    """Context manager acts as a decorator and helps initialize and persist and
     current state of affairs for the kraft utility."""
     def __init__(self):
         self._verbose = False
@@ -62,8 +65,9 @@ class Context(click.Context):
         self.obj = self
         self._cache = Cache(self.env)
         self._settings = Settings(os.environ['KRAFTCONF'])
-    
-    def init_env(self):
+        self._timestamps = True
+
+    def init_env(self):  # noqa: C901
         """Determines whether the integrity of the kraft application, namely
         determining whether the kraft application can run under the given
         runtime environment."""
@@ -88,13 +92,13 @@ class Context(click.Context):
         # Check if we have a build-time engine set
         if 'UK_BUILD_ENGINE' not in os.environ:
             os.environ['UK_BUILD_ENGINE'] = 'gcc'
-        
+
         if 'KRAFTCONF' not in os.environ:
             os.environ['KRAFTCONF'] = os.path.join(os.environ['HOME'], KRAFTCONF)
         if os.path.exists(os.environ['UK_APPS']) is False:
             Path(os.environ['UK_APPS']).touch()
-        
-        self._env =  Environment.from_env_file(self._workdir, None)
+
+        self._env = Environment.from_env_file(self._workdir, None)
 
     @property
     def cache(self):
@@ -127,7 +131,7 @@ class Context(click.Context):
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(logging.INFO)
-    
+
     @property
     def workdir(self):
         return self._workdir
@@ -145,5 +149,6 @@ class Context(click.Context):
     @property
     def settings(self):
         return self._settings
-    
+
+
 kraft_context = click.make_pass_decorator(Context, ensure=True)

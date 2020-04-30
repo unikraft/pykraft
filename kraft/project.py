@@ -28,56 +28,41 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import re
 import os
-import sys
-import json
-import tempfile
-import kconfiglib
 import subprocess
+import tempfile
+
 import dpath.util as dpath_util
 from pathlib import Path
-from json.decoder import JSONDecodeError
 
 import kraft.utils as utils
-from kraft.logger import logger
-from kraft.kraft import kraft_context
-from kraft.components.types import RepositoryType
-
-from kraft.components.core import Core
-from kraft.components.library import Library
-from kraft.components.library import Libraries
-from kraft.components.platform import Platform
-from kraft.components.platform import Platforms
-from kraft.components.executor import Executor
 from kraft.components.architecture import Architecture
 from kraft.components.architecture import Architectures
-from kraft.components.repository import Repository
-
-from kraft.errors import CannotReadKraftfile
+from kraft.components.core import Core
+from kraft.components.executor import Executor
+from kraft.components.library import Libraries
+from kraft.components.library import Library
+from kraft.components.platform import Platform
+from kraft.components.platform import Platforms
+from kraft.config.config import get_default_config_files
+from kraft.config.serialize import serialize_config
+from kraft.constants import DOT_CONFIG
+from kraft.constants import KRAFT_SPEC_LATEST
+from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
+from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
+from kraft.constants import MAKEFILE_UK
+from kraft.constants import SUPPORTED_FILENAMES
+from kraft.constants import UNIKRAFT_CORE
 from kraft.errors import InvalidRepositorySource
-from kraft.errors import MisconfiguredUnikraftProject
+from kraft.errors import KraftFileNotFound
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
-from kraft.errors import KraftFileNotFound
+from kraft.kraft import kraft_context
+from kraft.logger import logger
 
-from kraft.constants import UNIKRAFT_CORE
-from kraft.constants import KCONFIG_Y
-from kraft.constants import DOT_CONFIG
-from kraft.constants import DEFCONFIG
-from kraft.constants import MAKEFILE_UK
-from kraft.constants import ENV_VAR_PATTERN
-from kraft.constants import KRAFT_SPEC_LATEST
-from kraft.constants import SUPPORTED_FILENAMES
-from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
-from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
-
-from kraft.config.config import get_default_config_files
-from kraft.config.kconfig import infer_arch_config_name
-from kraft.config.kconfig import infer_plat_config_name
-from kraft.config.kconfig import infer_lib_config_name
-from kraft.config.serialize import serialize_config
 
 class Project(object):
     _name = None
@@ -90,14 +75,14 @@ class Project(object):
     _libraries = {}
 
     def __init__(self,
-        name,
-        core=None,
-        path=None,
-        config=None,
-        architectures=None,
-        platforms=None,
-        libraries=None):
-        
+                 name,
+                 core=None,
+                 path=None,
+                 config=None,
+                 architectures=None,
+                 platforms=None,
+                 libraries=None):
+
         self._name = name
         self._path = path
         self._core = core or Core()
@@ -107,25 +92,31 @@ class Project(object):
         self._architectures = architectures or Architectures([])
         self._platforms = platforms or Platforms([])
         self._libraries = libraries or Libraries([])
-    
+
     @property
     def name(self):
         return self._name
+
     @property
     def path(self):
         return self._path
+
     @property
     def core(self):
         return self._core
+
     @property
     def config(self):
         return self._config
+
     @property
     def architectures(self):
         return self._architectures
+
     @property
     def platforms(self):
         return self._platforms
+
     @property
     def libraries(self):
         return self._libraries
@@ -133,11 +124,13 @@ class Project(object):
     @classmethod
     @kraft_context
     def from_config(ctx, cls, path, config, name_override=None):
-        """Construct a Unikraft application from a config.Config object."""
+        """
+        Construct a Unikraft application from a config.Config object.
+        """
 
         if name_override:
             config.name = name_override
-    
+
         try:
             core = Core.from_config(ctx, config.unikraft)
             executor_base = Executor.from_config(ctx, config.executor)
@@ -165,20 +158,22 @@ class Project(object):
             logger.fatal(e)
 
         project = cls(
-            name = config.name,
-            core = core,
-            path = path,
-            config = config,
-            architectures = architectures,
-            platforms = platforms,
-            libraries = libraries
+            name=config.name,
+            core=core,
+            path=path,
+            config=config,
+            architectures=architectures,
+            platforms=platforms,
+            libraries=libraries
         )
 
         return project
 
     def gen_make_cmd(self, extra=None, verbose=False):
-        """Return a string with a correctly formatted make entrypoint for this
-        application"""
+        """
+        Return a string with a correctly formatted make entrypoint for this
+        application.
+        """
 
         cmd = [
             'make',
@@ -188,14 +183,14 @@ class Project(object):
 
         if verbose:
             cmd.append('V=1')
-        
+
         plat_paths = []
         for plat in self.platforms.all():
             if plat.repository.source != UNIKRAFT_CORE:
                 plat_paths.append(plat.repository.localdir)
-        
+
         cmd.append('P=%s' % ":".join(plat_paths))
-        
+
         lib_paths = []
         for lib in self.libraries.all():
             lib_paths.append(lib.repository.localdir)
@@ -210,17 +205,25 @@ class Project(object):
             cmd.append(extra)
 
         return cmd
-    
+
     @kraft_context
     def make(ctx, self, extra=None):
-        """Run a make target for this project."""
+        """
+        Run a make target for this project.
+        """
         self.checkout()
         cmd = self.gen_make_cmd(extra, ctx.verbose)
         utils.execute(cmd)
 
-    @kraft_context
-    def configure(ctx, self, target_arch=None, target_plat=None, force_configure=False):
-        """Configure a Unikraft application."""
+    @kraft_context  # noqa: C901
+    def configure(ctx,
+                  self,
+                  target_arch=None,
+                  target_plat=None,
+                  force_configure=False):
+        """
+        Configure a Unikraft application.
+        """
 
         if not self.is_configured():
             self.init()
@@ -230,35 +233,39 @@ class Project(object):
         if force_configure:
             # Check if we have used "--arch" before.  This saves the user from having to
             # re-type it.  This means omission uses the settings.
-            if target_arch is None and len(self.architectures.all()) > 1 and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE):
+            if target_arch is None and len(self.architectures.all()) > 1 \
+                    and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE):
                 target_arch = ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE)
-            
+
             elif target_arch is None and len(self.architectures.all()) == 1:
                 for arch in self.architectures.all():
                     target_arch = arch.name
 
-            if target_arch is not None and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE) is None:
+            if target_arch is not None \
+                    and ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE) is None:
                 ctx.settings.set(KRAFTCONF_CONFIGURE_ARCHITECTURE, target_arch)
 
             # Check if we have used "--plat" before.  This saves the user from having to
             # re-type it.  This means omission uses the settings.
-            if target_plat is None and len(self.platforms.all()) > 1 and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM):
+            if target_plat is None and len(self.platforms.all()) > 1 \
+                    and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM):
                 target_plat = ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM)
-            
+
             elif target_plat is None and len(self.platforms.all()) == 1:
                 for plat in self.platforms.all():
                     target_plat = plat.name
-            
-            if target_plat is not None and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM) is None:
+
+            if target_plat is not None \
+                    and ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM) is None:
                 ctx.settings.set(KRAFTCONF_CONFIGURE_PLATFORM, target_plat)
 
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.
         dotconfig = []
-        
+
         if 'kconfig' in self.config.unikraft:
             dotconfig.extend(self.config.unikraft['kconfig'])
-        
+
         found_arch = False
         for arch in self.architectures.all():
             if target_arch == arch.name:
@@ -270,10 +277,12 @@ class Project(object):
                 if isinstance(arch.config, (dict)) and 'kconfig' in arch.config:
                     dotconfig.extend(arch.config['kconfig'])
                 dotconfig.extend(arch.repository.kconfig_extra)
-        
+
         if not found_arch:
-            raise MismatchTargetArchitecture(target_arch, [arch.name for arch in self.architectures.all()])
-        
+            raise MismatchTargetArchitecture(target_arch, [
+                arch.name for arch in self.architectures.all()
+            ])
+
         found_plat = False
         for plat in self.platforms.all():
             if target_plat == plat.name:
@@ -288,7 +297,7 @@ class Project(object):
 
         if not found_plat:
             raise MismatchTargetPlatform(target_plat, [plat.name for plat in self.platforms.all()])
-            
+
         for lib in self.libraries.all():
             logger.info("Using %s" % lib.repository)
             kconfig_enable = lib.repository.kconfig_enabled_flag()
@@ -316,25 +325,31 @@ class Project(object):
             os.remove(path)
 
     def menuconfig(self):
-        """Run the make menuconfig target"""
+        """
+        Run the make menuconfig target.
+        """
         self.checkout()
         cmd = self.gen_make_cmd('menuconfig')
         logger.debug("Running: %s" % ' '.join(cmd))
         subprocess.run(cmd)
 
     def kmenuconfig(self):
-        """Run the make kmenuconfig target"""
+        """
+        Run the make kmenuconfig target.
+        """
         self.checkout()
         cmd = self.gen_make_cmd('kmenuconfig')
         logger.debug("Running: %s" % ' '.join(cmd))
         subprocess.run(cmd)
 
     def init(self, force_create=False):
-        """Initialize a repository"""
+        """
+        Initialize a repository.
+        """
         makefile_uk = os.path.join(self.path, MAKEFILE_UK)
         if os.path.exists(makefile_uk) is False or force_create:
             Path(makefile_uk).touch()
-    
+
         try:
             filenames = get_default_config_files(self.path)
         except KraftFileNotFound:
@@ -351,44 +366,49 @@ class Project(object):
 
         if os.path.exists(os.path.join(self.path, MAKEFILE_UK)) is False:
             return False
-        
+
         return True
-    
+
     def build(self, fetch=True, prepare=True, target=None, n_proc=None):
-        """Checkout all the correct versions based on the current app instance
-        and run the build command."""
+        """
+        Checkout all the correct versions based on the current app instance
+        and run the build command.
+        """
 
         extra = []
         if n_proc is not None:
             extra.append('-j%s' % str(n_proc))
-        
+
         if fetch:
             self.make('fetch')
-    
+
         if prepare:
             self.make('prepare')
-    
 
         # Create a no-op when target is False
         if target is False:
             return
-        
+
         elif target is not None:
             extra.append(target)
-        
+
         self.make(extra)
 
     def clean(self, proper=False):
-        """Clean the application."""
+        """
+        Clean the application.
+        """
 
         if proper:
             self.make("properclean")
 
         else:
             self.make("clean")
-    
+
     def checkout(self):
-        """Check out a particular version of the repository."""
+        """
+        Check out a particular version of the repository.
+        """
         self.core.checkout()
         self.architectures.checkout()
         self.platforms.checkout()
@@ -405,28 +425,30 @@ class Project(object):
     @kraft_context
     def get_config(ctx, self):
         if 'specification' not in self.config:
-            self.config['specification'] = SPECIFCATION_LATEST
-    
+            self.config['specification'] = KRAFT_SPEC_LATEST
+
         if 'source' not in self.config:
             dpath_util.new(self.config, 'unikraft/source', self.core.source)
-        
+
         if 'version' not in self.config:
             dpath_util.new(self.config, 'unikraft/version', self.core.version)
-            
+
         for arch in self.architectures.all():
             dpath_util.new(self.config, 'architectures/%s' % arch.name, True)
 
         for plat in self.platforms.all():
             dpath_util.new(self.config, 'platforms/%s' % plat.name, True)
-            
+
         # for lib in self.libraries.all():
         #     print(lib)
 
         return self.config
 
     def to_yaml(self):
-        """Return a YAML with the serialized string of this object."""
-        
+        """
+        Return a YAML with the serialized string of this object.
+        """
+
         config = self.get_config()
 
         return serialize_config(config)

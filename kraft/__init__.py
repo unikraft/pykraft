@@ -28,9 +28,11 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 __program__ = 'kraft'
-__version__ = '0.4.0'
+__version__ = '0.4.0-34-g62f6520'
 __description__ = '''
 Define, configure, build and run unikernel applications.
 '''

@@ -28,19 +28,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from git import GitCommandError
 from git import Repo as GitRepo
 from git.cmd import Git as GitCmd
-from git import GitCommandError
 
 from .provider import Provider
-
+from kraft.constants import GIT_BRANCH_PATTERN
+from kraft.constants import GIT_TAG_PATTERN
+from kraft.constants import GIT_UNIKRAFT_TAG_PATTERN
+from kraft.constants import UNIKRAFT_ORIGIN
 from kraft.logger import logger
 
-from kraft.constants import UNIKRAFT_ORIGIN
-from kraft.constants import GIT_TAG_PATTERN
-from kraft.constants import GIT_BRANCH_PATTERN
-from kraft.constants import GIT_UNIKRAFT_TAG_PATTERN
 
 def git_probe_remote_versions(source=None):
     """List references in a remote repository"""
@@ -49,7 +50,7 @@ def git_probe_remote_versions(source=None):
 
     if source is None:
         return versions
-    
+
     if source.startswith("file://"):
         source = source[7:]
 
@@ -58,8 +59,8 @@ def git_probe_remote_versions(source=None):
     logger.debug("Probing remote git repository: %s..." % source)
 
     try:
-        remote = g.ls_remote(source)
-    
+        g.ls_remote(source)
+
     except GitCommandError as e:
         logger.fatal("Could not connect to repository: %s" % str(e))
         return versions
@@ -81,7 +82,7 @@ def git_probe_remote_versions(source=None):
         # Check if version tag
         if source.startswith(UNIKRAFT_ORIGIN):
             ref = GIT_UNIKRAFT_TAG_PATTERN.search(hash_ref_list[1])
-        
+
         else:
             ref = GIT_TAG_PATTERN.search(hash_ref_list[1])
 
@@ -90,38 +91,38 @@ def git_probe_remote_versions(source=None):
 
     return versions
 
+
 class GitProvider(Provider):
 
     @classmethod
     def is_type(cls, source=None):
         if source is None:
             return False
-        
+
         try:
             if source.startswith("file://"):
                 source = source[7:]
-            
+
             GitRepo(source, search_parent_directories=True)
             return True
-        
-        except Exception as e:
+
+        except Exception:
             pass
-        
+
         try:
             GitCmd().ls_remote(source)
             return True
-        
-        except Exception as e:
+
+        except Exception:
             pass
-        
+
         return False
-    
+
     def probe_remote_versions(self, source=None):
         if source is None:
             source = self.source
-        
+
         return git_probe_remote_versions(source)
-    
+
     def version_source_url(self, varname=None):
         return self.source
-

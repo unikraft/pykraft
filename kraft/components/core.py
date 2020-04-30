@@ -28,9 +28,12 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from kraft.components.types import RepositoryType
 from kraft.components.repository import Repository
+from kraft.components.types import RepositoryType
+
 
 class Core(Repository):
     @classmethod
@@ -46,27 +49,25 @@ class Core(Repository):
         if 'version' in config:
             version = config['version']
 
-
         return super(Core, cls).from_source_string(
-            name = None,
-            source = source,
-            version = version,
-            repository_type = RepositoryType.CORE
+            name=None,
+            source=source,
+            version=version,
+            repository_type=RepositoryType.CORE
         )
 
     @classmethod
     def from_source_string(cls, source=None, version=None):
         return super(Core, cls).from_source_string(
-            name = None,
-            source = source,
-            version = version,
-            repository_type = RepositoryType.CORE
+            name=None,
+            source=source,
+            version=version,
+            repository_type=RepositoryType.CORE
         )
-    
+
     # One day we will need this
-    # e.g. 
+    # e.g.
     #    if core.compatible(UK_COMPAT_CORE_v0_4_0):
     #
     def compatible(self, version):
         return True
-    

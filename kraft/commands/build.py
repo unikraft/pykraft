@@ -28,16 +28,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
 import sys
+
 import click
 
 from kraft.config import config
-from kraft.logger import logger
-from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
+from kraft.logger import logger
+from kraft.project import Project
+
 
 @kraft_context
 def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
@@ -54,9 +57,9 @@ def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
     except KraftError as e:
         logger.error(str(e))
         sys.exit(1)
-    
+
     if not project.is_configured():
-        if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):
+        if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
             try:
                 project.configure(force_configure=True)
 
@@ -68,7 +71,7 @@ def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
     if fast:
         # This simply set the `-j` flag which signals to make to use all cores.
         n_proc = ""
-    
+
     try:
         project.build(
             fetch=fetch,
@@ -76,16 +79,17 @@ def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
             target=target,
             n_proc=n_proc
         )
-    
+
     except KraftError as e:
         logger.error(str(e))
         sys.exit(1)
 
+
 @click.command('build', short_help='Build the application.')
-@click.option('--fetch/--no-fetch',           'fetch',   help='Run fetch step before build.', default=True)
-@click.option('--prepare/--no-prepare',       'prepare', help='Run prepare step before build.',  default=True)
-@click.option('--fast',                 '-j', 'fast',    help='Use all CPU cores to build the application.', is_flag=True)
-@click.option('--noop',                 '-q', 'noop',    help='Do not run the build.', is_flag=True)
+@click.option('--fetch/--no-fetch',           'fetch',   help='Run fetch step before build.', default=True)  # noqa: E501
+@click.option('--prepare/--no-prepare',       'prepare', help='Run prepare step before build.',  default=True)  # noqa: E501
+@click.option('--fast',                 '-j', 'fast',    help='Use all CPU cores to build the application.', is_flag=True)  # noqa: E501
+@click.option('--noop',                 '-q', 'noop',    help='Do not run the build.', is_flag=True)  # noqa: E501
 @click.argument('target', required=False)
 def build(fetch=True, prepare=True, target=None, fast=False, noop=False):
     """

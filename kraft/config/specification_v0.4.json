@@ -60,7 +60,7 @@
   "additionalProperties": true,
 
   "definitions": {
-    
+
     "unikraft": {
       "id": "#/definitions/unikraft",
       "type": [ "object", "string" ],
@@ -80,7 +80,7 @@
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
       }
     },
-    
+
     "platform": {
       "id": "#/definitions/platform",
       "type": [ "object", "boolean" ],
@@ -94,7 +94,7 @@
         "memory": { "type": [ "string", "integer" ] }
       }
     },
-    
+
     "library": {
       "id": "#/definitions/library",
       "type": [ "object", "string" ],
@@ -104,7 +104,7 @@
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
       }
     },
-    
+
     "run": {
       "id": "#/definitions/run",
       "type": "object",
@@ -132,7 +132,7 @@
         }
       }
     },
-    
+
     "volume": {
       "id": "#/definitions/volume",
       "type": [ "object" ],
@@ -141,7 +141,7 @@
         "source": { "type": "string" }
       }
     },
-    
+
     "network": {
       "id": "#/definitions/network",
       "type": [ "object", "boolean" ],

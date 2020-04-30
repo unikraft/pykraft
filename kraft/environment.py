@@ -28,16 +28,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import logging
 import os
 import re
 
 import dotenv
 import six
 
-from .errors import KraftError
 from .errors import EnvFileNotFound
+from .errors import KraftError
+from kraft.logger import logger
+
 
 def split_env(env):
     if isinstance(env, six.binary_type):

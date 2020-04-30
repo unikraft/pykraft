@@ -28,46 +28,51 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
-import platform
+
 import kraft.utils as utils
-from kraft.utils import ClickOptionMutex
-
-from kraft.logger import logger
-from kraft.project import Project
-from kraft.errors import KraftError
-
+from kraft.commands.list import update
+from kraft.components.architecture import Architecture
+from kraft.components.architecture import Architectures
 from kraft.components.core import Core
 from kraft.components.platform import Platform
 from kraft.components.platform import Platforms
-from kraft.components.architecture import Architecture
-from kraft.components.architecture import Architectures
 from kraft.components.types import RepositoryType
-
-from kraft.commands.list import update
-from kraft.context import kraft_context
-
-from kraft.constants import UNIKRAFT_CORE
-from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
-from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
-
 from kraft.config.interpolation import interpolate_source_version
+from kraft.constants import KRAFTCONF_CONFIGURE_ARCHITECTURE
+from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
+from kraft.constants import UNIKRAFT_CORE
+from kraft.context import kraft_context
+from kraft.errors import KraftError
+from kraft.logger import logger
+from kraft.project import Project
+from kraft.utils import ClickOptionMutex
 
-@kraft_context
-def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force_create):
+
+@kraft_context  # noqa: C901
+def kraft_init(ctx,
+               name,
+               target_plat,
+               target_arch,
+               template_app,
+               version,
+               force_create):
     if name is None:
         name = os.path.basename(os.getcwd())
 
     # Pre-flight check determines if we are trying to work with nothing
-    if ctx.cache.is_stale() and click.confirm('kraft caches are out-of-date.  Would you like to update?'):
+    if ctx.cache.is_stale() and click.confirm('kraft caches are out-of-date.  Would you like to update?'):  # noqa: E501
         update()
-    
+
     # Check if the directory is non-empty and prompt for validation
     if utils.is_dir_empty(ctx.workdir) is False and force_create is False:
-        if click.confirm('%s is a non-empty directory, would you like to continue?' % ctx.workdir):
+        if click.confirm('%s is a non-empty directory, would you like to continue?' % ctx.workdir):  # noqa: E501
             # It should be safe to set this now
             force_create = True
         else:
@@ -75,12 +80,12 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             sys.exit(1)
 
     # if ctx.settings.get(KRAFTCONF_INIT_WORKDIR) == "local":
-    #   
-    
+    #
+
     # If we are using a template application, we can simply copy from the source
     # repository
     if template_app is not None:
-    
+
         apps = {}
 
         for repo in ctx.cache.all():
@@ -93,29 +98,28 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             logger.error('Template application not found: %s' % template_app)
             logger.error('Supported templates: %s' % ', '.join(apps.keys()))
             sys.exit(1)
-        
+
         app = apps[template_app]
 
         if version and version not in app.known_versions.keys():
             logger.error('Unknown version \'%s\' for app: %s' % (version, template_app))
             sys.exit(1)
-        
+
         app.checkout(version)
-        
+
         utils.recursively_copy(app.localdir, ctx.workdir, overwrite=force_create, ignore=[
             '.git', 'build', '.config', '.config.old', '.config.orig'
         ])
 
         logger.info('Initialized new unikraft application \'%s\' in %s' % (name, ctx.workdir))
-        
-    
-    # If no application is provided, we can initialize a template by dumping 
+
+    # If no application is provided, we can initialize a template by dumping
     # a YAML file
     else:
         # Determine the version of unikraft that we should be using
         if version is None:
-            # This simply sets the "source" to the unikraft core repository 
-            # which, once parsed through the internal cache, should pop out the 
+            # This simply sets the "source" to the unikraft core repository
+            # which, once parsed through the internal cache, should pop out the
             # latest version.
             unikraft_source = UNIKRAFT_CORE
             unikraft_version = None
@@ -130,7 +134,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
                 source=unikraft_source,
                 version=unikraft_version
             )
-            
+
             preferred_arch = ctx.settings.get(KRAFTCONF_CONFIGURE_ARCHITECTURE)
             if target_arch is None:
                 if preferred_arch:
@@ -138,7 +142,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
                 else:
                     logger.error("Please provide an architecture.")
                     sys.exit(1)
-            
+
             arch_source, arch_version = interpolate_source_version(
                 source=target_arch,
                 repository_type=RepositoryType.ARCH
@@ -146,8 +150,8 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
 
             archs = Architectures([])
             archs.add(target_arch, Architecture.from_source_string(
-                name = target_arch,
-                source = arch_source,
+                name=target_arch,
+                source=arch_source,
             ), {})
 
             preferred_plat = ctx.settings.get(KRAFTCONF_CONFIGURE_PLATFORM)
@@ -157,7 +161,7 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
                 else:
                     logger.error("Please provide a platform.")
                     sys.exit(1)
-            
+
             plat_source, plat_version = interpolate_source_version(
                 source=target_plat,
                 repository_type=RepositoryType.PLAT
@@ -165,8 +169,8 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
 
             plats = Platforms([])
             plats.add(target_plat, Platform.from_source_string(
-                name = target_plat,
-                source = plat_source,
+                name=target_plat,
+                source=plat_source,
             ), {})
 
             logger.info("Using %s..." % core)
@@ -187,12 +191,13 @@ def kraft_init(ctx, name, target_plat, target_arch, template_app, version, force
             logger.error(str(e))
             sys.exit(1)
 
+
 @click.command('init', short_help='Initialize a new unikraft application.')
-@click.option('--app',     '-a', 'template_app', help='Use an existing application as a template.', cls=ClickOptionMutex, not_required_if=['target_plat','target_arch'])
-@click.option('--plat',    '-p', 'target_plat',  help='Target platform.', cls=ClickOptionMutex, not_required_if=['template_app'])
-@click.option('--arch',    '-m', 'target_arch',  help='Target architecture.', cls=ClickOptionMutex, not_required_if=['template_app'], type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))
-@click.option('--version', '-V', 'version',      help="Use specific Unikraft release version.")
-@click.option('--force',   '-F', 'force_create', help='Overwrite any existing files.', is_flag=True)
+@click.option('--app',     '-a', 'template_app', help='Use an existing application as a template.', cls=ClickOptionMutex, not_required_if=['target_plat', 'target_arch'])  # noqa: E501
+@click.option('--plat',    '-p', 'target_plat',  help='Target platform.', cls=ClickOptionMutex, not_required_if=['template_app'])  # noqa: E501
+@click.option('--arch',    '-m', 'target_arch',  help='Target architecture.', cls=ClickOptionMutex, not_required_if=['template_app'], type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True))  # noqa: E501
+@click.option('--version', '-V', 'version',      help="Use specific Unikraft release version.")  # noqa: E501
+@click.option('--force',   '-F', 'force_create', help='Overwrite any existing files.', is_flag=True)  # noqa: E501
 @click.argument('name', required=False)
 def init(name, target_plat, target_arch, template_app, version, force_create):
     """

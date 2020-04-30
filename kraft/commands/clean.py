@@ -28,16 +28,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
 import sys
+
 import click
 
 from kraft.config import config
-from kraft.logger import logger
-from kraft.project import Project
 from kraft.errors import KraftError
 from kraft.kraft import kraft_context
+from kraft.logger import logger
+from kraft.project import Project
+
 
 @click.command('clean', short_help='Clean the application.')
 @click.option('--proper', '-p', is_flag=True, help='Delete the build directory.')
@@ -51,7 +54,7 @@ def clean(ctx, proper):
     """
     Cleans build files.
     """
-    
+
     logger.debug("Cleaning %s..." % ctx.workdir)
 
     try:

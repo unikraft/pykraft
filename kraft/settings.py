@@ -28,15 +28,17 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
-import sys
-import toml
 
 import dpath.util
+import toml
 from pathlib import Path
 
 from kraft.logger import logger
+
 
 class Settings(object):
     _kraftconf = None
@@ -47,15 +49,15 @@ class Settings(object):
 
         if os.path.exists(kraftconf) is False:
             Path(kraftconf).touch()
-        
+
         with open(self._kraftconf, 'r') as file:
             self._settings = toml.loads(file.read())
-            
+
     def save(self):
         # Write everything from the the start of the file
         with open(self._kraftconf, 'w+') as file:
             file.write(toml.dumps(self._settings))
-    
+
     def get(self, prop, default=None):
         try:
             result = dpath.util.get(self._settings, prop)
@@ -64,7 +66,7 @@ class Settings(object):
             result = None
 
         return result
-    
+
     def set(self, prop, val=None):
         if val is not None:
             dpath.util.new(self._settings, prop, val)

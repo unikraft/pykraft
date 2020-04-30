@@ -28,31 +28,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 PROVIDER_STATUS_AVAILABLE = "available"
 PROVIDER_STATUS_OUTOFDATE = "outofdate"
 PROVIDER_STATUS_EMPTY = "empty"
+
 
 class Provider(object):
     _source = None
 
     def __init__(self, source=None):
         self.source = source
-    
+
     @classmethod
     def is_type(self):
         pass
-    
+
     def probe_remote_versions(self, source=None):
         return []
-    
+
     def version_source_archive(self, varname=None):
         return self.source
 
     @property
     def source(self):
         return self._source
-    
+
     @source.setter
     def source(self, source=None):
         self._source = source
@@ -64,8 +67,6 @@ class Provider(object):
     #     # self.localdir = localdir
     #     # self.cachable = not (config.get("cachable", "") == False)
     #     # self.patches = []
-
-
 
     # @kraft_context
     # def clean_cache(self, ctx):
@@ -92,25 +93,25 @@ class Provider(object):
     #         raise RuntimeError(
     #             "Provider status is: '" + status + "'. This shouldn't happen"
     #         )
-        
+
     #     # if _fetched:
     #     #     self._patch()
 
-    # # def _patch(self):
-    # #     for f in self.patches:
-    # #         patch_file = os.path.abspath(os.path.join(self.core_root, f))
-    # #         if os.path.isfile(patch_file):
-    # #             logger.debug(
-    # #                 "  applying patch file: "
-    # #                 + patch_file
-    # #                 + "\n"
-    # #                 + "                   to: "
-    # #                 + os.path.join(self.localdir)
-    # #             )
-    # #             try:
-    # #                 Launcher("git", ["apply", patch_file], self.localdir).run()
-    # #             except OSError:
-    # #                 raise RuntimeError("Failed to call 'git' for patching core")
+    # def _patch(self):
+    #     for f in self.patches:
+    #         patch_file = os.path.abspath(os.path.join(self.core_root, f))
+    #         if os.path.isfile(patch_file):
+    #             logger.debug(
+    #                 "  applying patch file: "
+    #                 + patch_file
+    #                 + "\n"
+    #                 + "                   to: "
+    #                 + os.path.join(self.localdir)
+    #             )
+    #             try:
+    #                 Launcher("git", ["apply", patch_file], self.localdir).run()
+    #             except OSError:
+    #                 raise RuntimeError("Failed to call 'git' for patching core")
 
     # def status(self):
     #     if not self.cachable:
@@ -119,5 +120,3 @@ class Provider(object):
     #         return PROVIDER_STATUS_EMPTY
     #     else:
     #         return PROVIDER_STATUS_AVAILABLE
-
-

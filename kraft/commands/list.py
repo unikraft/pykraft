@@ -28,43 +28,54 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
+import json
 import os
 import sys
-import json
-import click
 import threading
-from enum import Enum
-from atpbar import flush
-from github import Github
 from datetime import datetime
 
-from kraft.logger import logger
-from kraft.errors import KraftError
-from kraft.context import kraft_context
+import click
+from atpbar import flush
+from github import Github
 
-from kraft.constants import UK_GITHUB_ORG
-from kraft.constants import DATE_FORMAT
-
-from kraft.components.types import RepositoryType
 from kraft.components.repository import Repository
+from kraft.components.types import RepositoryType
+from kraft.constants import DATE_FORMAT
+from kraft.constants import UK_GITHUB_ORG
+from kraft.context import kraft_context
+from kraft.errors import KraftError
+from kraft.logger import logger
 
-@click.command('list', short_help='List architectures, platforms, libraries or applications.')
-@click.option('--core',        '-c', 'core',         help='Display information about Unikraft\'s core repository.', is_flag=True)
-# @click.option('--archs',       '-m',                 help='List supported architectures.', is_flag=True)
-@click.option('--plats',       '-p', 'plats',        help='List supported platforms.', is_flag=True)
-@click.option('--libs',        '-l', 'libs',         help='List supported libraries.', is_flag=True)
-@click.option('--apps',        '-a', 'apps',         help='List supported application runtime execution environments.', is_flag=True)
-# @click.option('--json',        '-j', 'json',         help='Return values in JSON format.', is_flag=True)
-@click.option('--show-local',  '-d', 'show_local',   help='Show local source path.', is_flag=True)
-@click.option('--show-origin', '-r', 'show_origin',  help='Show remote source location.', is_flag=True)
-# @click.option('--import',      '-i', '_import',      help='Import a library from a specified path.')
-@click.option('--paginate',    '-n', 'paginate',     help='Paginate output.', is_flag=True)
-@click.option('--update',      '-u', 'force_update', help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.', is_flag=True)
-@click.option('--flush',       '-F', 'force_flush',  help='Cleans the cache and lists.', is_flag=True)
-@click.option('--json',        '-j', 'return_json',  help='Return output as JSON.', is_flag=True)
+
+@click.command('list', short_help='List architectures, platforms, libraries or applications.')  # noqa: E501,C901
+@click.option('--core',        '-c', 'core',         help='Display information about Unikraft\'s core repository.', is_flag=True)  # noqa: E501
+# @click.option('--archs',       '-m',                 help='List supported architectures.', is_flag=True)  # noqa: E501
+@click.option('--plats',       '-p', 'plats',        help='List supported platforms.', is_flag=True)  # noqa: E501
+@click.option('--libs',        '-l', 'libs',         help='List supported libraries.', is_flag=True)  # noqa: E501
+@click.option('--apps',        '-a', 'apps',         help='List supported application runtime execution environments.', is_flag=True)  # noqa: E501
+# @click.option('--json',        '-j', 'json',         help='Return values in JSON format.', is_flag=True)  # noqa: E501
+@click.option('--show-local',  '-d', 'show_local',   help='Show local source path.', is_flag=True)  # noqa: E501
+@click.option('--show-origin', '-r', 'show_origin',  help='Show remote source location.', is_flag=True)  # noqa: E501
+# @click.option('--import',      '-i', '_import',      help='Import a library from a specified path.')  # noqa: E501
+@click.option('--paginate',    '-n', 'paginate',     help='Paginate output.', is_flag=True)  # noqa: E501
+@click.option('--update',      '-u', 'force_update', help='Retrieves lists of available architectures, platforms libraries and applications supported by Unikraft.', is_flag=True)  # noqa: E501
+@click.option('--flush',       '-F', 'force_flush',  help='Cleans the cache and lists.', is_flag=True)  # noqa: E501
+@click.option('--json',        '-j', 'return_json',  help='Return output as JSON.', is_flag=True)  # noqa: E501
 @kraft_context
-def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_update, force_flush, return_json):
+def list(ctx,
+         core,
+         plats,
+         libs,
+         apps,
+         show_origin,
+         show_local,
+         paginate,
+         force_update,
+         force_flush,
+         return_json):
     """
     Retrieves lists of available architectures, platforms, libraries and applications
     supported by unikraft.  Use this command if you wish to determine (and then
@@ -73,7 +84,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
     By default, this subcommand will list all possible targets.
 
     """
-    
+
     # Pre-flight check determines if we are trying to work with nothing
     if ctx.cache.is_stale() and not force_update:
         if click.confirm('kraft caches are out-of-date.  Would you like to update?', default=True):
@@ -97,11 +108,11 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
     for repo in ctx.cache.all():
         repo = ctx.cache.get(repo)
 
-        if not repo.type in repos:
+        if repo.type not in repos:
             repos[repo.type] = []
-        
+
         repos[repo.type].append(repo)
-        
+
     for type, member in RepositoryType.__members__.items():
         columns = [member.plural.upper(), 'RELEASE', 'LAST CHECKED']
 
@@ -127,7 +138,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
 
         elif apps and member is RepositoryType.APP and member in repos:
             rows = repos[member]
-        
+
         if len(rows) > 0:
             data.append(columns)
 
@@ -135,7 +146,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
             if return_json:
                 if member.plural not in data_json:
                     data_json[member.plural] = []
-    
+
                 row_json = {
                     'name': row.name,
                     'latest': row.latest_release,
@@ -146,11 +157,11 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
                 if show_local:
                     if hasattr(row, 'localdir'):
                         row_json.update({'localdir': row.localdir})
-                    
+
                 if show_origin:
                     if hasattr(row, 'source'):
                         row_json.update({'source': row.source})
-                   
+
                 data_json[member.plural].append(row_json)
             else:
                 line = [
@@ -193,6 +204,7 @@ def list(ctx, core, plats, libs, apps, show_origin, show_local, paginate, force_
         else:
             print(output)
 
+
 @kraft_context
 def update(ctx):
     if 'UK_KRAFT_GITHUB_TOKEN' in os.environ:
@@ -206,11 +218,11 @@ def update(ctx):
     def clone_repo(ctx, clone_url=None):
         with ctx:
             logger.info("Probing %s..." % clone_url)
-            
+
             try:
                 Repository.from_source_string(
                     source=clone_url,
-                    force_update=True 
+                    force_update=True
                 )
             except KraftError as e:
                 logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))
@@ -233,7 +245,8 @@ def update(ctx):
     if sys.stdout.isatty():
         flush()
 
-def pretty_columns(data = []):
+
+def pretty_columns(data=[]):
     widths = [max(map(len, col)) for col in zip(*data)]
     output = ""
 
@@ -241,6 +254,7 @@ def pretty_columns(data = []):
         output += "\t".join((val.ljust(width) for val, width in zip(row, widths))) + "\n"
 
     return output
+
 
 def prettydate(date=None):
     if date is None:

@@ -28,20 +28,24 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
+
 from enum import Enum
+
+from kraft.constants import UK_GITHUB_CORE_FORMAT
+from kraft.constants import UK_GITHUB_NAMING_FORMAT
 from kraft.logger import logger
 
-from kraft.constants import UK_GITHUB_NAMING_FORMAT
-from kraft.constants import UK_GITHUB_CORE_FORMAT
 
 class RepositoryType(Enum):
-    CORE = ( "core" , "core"         , "core"          )
-    ARCH = ( "arch" , "architecture" , "architectures" )
-    PLAT = ( "plat" , "platform"     , "platforms"     )
-    LIB  = ( "lib"  , "library"      , "libraries"     )
-    APP  = ( "app"  , "application"  , "applications"  )
+    CORE = ( "core" , "core"         , "core"          )  # noqa
+    ARCH = ( "arch" , "architecture" , "architectures" )  # noqa
+    PLAT = ( "plat" , "platform"     , "platforms"     )  # noqa
+    LIB  = ( "lib"  , "library"      , "libraries"     )  # noqa
+    APP  = ( "app"  , "application"  , "applications"  )  # noqa
 
     @property
     def format(self):

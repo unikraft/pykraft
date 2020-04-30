@@ -28,25 +28,29 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
+
 from enum import Enum
 
-from kraft.logger import logger
 from kraft.errors import InvalidVolumeDriver
+from kraft.logger import logger
+
 
 class VolumeDriver(Enum):
-    VOL_INITRD = ( "initrd"  , [""] )
-    VOL_9PFS   = ( "9pfs"    , [
+    VOL_INITRD = ("initrd", [""])
+    VOL_9PFS = ("9pfs", [
         "CONFIG_LIBDEVFS=y"
         "CONFIG_LIB9PFS=y"
     ])
-    VOL_RAW    = ( "raw"     , [
+    VOL_RAW = ("raw", [
         "CONFIG_LIBDEVFS=y"
-    ] )
-    VOL_QCOW2  = ( "qcow2"   , [
+    ])
+    VOL_QCOW2 = ("qcow2", [
         "CONFIG_LIBDEVFS=y"
-    ] )
+    ])
 
     @property
     def name(self):
@@ -55,14 +59,15 @@ class VolumeDriver(Enum):
     @property
     def kconfig(self):
         return self.kconfig[0]
-    
+
     @classmethod
-    def from_name(cls, name = None):
+    def from_name(cls, name=None):
         for vol in VolumeDriver.__members__.items():
             if name == vol[1].name:
                 return vol
-        
+
         return None
+
 
 class Volume(object):
     _name = None
@@ -91,7 +96,7 @@ class Volume(object):
     @property
     def workdir(self):
         return self._workdir
-    
+
     @classmethod
     def from_config(cls, name, driver, config=None, workdir=None):
         source = None
@@ -107,7 +112,7 @@ class Volume(object):
                 source = os.path.join(workdir, source)
             else:
                 logger.warn("The provide source path for '%s' could not be found: %s" % (name, source))
-        
+
         if driver is None and 'driver' in config:
             driver = VolumeDriver.from_name(config['driver'])
 
@@ -117,7 +122,8 @@ class Volume(object):
             source=source,
             workdir=workdir
         )
-    
+
+
 class Volumes(object):
     _volumes = []
 
@@ -126,7 +132,7 @@ class Volumes(object):
 
     def add(self, volume):
         if isinstance(volume, Volume):
-            # Remove existing volume with the same name so as to override 
+            # Remove existing volume with the same name so as to override
             for net in self._volumes:
                 if net.name == volume.name:
                     self._volumes.remove(net)
@@ -140,12 +146,14 @@ class Volumes(object):
 
     def get(self, key, default=None):
         for volume in self._volumes:
-            if getattr(volume, key) == value:
+            if volume.name == key:
                 return volume
+
+        return default
 
     def all(self):
         return self._volumes
-    
+
     @classmethod
     def from_config(cls, workdir=None, config=None):
         volumes = cls([])
@@ -165,5 +173,5 @@ class Volumes(object):
                 ))
             else:
                 raise InvalidVolumeDriver(vol)
-        
+
         return volumes

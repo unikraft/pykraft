@@ -28,13 +28,15 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+# flake8: noqa
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from .up import up
-from .run import run
-from .init import init
-from .list import list
 from .build import build
 from .clean import clean
 from .configure import configure
-
+from .init import init
 from .lib.init import init as libinit
+from .list import list
+from .run import run
+from .up import up

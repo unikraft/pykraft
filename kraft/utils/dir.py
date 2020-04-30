@@ -28,37 +28,45 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
 import shutil
-from kraft.logger import logger
 from shutil import copyfile
-from shutil import ignore_patterns
 from shutil import SameFileError
+
+from kraft.logger import logger
+
 
 def is_dir_empty(path=None):
     """Return a boolean of whether the provided directory `dir` is empty."""
-    return os.path.isdir(path) is False or len([f for f in os.listdir(path) if not f.startswith('.')]) == 0
+    return os.path.isdir(path) is False or \
+        len([f for f in os.listdir(path) if not f.startswith('.')]) == 0
+
 
 def recursively_copy(src, dest, overwrite=False, ignore=[]):
     if os.path.basename(src) in ignore:
         pass
-    elif os.path.isdir(src) :
+    elif os.path.isdir(src):
         if not os.path.isdir(dest):
             os.makedirs(dest)
 
         files = os.listdir(src)
 
         for f in files:
-            recursively_copy(os.path.join(src, f), 
-                            os.path.join(dest, f), 
-                            overwrite,
-                            ignore)
+            recursively_copy(
+                os.path.join(src, f),
+                os.path.join(dest, f),
+                overwrite,
+                ignore
+            )
     elif (os.path.exists(dest) and overwrite) or os.path.exists(dest) is False:
         try:
             copyfile(src, dest)
         except SameFileError:
             pass
+
 
 def delete_resource(resource):
     if os.path.isfile(resource):

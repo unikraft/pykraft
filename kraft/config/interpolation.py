@@ -28,21 +28,27 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 from string import Template
 
-from kraft.constants import BRANCH_MASTER
-from kraft.constants import UNIKRAFT_ORG
-from kraft.constants import UNIKRAFT_CORE
-from kraft.constants import GITHUB_ORIGIN
-from kraft.constants import ORG_DELIMETERE
-from kraft.constants import REPO_VERSION_DELIMETERE
-from kraft.constants import REPO_VALID_URL_PREFIXES
+import six
 
 from kraft.components.types import RepositoryType
+from kraft.constants import BRANCH_MASTER
+from kraft.constants import GITHUB_ORIGIN
+from kraft.constants import ORG_DELIMETERE
+from kraft.constants import REPO_VALID_URL_PREFIXES
+from kraft.constants import REPO_VERSION_DELIMETERE
+from kraft.constants import UNIKRAFT_CORE
+from kraft.constants import UNIKRAFT_ORG
+from kraft.errors import ConfigurationError
 from kraft.errors import InvalidInterpolation
 from kraft.errors import InvalidRepositorySource
+from kraft.errors import UnsetRequiredSubstitution
+
 
 class Interpolator(object):
 
@@ -55,6 +61,7 @@ class Interpolator(object):
             return self.templater(string).substitute(self.mapping)
         except ValueError:
             raise InvalidInterpolation(string)
+
 
 class TemplateWithDefaults(Template):
     pattern = r"""
@@ -116,8 +123,56 @@ class TemplateWithDefaults(Template):
                              self.pattern)
         return self.pattern.sub(convert, self.template)
 
+
+def recursive_interpolate(obj, interpolator, config_path):
+    def append(config_path, key):
+        return '{}/{}'.format(config_path, key)
+
+    if isinstance(obj, six.string_types):
+        return converter.convert(config_path, interpolator.interpolate(obj))
+
+    if isinstance(obj, dict):
+        return dict(
+            (key, recursive_interpolate(val, interpolator, append(config_path, key)))
+            for (key, val) in obj.items()
+        )
+
+    if isinstance(obj, list):
+        return [recursive_interpolate(val, interpolator, config_path) for val in obj]
+
+    return converter.convert(config_path, obj)
+
+
+def get_config_path(config_key, section, name):
+    return '{}/{}/{}'.format(section, name, config_key)
+
+
+def interpolate_value(name, config_key, value, section, interpolator):
+    try:
+        return recursive_interpolate(value, interpolator, get_config_path(config_key, section, name))
+
+    except InvalidInterpolation as e:
+        raise ConfigurationError(
+            'Invalid interpolation format for "{config_key}" option '
+            'in {section} "{name}": "{string}"'.format(
+                config_key=config_key,
+                name=name,
+                section=section,
+                string=e.string))
+
+    except UnsetRequiredSubstitution as e:
+        raise ConfigurationError(
+            'Missing mandatory value for "{config_key}" option interpolating {value} '
+            'in {section} "{name}": {err}'.format(config_key=config_key,
+                                                  value=value,
+                                                  name=name,
+                                                  section=section,
+                                                  err=e.err)
+        )
+
+
 def interpolate_environment_variables(version, config, section, environment):
-    
+
     interpolator = Interpolator(TemplateWithDefaults, environment)
 
     def process_item(name, config_dict):
@@ -125,7 +180,7 @@ def interpolate_environment_variables(version, config, section, environment):
             (key, interpolate_value(name, key, val, section, interpolator))
             for key, val in (config_dict or {}).items()
         )
-    
+
     if isinstance(config, dict):
         return config
     else:
@@ -134,16 +189,20 @@ def interpolate_environment_variables(version, config, section, environment):
             for name, config_dict in config.items()
         )
 
-def interpolate_source_version(name=None, source=None, version=None, repository_type=None):
+
+def interpolate_source_version(name=None,  # noqa: C901
+                               source=None,
+                               version=None,
+                               repository_type=None):
     """Parse a well-known repository naming format such that a Repository
     object is realized.
 
     The general semantics for a source string are:
-    
+
         <ORIGIN>@<BRANCH, TAG or COMMIT HASH>.
 
     This allows for a fully qualified source origin, for example:
-    
+
         git://git@github.com/unikraft/unikraft.git@v0.4.0
         https://github.com/unikraft/unikraft.git@v0.4.0
         file:///root/unikraft/libs/my-lib@staging
@@ -182,7 +241,7 @@ def interpolate_source_version(name=None, source=None, version=None, repository_
         # Check if a reference to a Github org/repo:
         if ORG_DELIMETERE in source:
             source = "%s/%s" % (GITHUB_ORIGIN, source)
-        
+
         # Does the repository start with lib-, plat-, etc.?
         elif source.startswith(tuple(y.shortname + '-' for x, y in RepositoryType.__members__.items())):
             source = "%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, source)
@@ -197,7 +256,7 @@ def interpolate_source_version(name=None, source=None, version=None, repository_
         elif version is None:
             version = source
             source = UNIKRAFT_CORE
-        
+
         # Of the format "unikraft@version"
         elif source == UNIKRAFT_ORG:
             source = UNIKRAFT_CORE
@@ -208,5 +267,25 @@ def interpolate_source_version(name=None, source=None, version=None, repository_
     # Still no version?  Try master
     if version is None:
         version = BRANCH_MASTER
-    
+
     return source, version
+
+
+class ConversionMap(object):
+    map = {}
+
+    def convert(self, path, value):
+        for rexp in self.map.keys():
+            if rexp.match(path):
+                try:
+                    return self.map[rexp](value)
+                except ValueError as e:
+                    raise ConfigurationError(
+                        'Error while attempting to convert {} to appropriate type: {}'.format(
+                            path.replace('/', '.'), e
+                        )
+                    )
+        return value
+
+
+converter = ConversionMap()

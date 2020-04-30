@@ -28,13 +28,26 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import sys
-from kraft.errors import KconfigFileNotFound
+import os
+import re
+
+import dotenv
+import six
+from kconfiglib import Choice
+from kconfiglib import COMMENT
+from kconfiglib import MENU
+from kconfiglib import Symbol
 
 from kraft.constants import KCONFIG_ARCH_NAME
-from kraft.constants import KCONFIG_PLAT_NAME
 from kraft.constants import KCONFIG_LIB_NAME
+from kraft.constants import KCONFIG_PLAT_NAME
+from kraft.errors import ConfigurationError
+from kraft.errors import KconfigFileNotFound
+from kraft.logger import logger
+
 
 def split_kconfig(kconfig):
     if isinstance(kconfig, six.binary_type):
@@ -62,26 +75,56 @@ def kconfig_from_file(filename):
 
     return dotenv.dotenv_values(dotenv_path=filename, encoding='utf-8-sig')
 
-def infer_arch_config_name(name = None):
+
+def infer_arch_config_name(name=None):
     if name is None:
         return ''
-    
+
     return KCONFIG_ARCH_NAME % name.replace('-', '_').upper()
 
-def infer_plat_config_name(name = None):
+
+def infer_plat_config_name(name=None):
     if name is None:
         return ''
-    
+
     return KCONFIG_PLAT_NAME % name.replace('-', '_').upper()
-    
-def infer_lib_config_name(name = None):
+
+
+def infer_lib_config_name(name=None):
     if name is None:
         return ''
 
     if name.startswith('lib'):
         name = name[len('lib'):]
-    
+
     return KCONFIG_LIB_NAME % name.replace('-', '_').upper()
+
+
+def indent_print(s, indent):
+    print(indent*" " + s)
+
+
+def kconfig_vars_from_file(filename, interpolate=True):
+    """
+    Read in a line delimited file of kconfig variables.
+    """
+    if not os.path.exists(filename):
+        raise KconfigFileNotFound("Couldn't find env file: {}".format(filename))
+
+    elif not os.path.isfile(filename):
+        raise KconfigFileNotFound("{} is not a file.".format(filename))
+
+    env = dotenv.dotenv_values(
+        dotenv_path=filename,
+        encoding='utf-8-sig',
+        interpolate=interpolate
+    )
+
+    for k, v in env.items():
+        env[k] = v if interpolate else v.replace('$', '$$')
+
+    return env
+
 
 class Kconfig(dict):
     def __init__(self, *args, **kwargs):
@@ -92,16 +135,22 @@ class Kconfig(dict):
     @classmethod
     def from_file(cls, base_dir, kconfig_file=None):
         result = cls()
+
         if base_dir is None:
             return result
+
         if kconfig_file:
             kconfig_file_path = os.path.join(base_dir, kconfig_file)
+
         else:
             kconfig_file_path = os.path.join(base_dir, '.kconfig')
+
         try:
             return cls(kconfig_vars_from_file(kconfig_file_path))
-        except EnvFileNotFound:
+
+        except KconfigFileNotFound:
             pass
+
         return result
 
     def __getitem__(self, key):
@@ -109,7 +158,7 @@ class Kconfig(dict):
             return super(Kconfig, self).__getitem__(key)
         except KeyError:
             if not self.silent and key not in self.missing_keys:
-                log.warning(
+                logger.warning(
                     "The %s variable is not set. Defaulting to a blank string."
                     % key
                 )
@@ -135,11 +184,7 @@ class Kconfig(dict):
             return False
         return True
 
-
-    def indent_print(s, indent):
-        print(indent*" " + s)
-
-    def traverse_config(node, indent):
+    def traverse_config(self, node, indent):
         while node:
             if isinstance(node.item, Symbol):
                 indent_print("config " + node.item.name, indent)

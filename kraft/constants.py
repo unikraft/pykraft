@@ -28,21 +28,23 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
-DATE_FORMAT="%Y-%m-%d %H:%M:%S"
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-BRANCH_MASTER="master"
-BRANCH_STAGING="staging"
+BRANCH_MASTER = "master"
+BRANCH_STAGING = "staging"
 
-UK_GITHUB_ORG='unikraft'
+UK_GITHUB_ORG = 'unikraft'
 
 # Match against dereferenced tags only
 # https://stackoverflow.com/a/15472310
-GIT_UNIKRAFT_TAG_PATTERN=re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
-GIT_TAG_PATTERN=re.compile(r'refs/tags/([\w\d\.-]+)[\^\{\}]?')
-GIT_BRANCH_PATTERN=re.compile(r'refs/heads/(.*)')
+GIT_UNIKRAFT_TAG_PATTERN = re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
+GIT_TAG_PATTERN = re.compile(r'refs/tags/([\w\d\.-]+)[\^\{\}]?')
+GIT_BRANCH_PATTERN = re.compile(r'refs/heads/(.*)')
 SEMVER_PATTERN = re.compile(
     r"""
         (?P<major>0|[1-9]\d*)
@@ -62,10 +64,10 @@ SEMVER_PATTERN = re.compile(
     re.VERBOSE,
 )
 
-GITHUB_ORIGIN="https://github.com"
-UNIKRAFT_ORG="unikraft"
-UNIKRAFT_CORE="%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, "unikraft.git")
-UNIKRAFT_ORIGIN="%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG)
+GITHUB_ORIGIN = "https://github.com"
+UNIKRAFT_ORG = "unikraft"
+UNIKRAFT_CORE = "%s/%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG, "unikraft.git")
+UNIKRAFT_ORIGIN = "%s/%s" % (GITHUB_ORIGIN, UNIKRAFT_ORG)
 
 REPO_VERSION_DELIMETERE = "@"
 ORG_DELIMETERE = "/"
@@ -89,13 +91,13 @@ TARBALL_SUPPORTED_EXTENSIONS = [
     '.tar',
 ]
 
-UNIKERNEL_IMAGE_FORMAT="%s/build/%s_%s-%s"
-UNIKERNEL_IMAGE_FORMAT_DGB="%s/build/%s_%s-%s.dbg"
+UNIKERNEL_IMAGE_FORMAT = "%s/build/%s_%s-%s"
+UNIKERNEL_IMAGE_FORMAT_DGB = "%s/build/%s_%s-%s.dbg"
 
-DOT_CONFIG=".config"
-DEFCONFIG="defconfig"
-MAKEFILE_UK="Makefile.uk"
-ENV_VAR_PATTERN=re.compile(r'([A-Z_^=]+)=(\'[/\w\.\-\s]+\')')
+DOT_CONFIG = ".config"
+DEFCONFIG = "defconfig"
+MAKEFILE_UK = "Makefile.uk"
+ENV_VAR_PATTERN = re.compile(r'([A-Z_^=]+)=(\'[/\w\.\-\s]+\')')
 
 UNIKRAFT_WORKDIR = ".unikraft"
 UNIKRAFT_COREDIR = "unikraft"
@@ -108,37 +110,43 @@ URL_VERSION = '$VERSION'
 
 KRAFTCONF = ".kraftrc"
 KRAFTCONF_DELIMETER = "/"
-KRAFTCONF_INIT_WORKDIR="init/workdir"
+KRAFTCONF_INIT_WORKDIR = "init/workdir"
 KRAFTCONF_CONFIGURE_PLATFORM = "configure/platform"
 KRAFTCONF_CONFIGURE_ARCHITECTURE = "configure/architecture"
 
-KCONFIG='CONFIG_%s'
-KCONFIG_Y='y'
-KCONFIG_N='n'
-KCONFIG_EQ='%s=%s'
-KCONFIG_ARCH_NAME="CONFIG_ARCH_%s"
-KCONFIG_PLAT_NAME="CONFIG_PLAT_%s"
-KCONFIG_LIB_NAME="CONFIG_LIB%s"
+KCONFIG = 'CONFIG_%s'
+KCONFIG_Y = 'y'
+KCONFIG_N = 'n'
+KCONFIG_EQ = '%s=%s'
+KCONFIG_ARCH_NAME = "CONFIG_ARCH_%s"
+KCONFIG_PLAT_NAME = "CONFIG_PLAT_%s"
+KCONFIG_LIB_NAME = "CONFIG_LIB%s"
 
-UK_CONFIG_FILE='%s/Config.uk'
-UK_CORE_ARCH_DIR='%s/arch'
-UK_CORE_PLAT_DIR='%s/plat'
-UK_VERSION_VARNAME='$(%s_VERSION)'
+UK_CONFIG_FILE = '%s/Config.uk'
+UK_CORE_ARCH_DIR = '%s/arch'
+UK_CORE_PLAT_DIR = '%s/plat'
+UK_VERSION_VARNAME = '$(%s_VERSION)'
 
-CONFIG_UK_ARCH=re.compile(r'if\s+\(([\w\_]+)\)[\n\s]+source\s+"\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"')
-CONFIG_UK_PLAT=re.compile(r'menuconfig\s+([\w\_]+)')
-CONFIG_UK_LIB=re.compile(r'config\s+([\w\_]+)')
+CONFIG_UK_ARCH = re.compile(
+    r"""
+        if\s+\(([\w\_]+)\)[\n\s]+source\s+"\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"
+    """)
+CONFIG_UK_PLAT = re.compile(r'menuconfig\s+([\w\_]+)')
+CONFIG_UK_LIB = re.compile(r'config\s+([\w\_]+)')
 
-UK_GITHUB_NAMING_FORMAT=r'(%s)-([^.]+)'
-UK_GITHUB_CORE_FORMAT=re.compile(r'(unikraft)/(unikraft)')
+UK_GITHUB_NAMING_FORMAT = r'(%s)-([^.]+)'
+UK_GITHUB_CORE_FORMAT = re.compile(r'(unikraft)/(unikraft)')
 
 UK_COMPAT_CORE_v0_4_0 = "0.4.0"
 
-KRAFT_SPEC_V04='0.4'
-KRAFT_SPEC_LATEST=KRAFT_SPEC_V04
+KRAFT_SPEC_V04 = '0.4'
+KRAFT_SPEC_LATEST = KRAFT_SPEC_V04
 
-UK_DBG_EXT='.dbg'
-TMPL_EXT='.tmpl'
+UK_DBG_EXT = '.dbg'
+TMPL_EXT = '.tmpl'
 
-PROJECT_CONFIG='cookiecutter.json'
-PROJECT_MANIFEST='manifest.yaml'
+PROJECT_CONFIG = 'cookiecutter.json'
+PROJECT_MANIFEST = 'manifest.yaml'
+
+QEMU_GUEST = 'qemu-guest'
+XEN_GUEST = 'xen-guest'

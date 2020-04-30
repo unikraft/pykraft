@@ -57,7 +57,7 @@ Usage:
 
 Options:
   -h --help                   Show this help menu.
-  
+
 
 DNSMASQ Options:
   --with-dnsmasq              Start a DNSMASQ server.
@@ -73,15 +73,15 @@ DNSMASQ Options:
                                 advertises (default: $DNSMASQ_LEASE_TIME).
   --dnsmasq-logfile           The log file the running dnsmasq instance
                                 (default: $DNSMASQ_LOGFILE).
-                                
+
 
 Influential environmental variables:
   KRAFT_ARCHITECTURE          The architecture of the unikraft unikernel
   KRAFT_PLATFORM              The target platform for the unikernel
   KRAFT_IMAGE                 The location of the unikernel binary
-  KRAFT_NETWORK_NAME          
-  KRAFT_NETWORK_DRIVER        
-  KRAFT_NETWORK_BRIDGE        
+  KRAFT_NETWORK_NAME
+  KRAFT_NETWORK_DRIVER
+  KRAFT_NETWORK_BRIDGE
   KRAFT_KCONFIG               The list of selected Kconfig enabeld for the
                                 unikernel.
 
@@ -128,7 +128,7 @@ for i in "$@"; do
             DNSMASQ_LOGFILE="${i#*=}"
             shift
             ;;
-        
+
         -h|--help)
             HELP=y
             shift
@@ -154,7 +154,7 @@ start_dnsmasq_server() {
         --interface=$KRAFT_NETWORK_BRIDGE \
         --listen-address=$DNSMASQ_LISTEN_ADDR \
         --dhcp-range=$DNSMASQ_DHCP_RANGE,$DNSMASQ_NETMASK,$DNSMASQ_LEASE_TIME &>$DNSMASQ_LOGFILE &
-        
+
     PID=$(echo $!)
     echo "dnsmasq runninig with pid: $PID"
 }

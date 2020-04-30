@@ -28,8 +28,13 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from collections import namedtuple
+
+import six
+
 
 class ComponentConfigBase(namedtuple('_ComponentConfigBase', 'source version kconfig')):
     @classmethod
@@ -52,23 +57,30 @@ class ComponentConfigBase(namedtuple('_ComponentConfigBase', 'source version kco
             [(k, v) for k, v in zip(self._fields, self) if v is not None]
         )
 
+
 class UnikraftConfig(object):
     pass
+
 
 class ArchitectureConfig(ComponentConfigBase):
     pass
 
+
 class PlatformConfig(ComponentConfigBase):
     pass
+
 
 class LibraryConfig(ComponentConfigBase):
     pass
 
+
 class ExecutorConfig(object):
     pass
 
+
 class VolumeConfig(object):
     pass
+
 
 class NetworkConfig(object):
     pass

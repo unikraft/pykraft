@@ -28,27 +28,41 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
-import sys
-import click
 import platform
-from enum import Enum
+import sys
+
+import click
 
 from kraft.config import config
+from kraft.constants import UNIKERNEL_IMAGE_FORMAT
+from kraft.errors import ExecutorError
+from kraft.errors import KraftError
+from kraft.kraft import kraft_context
 from kraft.logger import logger
 from kraft.project import Project
-from kraft.errors import KraftError
-from kraft.errors import ExecutorError
-from kraft.kraft import kraft_context
-from kraft.components.volume import VolumeDriver
-# from kraft.components.executor import Executor
-# from kraft.components.network import start_dnsmasq_server
-from kraft.constants import UNIKERNEL_IMAGE_FORMAT
 
-@kraft_context
-def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic, 
-    bridge, interface, dry_run, args, memory, cpu_sockets, cpu_cores):
+
+@kraft_context # noqa
+def kraft_run(ctx,
+              plat,
+              arch,
+              initrd,
+              background,
+              paused,
+              gdb,
+              dbg,
+              virtio_nic,
+              bridge,
+              interface,
+              dry_run,
+              args,
+              memory,
+              cpu_sockets,
+              cpu_cores):
     """
     Starts the unikraft application once it has been successfully
     built.
@@ -68,20 +82,20 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic,
 
     target_platform = None
 
-    for platform in project.platforms.all():
+    for uk_platform in project.platforms.all():
         if plat == platform.name:
-            target_platform = platform
-    
+            target_platform = uk_platform
+
     if target_platform is None:
         logger.error('Application platform not configured or set')
         sys.exit(1)
-    
+
     target_architecture = None
 
     for architecture in project.architectures.all():
         if arch == architecture.name:
             target_architecture = architecture
-    
+
     if target_architecture is None:
         logger.error('Application architecture not configured or set')
         sys.exit(1)
@@ -101,7 +115,7 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic,
     executor = target_platform.repository.executor
     executor.architecture = target_architecture.name
     executor.use_debug = dbg
-    
+
     if initrd:
         executor.add_initrd(initrd)
 
@@ -113,19 +127,19 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic,
 
     if interface:
         executor.add_interface(interface)
-    
+
     if gdb:
         executor.open_gdb(gdb)
-    
+
     if memory:
         executor.set_memory(memory)
-    
+
     if cpu_sockets:
         executor.set_cpu_sockets(cpu_sockets)
-    
+
     if cpu_cores:
         executor.set_cpu_cores(cpu_cores)
-    
+
     try:
         executor.unikernel = unikernel
         executor.execute(
@@ -138,25 +152,39 @@ def kraft_run(ctx, plat, arch, initrd, background, paused, gdb, dbg, virtio_nic,
         logger.error("Cannot execute: %s" % e)
         sys.exit(1)
 
+
 @click.command('run', short_help='Run the application.')
-@click.option('--plat',        '-p', 'plat',        help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)
-@click.option('--arch',        '-m', 'arch',        help='Target architecture.', default=lambda:platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)
-@click.option('--initrd',      '-i', 'initrd',      help='Provide an init ramdisk.')
-@click.option('--background',  '-B', 'background',  help='Run in background.', is_flag=True)
-@click.option('--paused',      '-P', 'paused',      help='Run the application in paused state.', is_flag=True)
-@click.option('--gdb',         '-g', 'gdb',         help='Run a GDB server for the guest at PORT.', type=int)
-@click.option('--dbg',         '-d', 'dbg',         help='Use unstriped unikernel', is_flag=True)
-@click.option('--virtio-nic',  '-n', 'virtio_nic',  help='Attach a NAT-ed virtio-NIC to the guest.')
-@click.option('--bridge',      '-b', 'bridge',      help='Attach a NAT-ed virtio-NIC an existing bridge.')
-@click.option('--interface',   '-V', 'interface',   help='Assign host device interface directly as virtio-NIC to the guest.')
-@click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.', is_flag=True)
-@click.option('--memory',      '-M', 'memory',      help="Assign MB memory to the guest.", type=int)
-@click.option('--cpu-sockets', '-s', 'cpu_sockets', help="Number of guest CPU sockets.", type=int)
-@click.option('--cpu-cores',   '-c', 'cpu_cores',   help="Number of guest cores per socket.", type=int)
+@click.option('--plat',        '-p', 'plat',        help='Target platform.', default='linuxu', type=click.Choice(['linuxu', 'kvm', 'xen'], case_sensitive=True), show_default=True)  # noqa: E501
+@click.option('--arch',        '-m', 'arch',        help='Target architecture.', default=lambda: platform.machine(), type=click.Choice(['x86_64', 'arm', 'arm64'], case_sensitive=True), show_default=True)  # noqa: E501
+@click.option('--initrd',      '-i', 'initrd',      help='Provide an init ramdisk.')  # noqa: E501
+@click.option('--background',  '-B', 'background',  help='Run in background.', is_flag=True)  # noqa: E501
+@click.option('--paused',      '-P', 'paused',      help='Run the application in paused state.', is_flag=True)  # noqa: E501
+@click.option('--gdb',         '-g', 'gdb',         help='Run a GDB server for the guest at PORT.', type=int)  # noqa: E501
+@click.option('--dbg',         '-d', 'dbg',         help='Use unstriped unikernel', is_flag=True)  # noqa: E501
+@click.option('--virtio-nic',  '-n', 'virtio_nic',  help='Attach a NAT-ed virtio-NIC to the guest.')  # noqa: E501
+@click.option('--bridge',      '-b', 'bridge',      help='Attach a NAT-ed virtio-NIC an existing bridge.')  # noqa: E501
+@click.option('--interface',   '-V', 'interface',   help='Assign host device interface directly as virtio-NIC to the guest.')  # noqa: E501
+@click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.', is_flag=True)  # noqa: E501
+@click.option('--memory',      '-M', 'memory',      help="Assign MB memory to the guest.", type=int)  # noqa: E501
+@click.option('--cpu-sockets', '-s', 'cpu_sockets', help="Number of guest CPU sockets.", type=int)  # noqa: E501
+@click.option('--cpu-cores',   '-c', 'cpu_cores',   help="Number of guest cores per socket.", type=int)  # noqa: E501
 @click.argument('args', nargs=-1)
-def run(plat, arch, initrd, background, paused, gdb, dbg, virtio_nic, bridge,
-    interface, dry_run, args, memory, cpu_sockets, cpu_cores):
-    
+def run(plat,
+        arch,
+        initrd,
+        background,
+        paused,
+        gdb,
+        dbg,
+        virtio_nic,
+        bridge,
+        interface,
+        dry_run,
+        args,
+        memory,
+        cpu_sockets,
+        cpu_cores):
+
     kraft_run(
         plat=plat,
         arch=arch,

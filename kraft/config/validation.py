@@ -28,16 +28,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import os
-import six
 import json
+import os
 
+import six
 from jsonschema import Draft4Validator
 from jsonschema import RefResolver
 
 from kraft.errors import KraftError
 from kraft.errors import SPECIFICATION_EXPLANATION
+
 
 def python_type_to_yaml_type(type_):
     type_name = type(type_).__name__
@@ -52,17 +55,28 @@ def python_type_to_yaml_type(type_):
         'bytes': 'string',
     }.get(type_name, type_name)
 
+
 def anglicize_json_type(json_type):
     if json_type.startswith(('a', 'e', 'i', 'o', 'u')):
         return 'an ' + json_type
     return 'a ' + json_type
 
-def validate_top_level_string(filename, config, section):
+
+def validate_top_level_string(config_file, config, section):
     if not isinstance(config, six.string_types):
         raise KraftError(
             "Top level object in '{}' needs to be a string not '{}'.".format(
                 config_file.filename,
                 type(config)))
+
+
+def validate_top_level_string_or_lst(config_file, config, section):
+    if not isinstance(config, (six.string_types, list)):
+        raise KraftError(
+            "Top level object in '{}' needs to be a string or array  not '{}'.".format(
+                config_file.filename,
+                type(config)))
+
 
 def validate_unikraft_section(config_file, config):
     if not isinstance(config, (six.string_types, dict)):
@@ -71,6 +85,7 @@ def validate_unikraft_section(config_file, config):
                 config_file.filename,
                 type(config)))
 
+
 def validate_libraries_section(config_file, config):
     # if not isinstance(value, (dict, six.string_types, type(None))):
     if not isinstance(config, (six.string_types, dict)):
@@ -78,6 +93,7 @@ def validate_libraries_section(config_file, config):
             "Top level object in '{}' needs to be an object not '{}'.".format(
                 config_file.filename,
                 type(config)))
+
 
 def validate_config_section(filename, config, section):
     """Validate the structure of a configuration section. This must be done
@@ -109,6 +125,7 @@ def validate_config_section(filename, config, section):
                     name=key,
                     type=anglicize_json_type(python_type_to_yaml_type(value))))
 
+
 def validate_executor_section(config_file, config):
     if not isinstance(config, dict):
         raise KraftError(
@@ -116,8 +133,10 @@ def validate_executor_section(config_file, config):
                 config_file.filename,
                 type(config)))
 
+
 def get_schema_path():
     return os.path.dirname(os.path.abspath(__file__))
+
 
 def load_jsonschema(config_file):
     filename = os.path.join(
@@ -133,8 +152,10 @@ def load_jsonschema(config_file):
     with open(filename, "r") as fh:
         return json.load(fh)
 
+
 def get_resolver_path():
     return "file://%s/" % get_schema_path()
+
 
 def parse_key_from_error_msg(error):
     try:
@@ -142,9 +163,10 @@ def parse_key_from_error_msg(error):
     except IndexError:
         return error.message.split('(')[1].split(' ')[0].strip("'")
 
+
 def handle_error_for_schema_with_id(error, path):
     schema_id = error.schema['id']
-    
+
     if error.validator == 'additionalProperties':
         if schema_id.startswith('specification_v'):
             invalid_config_key = parse_key_from_error_msg(error)
@@ -176,6 +198,7 @@ def _parse_valid_types_from_validator(validator):
     return "{}, or {}".format(
         ", ".join([anglicize_json_type(validator[0])] + validator[1:-1]),
         anglicize_json_type(validator[-1]))
+
 
 def _parse_oneof_validator(error):
     """oneOf has multiple schemas, so we need to reason about which schema, sub
@@ -217,6 +240,7 @@ def _parse_oneof_validator(error):
     valid_types = _parse_valid_types_from_validator(types)
     return (None, "contains an invalid type, it should be {}".format(valid_types))
 
+
 def handle_generic_error(error, path):
     msg_format = None
     error_msg = error.message
@@ -257,6 +281,7 @@ def handle_generic_error(error, path):
 
     return error.message
 
+
 def process_config_schema_errors(error):
     path = list(error.path)
 
@@ -266,6 +291,7 @@ def process_config_schema_errors(error):
             return error_msg
 
     return handle_generic_error(error, path)
+
 
 def handle_errors(errors, format_error_func, filename):
     """jsonschema returns an error tree full of information to explain what has
@@ -281,6 +307,7 @@ def handle_errors(errors, format_error_func, filename):
         "The Kraft file{file_msg} is invalid because:\n{error_msg}".format(
             file_msg=" '{}'".format(filename) if filename else "",
             error_msg=error_msg))
+
 
 def validate_against_config_schema(config_file):
     schema = load_jsonschema(config_file)

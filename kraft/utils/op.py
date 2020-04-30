@@ -28,20 +28,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
 import subprocess
 
 from kraft.logger import logger
 
+
+def merge_dicts(x, y):
+    z = x.copy()
+    z.update(y)
+    return z
+
+
 def execute(cmd="", env={}, dry_run=False):
     if type(cmd) is list:
         cmd = " ".join(cmd)
 
     logger.debug("Running: %s" % cmd)
-    
+
     if not dry_run:
-        cmd = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, env={**os.environ, **env})
+        cmd = subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            env=merge_dicts(os.environ, env)
+        )
 
         for line in cmd.stdout:
             logger.info(line.strip().decode('ascii'))

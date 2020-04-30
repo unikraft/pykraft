@@ -28,18 +28,23 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
-import six 
+import six
 import yaml
 
 import kraft.config.types as types
+
 
 def serialize_config_type(dumper, data):
     representer = dumper.represent_str if six.PY3 else dumper.represent_unicode
     return representer(data.repr())
 
+
 def serialize_dict_type(dumper, data):
     return dumper.represent_dict(data.repr())
+
 
 def serialize_string(dumper, data):
     """ Ensure boolean-like strings are quoted in the output """
@@ -54,14 +59,17 @@ def serialize_string(dumper, data):
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')
     return representer(data)
 
+
 def serialize_string_escape_dollar(dumper, data):
     """ Ensure boolean-like strings are quoted in the output and escape $ characters """
     data = data.replace('$', '$$')
     return serialize_string(dumper, data)
 
+
 yaml.SafeDumper.add_representer(types.ArchitectureConfig, serialize_dict_type)
 yaml.SafeDumper.add_representer(types.PlatformConfig, serialize_dict_type)
 yaml.SafeDumper.add_representer(types.LibraryConfig, serialize_dict_type)
+
 
 def serialize_config(config, escape_dollar=False):
     if escape_dollar:

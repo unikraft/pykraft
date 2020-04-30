@@ -73,7 +73,7 @@ CINCLUDES-y += -I$({{ cookiecutter.library_kname|upper }}_BASE)/include
 {{ cookiecutter.library_kname|upper }}_FLAGS =
 
 # Suppress some warnings to make the build process look neater
-{{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS = 
+{{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS =
 
 {{ cookiecutter.library_kname|upper }}_CFLAGS-y += $({{ cookiecutter.library_kname|upper }}_FLAGS)
 {{ cookiecutter.library_kname|upper }}_CFLAGS-y += $({{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS)
