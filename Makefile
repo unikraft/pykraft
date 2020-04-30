@@ -77,6 +77,7 @@ SED                 ?= sed
 TAR                 ?= tar
 CP                  ?= cp
 CD                  ?= cd
+TOX                 ?= tox
 RELEASE_NOTES       ?=
 READ                ?= read
 NIGHTLY             ?= n
@@ -102,7 +103,7 @@ ifneq ($(DOCKER_RUN),)
 VARS := $(foreach E, $(shell printenv), -e "$(E)")
 .PROXY := docker-proxy-
 sdist pkg-deb changelog test:
-	$(info Running targets via Docker environment...)
+	$(info Running target via Docker environment...)
 	$(Q)$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@;
 	$(Q)exit 0
 endif
@@ -156,6 +157,10 @@ get-version:
 .PHONY: install
 install:
 	$(Q)$(PYTHON) setup.py install
+
+.PHONY: $(.PROXY)test
+$(.PROXY)test:
+	$(Q)$(TOX) -e pre-commit
 
 .PHONY: clean
 clean:
