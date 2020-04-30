@@ -41,7 +41,7 @@ ifneq ($(HASH_COMMIT),HEAD) # Others can't be dirty by definition
 DIRTY               ?= $(shell git update-index -q --refresh && git diff-index --quiet HEAD -- $(KRAFTDIR) || echo "-dirty")
 endif
 endif
-	
+
 APP_NAME            ?= kraft
 PKG_NAME            ?= unikraft-tools
 PKG_ARCH            ?= amd64
@@ -84,8 +84,8 @@ SETUPPY_FLAGS       ?= -d $(DISTDIR)
 ifeq ($(NIGHTLY),y)
 NIGHTLY             := nightly
 else
-NIGHTLY             := 
-endif 
+NIGHTLY             :=
+endif
 
 # If run with DOCKER= or within a container, unset DOCKER_RUN so all commands
 # are not proxied via docker container.
@@ -96,26 +96,26 @@ else ifneq ($(wildcard /.dockerenv),)
 DOCKER_RUN          :=
 endif
 
-.PRE :=
+.PROXY :=
 ifneq ($(DOCKER_RUN),)
 VARS := $(foreach E, $(shell printenv), -e "$(E)")
-.PRE := docker-proxy-
-sdist pkg-deb changelog:
-	$(info Building all targets via Docker environment!)
+.PROXY := docker-proxy-
+sdist pkg-deb changelog test:
+	$(info Running targets via Docker environment...)
 	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@;
 	@exit 0
 endif
 
-.PHONY: $(.PRE)pkg-deb
-$(.PRE)pkg-deb: $(.PRE)sdist $(.PRE)changelog $(.PRE)bump
+.PHONY: $(.PROXY)pkg-deb
+$(.PROXY)pkg-deb: $(.PROXY)sdist $(.PROXY)changelog $(.PROXY)bump
 	$(MKDIR) -p $(DISTDIR)/build
 	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(APP_VERSION).tar.gz
 	$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
 	$(SED) -i -re "1s/..UNRELEASED/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
 	($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
 
-.PHONY: $(.PRE)sdist
-$(.PRE)sdist: bump
+.PHONY: $(.PROXY)sdist
+$(.PROXY)sdist: bump
 	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
 
 .PHONY: bump
@@ -129,13 +129,13 @@ bump-commit:
 	$(GIT) commit -s -m $(COMMIT_MESSAGE)
 	$(GIT) tag -a v$(APP_VERSION) -m $(COMMIT_MESSAGE)
 
-.PHONY: $(.PRE)changelog
-$(.PRE)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(APP_VERSION) released"
-$(.PRE)changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -1 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
+.PHONY: $(.PROXY)changelog
+$(.PROXY)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(APP_VERSION) released"
+$(.PROXY)changelog: PREV_VERSION ?= $(shell git tag | sort -r | head -1 | awk '{split($$0, tags, "\n")} END {print tags[1]}')
 ifeq ($(wildcard $(KRAFTDIR)/package/debian/changelog),)
-$(.PRE)changelog: DCH_FLAGS += --create
+$(.PROXY)changelog: DCH_FLAGS += --create
 endif
-$(.PRE)changelog:
+$(.PROXY)changelog:
 ifeq ($(findstring $(APP_VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
 	$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
 		-v "$(APP_VERSION)" \
@@ -150,7 +150,7 @@ endif
 
 .PHONY: get-version
 get-version:
-	@echo $(APP_VERSION)
+	echo $(APP_VERSION)
 
 .PHONY: install
 install:
@@ -158,7 +158,7 @@ install:
 
 .PHONY: clean
 clean:
-	@$(RM) -Rfv $(DISTDIR)/build/*
+	$(RM) -Rfv $(DISTDIR)/build/*
 
 .PHONY: properclean
 properclean:
