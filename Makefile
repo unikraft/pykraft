@@ -81,6 +81,7 @@ RELEASE_NOTES       ?=
 READ                ?= read
 NIGHTLY             ?= n
 SETUPPY_FLAGS       ?= -d $(DISTDIR)
+Q                   ?= @
 ifeq ($(NIGHTLY),y)
 NIGHTLY             := nightly
 else
@@ -102,32 +103,32 @@ VARS := $(foreach E, $(shell printenv), -e "$(E)")
 .PROXY := docker-proxy-
 sdist pkg-deb changelog test:
 	$(info Running targets via Docker environment...)
-	$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@;
-	@exit 0
+	$(Q)$(call DOCKER_RUN,$(VARS),pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)) $(MAKE) -e $@;
+	$(Q)exit 0
 endif
 
 .PHONY: $(.PROXY)pkg-deb
 $(.PROXY)pkg-deb: $(.PROXY)sdist $(.PROXY)changelog $(.PROXY)bump
-	$(MKDIR) -p $(DISTDIR)/build
-	$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(APP_VERSION).tar.gz
-	$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
-	$(SED) -i -re "1s/..UNRELEASED/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
-	($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
+	$(Q)$(MKDIR) -p $(DISTDIR)/build
+	$(Q)$(TAR) -x -C $(DISTDIR)/build --strip-components=1 --exclude '*.egg-info' -f $(DISTDIR)/$(PKG_NAME)-$(APP_VERSION).tar.gz
+	$(Q)$(CP) -Rfv $(KRAFTDIR)/package/debian $(DISTDIR)/build
+	$(Q)$(SED) -i -re "1s/..UNRELEASED/~$(shell lsb_release -cs)) $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
+	($(Q)$(CD) $(DISTDIR)/build; $(Q)$(DEBUILD) $(DEBUILD_FLAGS))
 
 .PHONY: $(.PROXY)sdist
 $(.PROXY)sdist: bump
-	$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
+	$(Q)$(PYTHON) setup.py $(NIGHTLY) sdist $(SETUPPY_FLAGS)
 
 .PHONY: bump
 bump:
-	$(SED) -i --regexp-extended "s/__version__[ ='0-9a-zA-Z\.\-]+/__version__ = '$(APP_VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
+	$(Q)$(SED) -i --regexp-extended "s/__version__[ ='0-9a-zA-Z\.\-]+/__version__ = '$(APP_VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
 
 .PHONY: bump-commit
 bump-commit: COMMIT_MESSAGE ?= "$(APP_NAME) v$(APP_VERSION) released"
 bump-commit:
-	$(GIT) add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
-	$(GIT) commit -s -m $(COMMIT_MESSAGE)
-	$(GIT) tag -a v$(APP_VERSION) -m $(COMMIT_MESSAGE)
+	$(Q)$(GIT) add $(KRAFTDIR)/kraft/__init__.py $(KRAFTDIR)/Makefile $(KRAFTDIR)/package/debian/changelog
+	$(Q)$(GIT) commit -s -m $(COMMIT_MESSAGE)
+	$(Q)$(GIT) tag -a v$(APP_VERSION) -m $(COMMIT_MESSAGE)
 
 .PHONY: $(.PROXY)changelog
 $(.PROXY)changelog: COMMIT_MESSAGE ?= "$(APP_NAME) v$(APP_VERSION) released"
@@ -137,12 +138,12 @@ $(.PROXY)changelog: DCH_FLAGS += --create
 endif
 $(.PROXY)changelog:
 ifeq ($(findstring $(APP_VERSION),$(shell head -1 $(KRAFTDIR)/package/debian/changelog)),)
-	$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
+	$(Q)$(CD) $(KRAFTDIR)/package && $(DCH) $(DCH_FLAGS) -M \
 		-v "$(APP_VERSION)" \
 		--package $(PKG_NAME) \
 		--distribution UNRELEASED \
 		"$(APP_NAME) v$(APP_VERSION) released"
-	$(GIT) log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
+	$(Q)$(GIT) log --format='%s' $(PREV_VERSION)..HEAD | sort -r | while read line; do \
 		echo "Found change: $$line"; \
 		(cd $(KRAFTDIR)/package && $(DCH) -M -a "$$line"); \
 	done;
@@ -150,18 +151,18 @@ endif
 
 .PHONY: get-version
 get-version:
-	echo $(APP_VERSION)
+	$(Q)echo $(APP_VERSION)
 
 .PHONY: install
 install:
-	$(PYTHON) setup.py install
+	$(Q)$(PYTHON) setup.py install
 
 .PHONY: clean
 clean:
-	$(RM) -Rfv $(DISTDIR)/build/*
+	$(Q)$(RM) -Rfv $(DISTDIR)/build/*
 
 .PHONY: properclean
 properclean:
-	@$(RM) -Rfv $(DISTDIR)/*
+	$(Q)$(RM) -Rfv $(DISTDIR)/*
 
 include $(KRAFTDIR)/package/docker/Makefile
