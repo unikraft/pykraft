@@ -213,9 +213,9 @@ endif
 
 .PHONY: docker-kraft
 ifeq ($(KRAFT_TARGET),kraft-dev)
-docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)
-else
 docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)-dev
+else
+docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)
 endif
 docker-kraft:
 ifneq (,$(findstring help,$(MAKECMDGOALS)))
@@ -261,10 +261,10 @@ endif
 #
 # can be used to directly create a desired environment.
 define kern-plat-arch
-LINUXK_TARGETS += docker-linuxk$1-$3 $2-$3
+LINUXK_TARGETS += docker-linuxk$1-$3
 
 .PHONY: docker-linuxk$1-$3 $2-$3
-docker-linuxk: docker-linuxk$1-$2-$3
+docker-linuxk-all: docker-linuxk$1-$2-$3
 
 docker-linuxk$1-$2-$3: docker-linuxk$1-$3
 docker-$2: docker-linuxk$1-$2-$3
@@ -292,13 +292,12 @@ docker-$2-$3: docker-linuxk$1-$3
 		$2
 endef
 
-.PHONY: linuxk-list
+.PHONY: docker-linuxk-list
 docker-linuxk-list:
-	@echo "Available make targets:\n"
+	@echo "Available make targets:"
 	@for target in $(LINUXK_TARGETS); do \
 		echo " *" $$target ; \
 	done
-
 
 .PHONY: plats
 plats: $(UK_PLATS)
