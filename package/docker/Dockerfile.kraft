@@ -48,6 +48,9 @@ COPY . /usr/src/kraft
 WORKDIR /usr/src/unikraft/apps/app
 ENV UK_WORKDIR /usr/src/unikraft
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 RUN set -xe; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -74,9 +77,6 @@ RUN set -xe; \
 ENTRYPOINT [ "kraft" ]
 
 FROM kraft AS kraft-dev
-
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
 
 WORKDIR /usr/src/kraft
 
