@@ -70,7 +70,7 @@ def validate_top_level_string(config_file, config, section):
                 type(config)))
 
 
-def validate_top_level_string_or_lst(config_file, config, section):
+def validate_top_level_string_or_list(config_file, config, section):
     if not isinstance(config, (six.string_types, list)):
         raise KraftError(
             "Top level object in '{}' needs to be a string or array  not '{}'.".format(
