@@ -19,7 +19,6 @@ repos:
     sha: 'v1.3.4'
     hooks:
       - id: reorder-python-imports
-        language_version: 'python2.7'
         args:
           - --add-import
           - from __future__ import absolute_import
