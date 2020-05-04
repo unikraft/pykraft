@@ -38,14 +38,14 @@ from click.formatting import wrap_text
 from click.termui import _ansi_colors
 from click.termui import _ansi_reset_all
 
-import kraft.utils as utils
+from .op import merge_dicts
 
 CONTEXT_SETTINGS = dict(
     auto_envvar_prefix='UK',
     help_option_names=['-h', '--help'],
 )
 
-UNKNOWN_OPTIONS = utils.merge_dicts(
+UNKNOWN_OPTIONS = merge_dicts(
     {'ignore_unknown_options': True},
     CONTEXT_SETTINGS
 )
