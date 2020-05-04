@@ -50,6 +50,7 @@ UK_ARCH             ?= x86_64
 UK_ARCHS            ?= x86_64 \
                        arm \
                        arm64
+LINUXK_TARGETS      ?=
 
 DEB_DISTS           ?= debian ubuntu
 DEB_DISTS_debian    ?= sid buster stretch
@@ -68,6 +69,7 @@ REPO                ?= https://github.com/unikraft/kraft
 ORG                 ?= unikraft
 TAG                 ?= $(HASH)$(DIRTY)
 APP_VERSION         ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
+KRAFT_TARGET        ?= kraft
 
 _EMPTY              :=
 _SPACE              := $(_EMPTY) $(_EMPTY)
@@ -80,17 +82,24 @@ QEMU_VERSION        ?= 4.2.0
 
 .PHONY: docker-qemu
 ifeq ($(TAG),)
-docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)
+docker-qemu: IMAGE_NAME ?= $(ORG)/qemu:$(QEMU_VERSION)
 else
-docker-qemu: IMAGE ?= $(ORG)/qemu:$(QEMU_VERSION)-$(TAG)
+docker-qemu: IMAGE_NAME ?= $(ORG)/qemu:$(QEMU_VERSION)-$(TAG)
 endif
 docker-qemu:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [IMAGE_NAME=...] $(MAKE) $@                                            "
+	@echo "                                                                              "
+	@echo
+else
 	$(DOCKER) build \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
-		--tag $(IMAGE) \
+		--tag $(IMAGE_NAME) \
 		--cache-from $(ORG)/qemu:$(QEMU_VERSION) \
+		--cache-from $(IMAGE_NAME) \
 		--file $(DOCKERDIR)/Dockerfile.qemu \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
+endif
 
 # GCC build targets
 GCC_VERSION         ?= 9.2.0
@@ -100,70 +109,141 @@ GLIB_VERSION        ?= 2.11
 .PHONY: docker-gcc
 docker-gcc: TARGET ?= gcc
 ifeq ($(TAG),)
-docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)
+docker-gcc: IMAGE_NAME ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)
 else
-docker-gcc: IMAGE ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)-$(TAG)
+docker-gcc: IMAGE_NAME ?= $(ORG)/$(TARGET):$(GCC_VERSION)-$(UK_ARCH)-$(TAG)
 endif
 docker-gcc:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [IMAGE_NAME=...] $(MAKE) $@                                            "
+	@echo "                                                                              "
+	@echo
+else
 	$(DOCKER) build \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
 		--build-arg BINUTILS_VERSION=$(BINUTILS_VERSION) \
 		--build-arg GLIB_VERSION=$(GLIB_VERSION) \
-		--tag $(IMAGE) \
+		--tag $(IMAGE_NAME) \
 		--cache-from $(ORG)/gcc-build:$(GCC_VERSION)-$(UK_ARCH) \
+		--cache-from $(IMAGE_NAME) \
 		--file $(DOCKERDIR)/Dockerfile.gcc \
 		--target=$(TARGET) \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
+endif
 
-.PHONY: docker-pkg-deb-dists
-docker-pkg-deb-dists: $(addprefix docker-pkg-deb-dist-,$(DEB_DISTS))
+.PHONY: docker-pkg-deb-all
+docker-pkg-deb-all:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [APP_VERSION=... PKG_VENDOR=... PKG_DISTRIBUTION=...] $(MAKE) $@       "
+	@echo "                                                                              "
+	@echo "  Build all defined Debian-based packages and output into dists/.             "
+	@echo
+else
+docker-pkg-deb-all: $(addprefix docker-pkg-deb-dist-,$(DEB_DISTS))
+endif
 
 docker-pkg-deb-dist-%: $(addprefix docker-pkg-deb-dist-$*-,$($(addprefix DEB_DISTS_,$*)))
-	$(MAKE) $(addprefix docker-pkg-$*-,$($(addprefix DEB_DISTS_,$*)))
+	$(MAKE) $(addprefix docker-pkg-deb-$*-,$($(addprefix DEB_DISTS_,$*)))
 
-$(addsuffix -%,$(addprefix docker-pkg-,$(DEB_DISTS))):
-	PKG_VENDOR=$(subst -$*,,$(subst docker-pkg-,,$@)) PKG_DISTRIBUTION=$* $(MAKE) docker-pkg-deb
+$(addsuffix -%,$(addprefix docker-pkg-deb-,$(DEB_DISTS))):
+	PKG_VENDOR=$(subst -$*,,$(subst docker-pkg-deb-,,$@)) PKG_DISTRIBUTION=$* $(MAKE) docker-pkg-deb
+
+.PHONY: test-docker-pkg-deb-all
+test-docker-pkg-deb-all:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [APP_VERSION=... PKG_VENDOR=... PKG_DISTRIBUTION=...] $(MAKE) $@       "
+	@echo "                                                                              "
+	@echo "  Test the installation of a Debian-based package within a Docker container.  "
+	@echo
+else
+test-docker-pkg-deb-all: $(addprefix test-docker-pkg-deb-,$(DEB_DISTS))
+endif
+
+test-docker-pkg-deb-%: $(addprefix test-docker-pkg-deb-$*-,$($(addprefix DEB_DISTS_,$*)))
+	$(MAKE) $(addprefix test-docker-pkg-deb-$*-,$($(addprefix DEB_DISTS_,$*)))
+
+$(addsuffix -%,$(addprefix test-docker-pkg-deb-,$(DEB_DISTS))):
+	PKG_VENDOR=$(subst -$*,,$(subst test-docker-pkg-deb-,,$@)) PKG_DISTRIBUTION=$* $(MAKE) test-docker-pkg-deb
 
 .PHONY: docker-pkg-deb
 docker-pkg-deb: PKG_VENDOR ?= debian
 docker-pkg-deb: PKG_DISTRIBUTION ?= stretch-20200224
 ifeq ($(TAG),)
-docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)
+docker-pkg-deb: IMAGE_NAME ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)
 else
-docker-pkg-deb: IMAGE ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)-$(TAG)
+docker-pkg-deb: IMAGE_NAME ?= $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION)-$(TAG)
 endif
 docker-pkg-deb:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [PKG_VENDOR=... PKG_DISTRIBUTION=... IMAGE_NAME=...] $(MAKE) $@        "
+	@echo "                                                                              "
+	@echo
+else
 	$(DOCKER) build \
 		--build-arg PKG_VENDOR=$(PKG_VENDOR) \
 		--build-arg PKG_DISTRIBUTION=$(PKG_DISTRIBUTION) \
-		--tag $(IMAGE) \
+		--tag $(IMAGE_NAME) \
 		--cache-from $(ORG)/pkg-deb:$(PKG_VENDOR)-$(PKG_DISTRIBUTION) \
+		--cache-from $(IMAGE_NAME) \
 		--file $(DOCKERDIR)/Dockerfile.pkg-deb \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
+endif
 
-.PHONY: docker-pkg-deb-test
-docker-pkg-deb-test: APP_VERSION ?= 0.4.0
-docker-pkg-deb-test: PKG_VENDOR ?= debian
-docker-pkg-deb-test: PKG_DISTRIBUTION ?= stretch
-docker-pkg-deb-test:
+.PHONY: docker-pkg-deb
+test-docker-pkg-deb: APP_VERSION ?= 0.4.0
+test-docker-pkg-deb: PKG_VENDOR ?= debian
+test-docker-pkg-deb: PKG_DISTRIBUTION ?= stretch
+test-docker-pkg-deb:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [APP_VERSION=... PKG_VENDOR=... PKG_DISTRIBUTION=...] $(MAKE) $@       "
+	@echo "                                                                              "
+	@echo "  Test the installation of a specified Debian-based package within a Docker   "
+	@echo "  container.                                                                  "
+	@echo
+else
 	$(DOCKER) build \
 		--build-arg APP_VERSION=$(APP_VERSION) \
 		--build-arg PKG_VENDOR=$(PKG_VENDOR) \
 		--build-arg PKG_DISTRIBUTION=$(PKG_DISTRIBUTION) \
 		--file $(DOCKERDIR)/Dockerfile.pkg-deb-test \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
+endif
+
 
 .PHONY: docker-kraft
-docker-kraft: IMAGE ?= $(ORG)/kraft:$(APP_VERSION)
+ifeq ($(KRAFT_TARGET),kraft-dev)
+docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)
+else
+docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)-dev
+endif
 docker-kraft:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [APP_VERSION=... IMAGE_NAME=...] $(MAKE) $@                            "
+	@echo "                                                                              "
+	@echo "  Build the kraft Docker container ultimately known as unikraft/kraft:latest. "
+	@echo "                                                                              "
+	@echo "Additional flags:                                                             "
+	@echo "  UK_ARCH      Set the target runtime architecture for kraft (influences GCC) "
+	@echo "                 (Default: $(UK_ARCH)).                                       "
+	@echo "  GCC_VERSION  Set the version of GCC to bundle with kraft                    "
+	@echo "                 (Default: $(GCC_VERSION)).                                   "
+	@echo "  IMAGE_NAME   Set an alternative Docker image name                           "
+	@echo "                 (Default: $(IMAGE_NAME)).                                    "
+	@echo "  KRAFT_TARGET Set the build target within the Dockerfile {kraft, kraft-dev}  "
+	@echo "                 (Default: $(KRAFT_TARGET)).                                  "
+	@echo
+else
 	$(DOCKER) build \
-		--tag $(IMAGE) \
+		--tag $(IMAGE_NAME) \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
-		--cache-from $(ORG)/kraft:latest \
+		--cache-from $(ORG)/$(APP_NAME):latest \
+		--cache-from $(IMAGE_NAME) \
 		--file $(DOCKERDIR)/Dockerfile.kraft \
+		--target $(KRAFT_TARGET) \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
+endif
 
 # kern-plat-arch populates a target image based on kernel, platform, and
 # architecture in the format:
@@ -181,15 +261,15 @@ docker-kraft:
 #
 # can be used to directly create a desired environment.
 define kern-plat-arch
-TARGETS += linuxk$1-$3 $2-$3
+LINUXK_TARGETS += docker-linuxk$1-$3 $2-$3
 
-.PHONY: linuxk$1-$3 $2-$3
-all: linuxk$1-$2-$3
+.PHONY: docker-linuxk$1-$3 $2-$3
+docker-linuxk: docker-linuxk$1-$2-$3
 
-linuxk$1-$2-$3: linuxk$1-$3
-$2: linuxk$1-$2-$3
+docker-linuxk$1-$2-$3: docker-linuxk$1-$3
+docker-$2: docker-linuxk$1-$2-$3
 
-linuxk$1-$3:
+docker-linuxk$1-$3:
 	$(DOCKER) build \
 		--build-arg LINUXK_VERSION=$1 \
 		--build-arg UK_ARCH=$3 \
@@ -198,7 +278,7 @@ linuxk$1-$3:
 		--file $(DOCKERDIR)/Dockerfile.linuxk \
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 
-$2-$3: linuxk$1-$3
+docker-$2-$3: docker-linuxk$1-$3
 	$(DOCKER) build \
 		--build-arg UK_VER=$(UK_VER) \
 		--build-arg UK_KERN=$1 \
@@ -212,16 +292,13 @@ $2-$3: linuxk$1-$3
 		$2
 endef
 
-.PHONY: list
-list:
+.PHONY: linuxk-list
+docker-linuxk-list:
 	@echo "Available make targets:\n"
-	@for target in $(TARGETS); do \
+	@for target in $(LINUXK_TARGETS); do \
 		echo " *" $$target ; \
 	done
 
-.DEFAULT_GOAL       := all
-.PHONY: all
-all: $(TARGETS)
 
 .PHONY: plats
 plats: $(UK_PLATS)

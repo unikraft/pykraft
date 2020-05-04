@@ -36,7 +36,7 @@ FROM unikraft/gcc:${GCC_VERSION}-${UK_ARCH} AS gcc
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
-FROM python:3.6-slim
+FROM python:3.6-slim AS kraft
 
 COPY --from=gcc /bin/ /bin
 COPY --from=gcc /lib/ /lib
@@ -49,26 +49,38 @@ WORKDIR /usr/src/unikraft/apps/app
 ENV UK_WORKDIR /usr/src/unikraft
 
 RUN set -xe; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		make \
-		libncursesw5-dev \
-		libncursesw5 \
-		libyaml-dev \
-		flex \
-		git \
-		wget \
-		patch \
-		gawk \
-		socat \
-		bison \
-		unzip \
-		uuid-runtime; \
-	rm -Rf /var/cache/apt/*; \
-	mkdir -p /usr/src/unikraft/unikraft; \
-	mkdir -p /usr/src/unikraft/libs; \
-	mkdir -p /usr/src/unikraft/apps/app; \
-	cd /usr/src/kraft; \
-	python setup.py install
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+      make \
+      libncursesw5-dev \
+      libncursesw5 \
+      libyaml-dev \
+      flex \
+      git \
+      wget \
+      patch \
+      gawk \
+      socat \
+      bison \
+      unzip \
+      uuid-runtime; \
+    rm -Rf /var/cache/apt/*; \
+    mkdir -p /usr/src/unikraft/unikraft; \
+    mkdir -p /usr/src/unikraft/libs; \
+    mkdir -p /usr/src/unikraft/apps/app; \
+    cd /usr/src/kraft; \
+    python setup.py install
 
 ENTRYPOINT [ "kraft" ]
+
+FROM kraft AS kraft-dev
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+WORKDIR /usr/src/kraft
+
+RUN set -xe; \
+		pip install -r ./requirements-dev.txt
+
+ENTRYPOINT [ "" ]

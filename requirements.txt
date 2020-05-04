@@ -10,7 +10,6 @@ GitPython >= 3.1.0
 htmllistparse >= 0.5.2
 jsonschema >= 2.5.1, < 4
 kconfiglib >= 13.7.1
-kconfiglib >= 13.7.1
 memorize.py >= 1.2
 PyGithub >= 1.26
 python-dotenv >= 0.10.5, < 1
