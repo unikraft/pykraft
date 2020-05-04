@@ -67,6 +67,8 @@ class Architecture(Repository):
                     'localdir': core.localdir + match[1]
                 }
 
+        assert len(known_archs) > 0, "unknown number of supported architectures"
+
         if arch in known_archs:
             return cls(
                 name=arch,

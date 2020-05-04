@@ -33,6 +33,7 @@ from __future__ import unicode_literals
 
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -134,28 +135,29 @@ class Project(object):
         try:
             core = Core.from_config(ctx, config.unikraft)
             executor_base = Executor.from_config(ctx, config.executor)
-            logger.debug("Discovered %s" % core)
+            logger.debug("Discovered core: %s" % core)
 
             architectures = Architectures([])
             for arch in config.architectures:
                 architecture = Architecture.from_config(ctx, core, arch, config.architectures[arch])
-                logger.debug("Discovered %s" % architecture)
+                logger.debug("Discovered architcture: %s" % architecture)
                 architectures.add(arch,  architecture, config.architectures[arch])
 
             platforms = Platforms([])
             for plat in config.platforms:
                 platform = Platform.from_config(ctx, core, plat, config.platforms[plat], executor_base)
-                logger.debug("Discovered %s" % platform)
+                logger.debug("Discovered platform: %s" % platform)
                 platforms.add(plat, platform, config.platforms[plat])
 
             libraries = Libraries([])
             for lib in config.libraries:
                 library = Library.from_config(ctx, lib, config.libraries[lib])
-                logger.debug("Discovered %s" % library)
+                logger.debug("Discovered library: %s" % library)
                 libraries.add(lib, library, config.libraries[lib])
 
-        except InvalidRepositorySource as e:
+        except (InvalidRepositorySource, AssertionError) as e:
             logger.fatal(e)
+            sys.exit(1)
 
         project = cls(
             name=config.name,
