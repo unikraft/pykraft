@@ -410,10 +410,11 @@ class Repository(object):
                     except GitCommandError as e2:
                         if not ctx.ignore_checkout_errors:
                             logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e2)))
-                            sys.exit(1)
+                            return
+
                 elif not ctx.ignore_checkout_errors:
                     logger.error("Could not checkout %s@%s: %s" % (self.name, version, str(e1)))
-                    sys.exit(1)
+                    return
 
     @property
     def name(self):
