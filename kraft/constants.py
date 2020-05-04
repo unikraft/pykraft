@@ -130,7 +130,9 @@ UK_VERSION_VARNAME = '$(%s_VERSION)'
 CONFIG_UK_ARCH = re.compile(
     r"""
         if\s+\(([\w\_]+)\)[\n\s]+source\s+"\$\(UK_BASE\)(\/arch\/[\w_]+\/(\w+)\/)Config\.uk"
-    """)
+    """,
+    re.VERBOSE
+)
 CONFIG_UK_PLAT = re.compile(r'menuconfig\s+([\w\_]+)')
 CONFIG_UK_LIB = re.compile(r'config\s+([\w\_]+)')
 
