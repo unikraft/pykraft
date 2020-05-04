@@ -227,7 +227,7 @@ $(.PROXY)pkg-deb:
 	$(Q)$(SED) -i \
 		-re "1s/..UNRELEASED/~$(shell lsb_release -cs)) \
 		    $(shell lsb_release -cs)/" $(DISTDIR)/build/debian/changelog
-	($(Q)$(CD) $(DISTDIR)/build; $(Q)$(DEBUILD) $(DEBUILD_FLAGS))
+	$(Q)($(CD) $(DISTDIR)/build; $(DEBUILD) $(DEBUILD_FLAGS))
 endif
 
 
