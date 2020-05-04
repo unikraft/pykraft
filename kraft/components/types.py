@@ -32,7 +32,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import re
-
 from enum import Enum
 
 from kraft.constants import UK_GITHUB_CORE_FORMAT

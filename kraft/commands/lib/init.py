@@ -33,9 +33,9 @@ from __future__ import unicode_literals
 
 import os
 import sys
+from configparser import NoOptionError
 
 import click
-from configparser import NoOptionError
 from git import GitConfigParser
 
 import kraft.utils as utils
@@ -43,9 +43,9 @@ from kraft.components.library import Library
 from kraft.constants import GITCONFIG_GLOBAL
 from kraft.constants import GITCONFIG_LOCAL
 from kraft.constants import URL_VERSION
+from kraft.context import kraft_context
 from kraft.errors import CannotConnectURLError
 from kraft.errors import UnknownSourceProvider
-from kraft.kraft import kraft_context
 from kraft.logger import logger
 
 

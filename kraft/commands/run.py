@@ -39,9 +39,9 @@ import click
 
 from kraft.config import config
 from kraft.constants import UNIKERNEL_IMAGE_FORMAT
+from kraft.context import kraft_context
 from kraft.errors import ExecutorError
 from kraft.errors import KraftError
-from kraft.kraft import kraft_context
 from kraft.logger import logger
 from kraft.project import Project
 

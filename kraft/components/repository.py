@@ -53,10 +53,10 @@ from kraft.constants import KCONFIG_EQ
 from kraft.constants import KCONFIG_Y
 from kraft.constants import UK_CONFIG_FILE
 from kraft.constants import UNIKRAFT_CORE
+from kraft.context import kraft_context
 from kraft.errors import InvalidRepositorySource
 from kraft.errors import NoTypeAndNameRepo
 from kraft.errors import UnknownSourceProvider
-from kraft.kraft import kraft_context
 from kraft.logger import logger
 
 

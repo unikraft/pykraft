@@ -33,9 +33,9 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from pathlib import Path
 
 import click
-from pathlib import Path
 
 from kraft.cache import Cache
 from kraft.constants import KRAFTCONF

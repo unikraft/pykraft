@@ -36,9 +36,9 @@ import platform
 import subprocess
 import tarfile
 import tempfile
+from enum import Enum
 
 import six
-from enum import Enum
 
 import kraft.utils as utils
 from kraft.components.network import Networks

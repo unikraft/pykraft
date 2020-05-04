@@ -32,10 +32,10 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+from pathlib import Path
 
 import dpath.util
 import toml
-from pathlib import Path
 
 from kraft.logger import logger
 

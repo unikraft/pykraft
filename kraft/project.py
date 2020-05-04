@@ -34,9 +34,9 @@ from __future__ import unicode_literals
 import os
 import subprocess
 import tempfile
+from pathlib import Path
 
 import dpath.util as dpath_util
-from pathlib import Path
 
 import kraft.utils as utils
 from kraft.components.architecture import Architecture
@@ -56,11 +56,11 @@ from kraft.constants import KRAFTCONF_CONFIGURE_PLATFORM
 from kraft.constants import MAKEFILE_UK
 from kraft.constants import SUPPORTED_FILENAMES
 from kraft.constants import UNIKRAFT_CORE
+from kraft.context import kraft_context
 from kraft.errors import InvalidRepositorySource
 from kraft.errors import KraftFileNotFound
 from kraft.errors import MismatchTargetArchitecture
 from kraft.errors import MismatchTargetPlatform
-from kraft.kraft import kraft_context
 from kraft.logger import logger
 
 

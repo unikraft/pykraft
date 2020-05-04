@@ -32,10 +32,10 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import subprocess
+from enum import Enum
 from shutil import which
 
 import six
-from enum import Enum
 
 import kraft.utils as utils
 from kraft.errors import InvalidBridgeName
