@@ -188,7 +188,7 @@ class Repository(object):
         elif self.type == RepositoryType.PLAT and self.source == UNIKRAFT_CORE:
             return
 
-        # self._set_cache(source, self)
+        self.__set_cache(source, self)
 
     @classmethod
     @kraft_context
@@ -214,6 +214,11 @@ class Repository(object):
         source = None
 
         if 'repository_type' not in kwargs:
+            return super(Repository, cls).__new__(cls)
+        elif kwargs['repository_type'] == RepositoryType.ARCH:
+            return super(Repository, cls).__new__(cls)
+        elif kwargs['repository_type'] == RepositoryType.PLAT \
+                and kwargs['source'] == UNIKRAFT_CORE:
             return super(Repository, cls).__new__(cls)
 
         existing = None
@@ -359,8 +364,10 @@ class Repository(object):
             version = self.version
 
         if self.type == RepositoryType.ARCH:
+            logger.debug('Cannot checkout: %s' % self.longname)
             return
         elif self.type == RepositoryType.PLAT and self.source == UNIKRAFT_CORE:
+            logger.debug('Cannot checkout: %s' % self.longname)
             return
         elif version is not None:
             try:
