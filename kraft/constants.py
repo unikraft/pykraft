@@ -147,8 +147,8 @@ KRAFT_SPEC_LATEST = KRAFT_SPEC_V04
 UK_DBG_EXT = '.dbg'
 TMPL_EXT = '.tmpl'
 
-PROJECT_CONFIG = 'cookiecutter.json'
-PROJECT_MANIFEST = 'manifest.yaml'
+TEMPLATE_CONFIG = 'cookiecutter.json'
+TEMPLATE_MANIFEST = 'manifest.yaml'
 
 QEMU_GUEST = 'qemu-guest'
 XEN_GUEST = 'xen-guest'

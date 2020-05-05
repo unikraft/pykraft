@@ -46,8 +46,8 @@ from kraft.components.provider import determine_provider
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
 from kraft.components.types import RepositoryType
-from kraft.constants import PROJECT_CONFIG
-from kraft.constants import PROJECT_MANIFEST
+from kraft.constants import TEMPLATE_CONFIG
+from kraft.constants import TEMPLATE_MANIFEST
 from kraft.constants import UK_VERSION_VARNAME
 from kraft.errors import CannotConnectURLError
 from kraft.errors import UnknownSourceProvider
@@ -66,28 +66,28 @@ def get_templates_path():
 def get_template_config():
     return os.path.join(
         get_templates_path(),
-        PROJECT_CONFIG
+        TEMPLATE_CONFIG
     )
 
 
-def delete_resources_for_disabled_features(project_dir=None):
-    if project_dir is None:
+def delete_resources_for_disabled_features(templatedir=None):
+    if templatedir is None:
         return
 
-    project_manifest = os.path.join(project_dir, PROJECT_MANIFEST)
+    template_manifest = os.path.join(templatedir, TEMPLATE_MANIFEST)
 
-    if os.path.exists(project_manifest) is False:
+    if os.path.exists(template_manifest) is False:
         return
 
-    with open(project_manifest) as manifest_file:
+    with open(template_manifest) as manifest_file:
         manifest = yaml.load(manifest_file, Loader=yaml.FullLoader)
 
         for feature in manifest['features']:
             if not feature['enabled']:
                 for resource in feature['resources']:
-                    delete_resource(os.path.join(project_dir, resource))
+                    delete_resource(os.path.join(templatedir, resource))
 
-    delete_resource(project_manifest)
+    delete_resource(template_manifest)
 
 
 class Library(Repository):
