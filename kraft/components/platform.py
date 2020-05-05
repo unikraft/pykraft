@@ -52,7 +52,13 @@ class Platform(Repository):
         self._executor = executor
 
     @classmethod
-    def from_config(cls, ctx, core=None, plat=None, config=None, executor_base=None):
+    def from_config(cls,
+                    ctx,
+                    core=None,
+                    plat=None,
+                    config=None,
+                    executor_base=None,
+                    save_cache=True):
         assert ctx is not None, "ctx is undefined"
 
         if not core.is_downloaded:
@@ -84,7 +90,8 @@ class Platform(Repository):
                     source=core.source,
                     version=core.version,
                     localdir=os.path.join(UK_CORE_PLAT_DIR % core.localdir, plat),
-                    repository_type=RepositoryType.PLAT
+                    repository_type=RepositoryType.PLAT,
+                    save_cache=save_cache,
                 )
 
         # Determine executor driver
@@ -101,11 +108,12 @@ class Platform(Repository):
         return platform
 
     @classmethod
-    def from_source_string(cls, name, source=None):
+    def from_source_string(cls, name, source=None, save_cache=True):
         return super(Platform, cls).from_source_string(
             name=name,
             source=source,
-            repository_type=RepositoryType.PLAT
+            repository_type=RepositoryType.PLAT,
+            save_cache=save_cache,
         )
 
 

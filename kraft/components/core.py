@@ -37,7 +37,7 @@ from kraft.components.types import RepositoryType
 
 class Core(Repository):
     @classmethod
-    def from_config(cls, ctx, config=None):
+    def from_config(cls, ctx, config=None, save_cache=True):
         assert ctx is not None, "ctx is undefined"
 
         source = None
@@ -53,16 +53,18 @@ class Core(Repository):
             name=None,
             source=source,
             version=version,
-            repository_type=RepositoryType.CORE
+            repository_type=RepositoryType.CORE,
+            save_cache=save_cache,
         )
 
     @classmethod
-    def from_source_string(cls, source=None, version=None):
+    def from_source_string(cls, source=None, version=None, save_cache=True):
         return super(Core, cls).from_source_string(
             name=None,
             source=source,
             version=version,
-            repository_type=RepositoryType.CORE
+            repository_type=RepositoryType.CORE,
+            save_cache=save_cache,
         )
 
     # One day we will need this

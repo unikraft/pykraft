@@ -45,7 +45,12 @@ from kraft.constants import UK_CORE_ARCH_DIR
 
 class Architecture(Repository):
     @classmethod
-    def from_config(cls, ctx, core=None, arch=None, config=None):
+    def from_config(cls,
+                    ctx,
+                    core=None,
+                    arch=None,
+                    config=None,
+                    save_cache=True):
         assert ctx is not None, "ctx is undefined"
 
         arch_dir = os.path.join((UK_CORE_ARCH_DIR % core.localdir), CONFIG_UK)
@@ -76,17 +81,19 @@ class Architecture(Repository):
                 version=core.version,
                 localdir=known_archs[arch]['localdir'],
                 repository_type=RepositoryType.ARCH,
-                kconfig_extra=known_archs[arch]['kconfig']
+                kconfig_extra=known_archs[arch]['kconfig'],
+                save_cache=save_cache,
             )
 
         return None
 
     @classmethod
-    def from_source_string(cls, name, source=None):
+    def from_source_string(cls, name, source=None, save_cache=True):
         return super(Architecture, cls).from_source_string(
             name=name,
             source=source,
-            repository_type=RepositoryType.ARCH
+            repository_type=RepositoryType.ARCH,
+            save_cache=save_cache,
         )
 
 

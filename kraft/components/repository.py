@@ -106,7 +106,8 @@ class Repository(object):
                  repository_type=None,
                  force_update=False,
                  download=False,
-                 kconfig_extra={}):
+                 kconfig_extra={},
+                 save_cache=True):
         """
         Determine whether the provided URL is a Git repository and then
         remotely retrieve the contents of said repository based on your
@@ -188,7 +189,8 @@ class Repository(object):
         elif self.type == RepositoryType.PLAT and self.source == UNIKRAFT_CORE:
             return
 
-        self.__set_cache(source, self)
+        if save_cache:
+            self.__set_cache(source, self)
 
     @classmethod
     @kraft_context
@@ -237,13 +239,15 @@ class Repository(object):
                            source=None,
                            version=None,
                            repository_type=None,
-                           force_update=False):
+                           force_update=False,
+                           save_cache=True):
         return cls(
             name=name,
             source=source,
             version=version,
             repository_type=repository_type,
             force_update=force_update,
+            save_cache=save_cache,
         )
 
     def passively_determine_type_and_name(self, name):
@@ -637,6 +641,10 @@ class RepositoryConfig(object):
     @property
     def config(self):
         return self._config
+
+    @classmethod
+    def check_integrity(cls, path=None):
+        return True
 
 
 class RepositoryManager(object):

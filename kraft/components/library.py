@@ -95,7 +95,7 @@ class Library(Repository):
     _template_values = {}
 
     @classmethod
-    def from_config(cls, ctx, name, config=None):
+    def from_config(cls, ctx, name, config=None, save_cache=True):
         assert ctx is not None, "ctx is undefined"
 
         source = None
@@ -111,15 +111,17 @@ class Library(Repository):
             name=name,
             source=source,
             version=version,
-            repository_type=RepositoryType.LIB
+            repository_type=RepositoryType.LIB,
+            save_cache=save_cache,
         )
 
     @classmethod
-    def from_source_string(cls, name, source):
+    def from_source_string(cls, name, source, save_cache=True):
         return super(Library, cls).from_source_string(
             name=name,
             source=source,
-            repository_type=RepositoryType.LIB
+            repository_type=RepositoryType.LIB,
+            save_cache=save_cache,
         )
 
     @classmethod
@@ -127,9 +129,8 @@ class Library(Repository):
                     name=None,
                     origin=None,
                     source=None,
-                    version=None):
-        """"""
-
+                    version=None,
+                    save_cache=False):
         try:
             logger.debug("Pinging %s..." % origin)
             urllib.request.urlopen(origin).getcode()
@@ -153,6 +154,7 @@ class Library(Repository):
             repository_type=RepositoryType.LIB,
             provider=provider,
             version=version,
+            save_cache=save_cache,
         )
 
         library.origin = origin
