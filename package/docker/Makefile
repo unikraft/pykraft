@@ -54,7 +54,7 @@ LINUXK_TARGETS      ?=
 
 DEB_DISTS           ?= debian ubuntu
 DEB_DISTS_debian    ?= sid buster stretch
-DEB_DISTS_ubuntu    ?= bionic xenial trusty
+DEB_DISTS_ubuntu    ?= focal bionic xenial trusty
 
 ifeq ($(HASH),)
 HASH_COMMIT         ?= HEAD # Setting this is only really useful with the show-tag target
