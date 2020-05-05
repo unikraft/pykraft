@@ -34,7 +34,6 @@ DOCKERDIR            ?= $(KRAFTDIR)/docker
 DISTDIR              ?= $(KRAFTDIR)/dist
 
 ifeq ($(HASH),)
-# Setting this is only really useful with the show-tag target
 HASH_COMMIT          ?= HEAD
 HASH                 ?= $(shell git update-index -q --refresh && \
                                 git describe --tags)
@@ -189,8 +188,8 @@ else
 test test-unit test-coverage test-lint:
 endif
 	$(Q)pre-commit install -f
-	$(info Running target via Docker ($(ORG)/$(APP_NAME):$(APP_VERSION)-dev)...)
-	$(Q)$(call DOCKER_RUN,$(VARS),kraft:$(APP_VERSION)-dev) $(MAKE) -e $@;
+	$(info Running target via Docker ($(ORG)/$(APP_NAME):latest-dev)...)
+	$(Q)$(call DOCKER_RUN,$(VARS),kraft:latest-dev) $(MAKE) -e $@;
 	$(Q)exit 0
 endif
 

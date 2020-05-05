@@ -243,6 +243,9 @@ else
 		--file $(DOCKERDIR)/Dockerfile.kraft \
 		--target $(KRAFT_TARGET) \
 		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
+ifeq ($(KRAFT_TARGET),kraft-dev)
+	$(DOCKER) tag $(IMAGE_NAME) $(ORG)/$(APP_NAME):latest-dev
+endif
 endif
 
 # kern-plat-arch populates a target image based on kernel, platform, and
