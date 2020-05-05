@@ -250,15 +250,19 @@ class Repository(object):
             save_cache=save_cache,
         )
 
-    def passively_determine_type_and_name(self, name):
+    def passively_determine_type_and_name(self, source=None):
         """
         Determine the name and type of the repository by checking the name of
         the repository against a well-known "type-name" syntax.  We can pass a
         name into this method, whether it's a URL, a directory or a name.
         """
+        if source is None:
+            return None, None
+
+        basename = os.path.basename(source)
 
         for repository_type, member in RepositoryType.__members__.items():
-            ref = member.search(name)
+            ref = member.search(basename)
 
             if ref is not None:
                 return member, ref.group(2)
