@@ -36,7 +36,6 @@ from enum import Enum
 
 from kraft.constants import UK_GITHUB_CORE_FORMAT
 from kraft.constants import UK_GITHUB_NAMING_FORMAT
-from kraft.logger import logger
 
 
 class RepositoryType(Enum):
@@ -66,37 +65,9 @@ class RepositoryType(Enum):
         return self.value[2]
 
     def search(self, name):
-        """Search determines whether the provided input `name` is of the
+        """
+        Search determines whether the provided input `name` is of the
         repository naming format.  The method returns the usable name for the
-        repository and thus the repository."""
+        repository and thus the repository.
+        """
         return self.format.search(name)
-
-    def valid_dir(self, dir):
-        """Make a reasonable attempt to determine whether the provided directory
-        is valid for this repository.  This is a heuristic which checks a number
-        of required files depending on the repository type.  Unikraft itself
-        requires the files checked and the syntax of these files to be correct
-        before it can use the repository.  By checking the validity of the
-        directory for the repository we are to preemptively warn a developer of
-        of any problems that may arise before the unikraft build system throws
-        its own errors."""
-
-        if self.shortname == "core":
-            logger.warn("Testing the validity of unikraft core is not yet implemented!")
-            return True
-
-        elif self.shortname == "arch":
-            logger.warn("Testing the validity of unikraft architecture is not yet implemented!")
-            return True
-
-        elif self.shortname == "plat":
-            logger.warn("Testing the validity of unikraft platform is not yet implemented!")
-            return True
-
-        elif self.shortname == "lib":
-            logger.warn("Testing the validity of unikraft library is not yet implemented!")
-            return True
-
-        elif self.shortname == "app":
-            logger.warn("Testing the validity of unikraft application is not yet implemented!")
-            return True
