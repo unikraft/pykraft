@@ -97,6 +97,7 @@ UNIKERNEL_IMAGE_FORMAT_DGB = "%s/build/%s_%s-%s.dbg"
 DOT_CONFIG = ".config"
 DEFCONFIG = "defconfig"
 MAKEFILE_UK = "Makefile.uk"
+CONFIG_UK = "Config.uk"
 ENV_VAR_PATTERN = re.compile(r'([A-Z_^=]+)=(\'[/\w\.\-\s]+\')')
 
 UNIKRAFT_WORKDIR = ".unikraft"
@@ -122,7 +123,6 @@ KCONFIG_ARCH_NAME = "CONFIG_ARCH_%s"
 KCONFIG_PLAT_NAME = "CONFIG_PLAT_%s"
 KCONFIG_LIB_NAME = "CONFIG_LIB%s"
 
-UK_CONFIG_FILE = '%s/Config.uk'
 UK_CORE_ARCH_DIR = '%s/arch'
 UK_CORE_PLAT_DIR = '%s/plat'
 UK_VERSION_VARNAME = '$(%s_VERSION)'

@@ -48,10 +48,10 @@ from kraft.components.provider import determine_provider
 from kraft.components.types import RepositoryType
 from kraft.constants import BRANCH_MASTER
 from kraft.constants import BRANCH_STAGING
+from kraft.constants import CONFIG_UK
 from kraft.constants import KCONFIG
 from kraft.constants import KCONFIG_EQ
 from kraft.constants import KCONFIG_Y
-from kraft.constants import UK_CONFIG_FILE
 from kraft.constants import UNIKRAFT_CORE
 from kraft.context import kraft_context
 from kraft.errors import InvalidRepositorySource
@@ -568,7 +568,7 @@ class Repository(object):
 
     def intrusively_determine_kconfig(self):
         kconfig = None
-        config_uk = UK_CONFIG_FILE % self.localdir
+        config_uk = os.path.join(self.localdir, CONFIG_UK)
 
         if os.path.exists(config_uk):
             logger.debug("Reading: %s..." % config_uk)

@@ -36,10 +36,10 @@ import os
 from kraft.components.repository import Repository
 from kraft.components.repository import RepositoryManager
 from kraft.components.types import RepositoryType
+from kraft.constants import CONFIG_UK
 from kraft.constants import CONFIG_UK_ARCH
 from kraft.constants import KCONFIG
 from kraft.constants import KCONFIG_Y
-from kraft.constants import UK_CONFIG_FILE
 from kraft.constants import UK_CORE_ARCH_DIR
 
 
@@ -48,7 +48,7 @@ class Architecture(Repository):
     def from_config(cls, ctx, core=None, arch=None, config=None):
         assert ctx is not None, "ctx is undefined"
 
-        arch_dir = UK_CONFIG_FILE % (UK_CORE_ARCH_DIR % core.localdir)
+        arch_dir = os.path.join((UK_CORE_ARCH_DIR % core.localdir), CONFIG_UK)
 
         if not os.path.isfile(arch_dir):
             core.checkout()
