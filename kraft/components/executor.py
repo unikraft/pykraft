@@ -381,7 +381,7 @@ class KVMExecutor(Executor):
         self._cmd.extend(('-k', self.unikernel))
 
         if background:
-            self._cmd.append('-X')
+            self._cmd.append('-x')
         if paused:
             self._cmd.append('-P')
         if dry_run:
