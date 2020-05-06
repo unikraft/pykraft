@@ -46,9 +46,10 @@ from kraft.utils.cli import CONTEXT_SETTINGS
 from kraft.utils.cli import KraftHelpGroup
 
 
-@click.option('--verbose',                    '-v', 'verbose',                help='Enables verbose mode.', is_flag=True) # noqa: E501,E261
-@click.option('--no-checkout',                '-X', 'dont_checkout',          help='Toggle checking-out repositories before any action.', is_flag=True) # noqa: E501,E261
-@click.option('--ignore-git-checkout-errors', '-C', 'ignore_checkout_errors', help='Ignore checkout errors.', is_flag=True) # noqa: E501,E261
+@click.option('--verbose',                    '-v', 'verbose',                help='Enables verbose mode.', is_flag=True)  # noqa: E501,E261
+@click.option('--no-checkout',                '-X', 'dont_checkout',          help='Toggle checking-out repositories before any action.', is_flag=True)  # noqa: E501,E261
+@click.option('--ignore-git-checkout-errors', '-C', 'ignore_checkout_errors', help='Ignore checkout errors.', is_flag=True)  # noqa: E501,E261
+@click.option('--assume-yes',                 '-Y', 'assume_yes',             help='Assume yes to any binary prompts.', is_flag=True)  # noqa: E501,E261
 @click.group(cls=KraftHelpGroup, context_settings=CONTEXT_SETTINGS, epilog="""
 Influential Environmental Variables:
   env::UK_WORKDIR The working directory for all Unikraft
@@ -68,10 +69,11 @@ Help:
 """)
 @click.version_option()
 @kraft_context
-def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors):
+def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors, assume_yes):
     ctx.verbose = verbose
     ctx.dont_checkout = dont_checkout
     ctx.ignore_checkout_errors = ignore_checkout_errors
+    ctx.assume_yes = assume_yes
     ctx.cache.sync()
 
 

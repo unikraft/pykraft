@@ -52,6 +52,7 @@ class Context(click.Context):
     _verbose = False
     _dont_checkout = False
     _timestamps = True
+    _assume_yes = False
     ignore_checkout_errors = False
 
     """Context manager acts as a decorator and helps initialize and persist and
@@ -141,6 +142,14 @@ class Context(click.Context):
         # Re-initialize an environment from a new given workding directory
         self._env = Environment.from_env_file(workdir, None)
         self._workdir = workdir
+
+    @property
+    def assume_yes(self):
+        return self._assume_yes
+
+    @assume_yes.setter
+    def assume_yes(self, assume_yes=False):
+        self._assume_yes = assume_yes
 
     @property
     def env(self):
