@@ -74,7 +74,11 @@ class Platform(Repository):
                 executor_config = config['run']
 
             if 'source' in config:
-                platform = super(Platform, cls).from_source_string(config['source'], RepositoryType.PLAT)
+                platform = super(Platform, cls).from_unikraft_origin(
+                    source=config['source'],
+                    repository_type=RepositoryType.PLAT,
+                    save_cache=save_cache,
+                )
 
         if platform is None:
             # Check if we have a cache hit for this platform name.   We do this
@@ -108,8 +112,8 @@ class Platform(Repository):
         return platform
 
     @classmethod
-    def from_source_string(cls, name, source=None, save_cache=True):
-        return super(Platform, cls).from_source_string(
+    def from_unikraft_origin(cls, name, source=None, save_cache=True):
+        return super(Platform, cls).from_unikraft_origin(
             name=name,
             source=source,
             repository_type=RepositoryType.PLAT,

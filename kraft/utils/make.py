@@ -31,45 +31,61 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from kraft.components.repository import Repository
-from kraft.components.types import RepositoryType
+import re
+import subprocess
 
 
-class Core(Repository):
-    @classmethod
-    def from_config(cls, ctx, config=None, save_cache=True):
-        assert ctx is not None, "ctx is undefined"
+def make_list_vars(Makefile=None, origin=None):
+    """
+    Generate the (key, value) dict of all variables defined in make process.
 
-        source = None
-        version = None
+    Args:
+        Makefile:  The location of the Makefile to expand.
+        origin:  The means of selecting where the variable is derived from.
+            Choose from: 'automatic', 'environment', 'default', 'override',
+            'makefile'.  Setting to None returns all origins.
 
-        if 'source' in config:
-            source = config['source']
+    Returns:
+        A dict mapping keys to the corresponding variable.
+    """
 
-        if 'version' in config:
-            version = config['version']
+    p = subprocess.getoutput("make -pnB -f %s" % Makefile)
 
-        return super(Core, cls).from_unikraft_origin(
-            name=None,
-            source=source,
-            version=version,
-            repository_type=RepositoryType.CORE,
-            save_cache=save_cache,
-        )
+    M = {}
+    re_var = re.compile(r"^#\s*Variables\b")  # start of variable segment
+    re_varend = re.compile(r"^#\s*variable")  # end of variables
+    state = None  # state of parser
+    mname = None
 
-    @classmethod
-    def from_unikraft_origin(cls, source=None, version=None, save_cache=True):
-        return super(Core, cls).from_unikraft_origin(
-            name=None,
-            source=source,
-            version=version,
-            repository_type=RepositoryType.CORE,
-            save_cache=save_cache,
-        )
+    for line in p.splitlines():
+        if state is None and re_var.search(line):
+            state = 'var'
 
-    # One day we will need this
-    # e.g.
-    #    if core.compatible(UK_COMPAT_CORE_v0_4_0):
-    #
-    def compatible(self, version):
-        return True
+        elif state == 'var':
+            line = line.strip()
+
+            if re_varend.search(line):  # last line of variable block
+                state = 'end'
+                break
+
+            if line.startswith("#"):  # type of variable
+                q = line.split()
+                mname = q[1]
+
+            elif mname is not None:
+                if origin is not None and mname not in origin:
+                    continue
+
+                if mname not in M:
+                    M[mname] = {}
+
+                q = line.split(maxsplit=2)  # key =|:= value
+
+                if len(q) == 2:
+                    M[mname][q[0]] = ''
+                else:
+                    M[mname][q[0]] = q[2]
+
+                mname = None
+
+    return M

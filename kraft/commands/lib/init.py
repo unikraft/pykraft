@@ -126,7 +126,7 @@ def init(ctx,
         origin = click.prompt("source (Use %s for automatic versioning)" % URL_VERSION)
 
     try:
-        library = Library.from_origin(
+        library = Library.from_source_origin(
             name=name,
             origin=origin,
             source=libdir,

@@ -37,6 +37,7 @@ from kraft.commands import build
 from kraft.commands import clean
 from kraft.commands import configure
 from kraft.commands import init
+from kraft.commands import libbump
 from kraft.commands import libinit
 from kraft.commands import list
 from kraft.commands import run
@@ -80,19 +81,15 @@ def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors, assume_yes):
 @click.group(name='lib', short_help='Unikraft library commands.')
 @kraft_context
 def lib(ctx):
-    """Unikraft library sub-commands useful for maintaing and working
-    directly with Unikraft libraries."""
-    pass
-
-
-@click.group(name='measure', short_help='Unikraft measurement commands.')
-@kraft_context
-def measure(ctx):
-    """Unikraft measurement commands are ..."""
+    """
+    Unikraft library sub-commands are useful for maintaining and working
+    directly with Unikraft libraries.
+    """
     pass
 
 
 lib.add_command(libinit)
+lib.add_command(libbump)
 
 kraft.add_command(up)
 kraft.add_command(run)

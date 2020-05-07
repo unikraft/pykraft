@@ -36,6 +36,7 @@ from .build import build
 from .clean import clean
 from .configure import configure
 from .init import init
+from .lib.bump import bump as libbump
 from .lib.init import init as libinit
 from .list import list
 from .run import run

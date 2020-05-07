@@ -88,8 +88,8 @@ class Architecture(Repository):
         return None
 
     @classmethod
-    def from_source_string(cls, name, source=None, save_cache=True):
-        return super(Architecture, cls).from_source_string(
+    def from_unikraft_origin(cls, name, source=None, save_cache=True):
+        return super(Architecture, cls).from_unikraft_origin(
             name=name,
             source=source,
             repository_type=RepositoryType.ARCH,

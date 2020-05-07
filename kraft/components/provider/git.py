@@ -40,11 +40,20 @@ from kraft.constants import GIT_BRANCH_PATTERN
 from kraft.constants import GIT_TAG_PATTERN
 from kraft.constants import GIT_UNIKRAFT_TAG_PATTERN
 from kraft.constants import UNIKRAFT_ORIGIN
+from kraft.constants import VSEMVER_PATTERN
 from kraft.logger import logger
 
 
-def git_probe_remote_versions(source=None):
-    """List references in a remote repository"""
+def git_probe_remote_versions(source=None):  # noqa: C901
+    """
+    List references in a remote repository.
+
+    Args:
+        source:  The remote repository to probe.
+
+    Returns:
+        Dictionary of versions and their git shas.
+    """
 
     versions = {}
 
@@ -76,7 +85,11 @@ def git_probe_remote_versions(source=None):
         ref = GIT_BRANCH_PATTERN.search(hash_ref_list[1])
 
         if ref:
-            versions[ref.group(1)] = hash_ref_list[0]
+            ver = ref.group(1)
+            if VSEMVER_PATTERN.search(ver):
+                ver = ver[1:]
+
+            versions[ver] = hash_ref_list[0]
             continue
 
         # Check if version tag
@@ -87,7 +100,11 @@ def git_probe_remote_versions(source=None):
             ref = GIT_TAG_PATTERN.search(hash_ref_list[1])
 
         if ref:
-            versions[ref.group(1)] = hash_ref_list[0]
+            ver = ref.group(1)
+            if VSEMVER_PATTERN.search(ver):
+                ver = ver[1:]
+
+            versions[ver] = hash_ref_list[0]
 
     return versions
 

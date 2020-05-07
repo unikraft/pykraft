@@ -31,10 +31,22 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from git.cmd import Git as GitCmd
-
+from .git import git_probe_remote_versions
 from .git import GitProvider
+from kraft.constants import GITHUB_ORIGIN
 from kraft.constants import REPO_VALID_URL_PREFIXES
+from kraft.constants import TARBALL_SUPPORTED_EXTENSIONS
+# from git.cmd import Git as GitCmd
+
+
+def github_org_name(source=None):
+    for prefix in REPO_VALID_URL_PREFIXES:
+        if source.startswith(prefix):
+            source = source[len(prefix):]
+
+    github_parts = source.split('/')
+
+    return github_parts[1], github_parts[2]
 
 
 class GitHubProvider(GitProvider):
@@ -45,13 +57,21 @@ class GitHubProvider(GitProvider):
             return False
 
         if 'github.com' in origin:
-            try:
-                GitCmd().ls_remote(origin)
-                return True
-            except Exception:
-                pass
+            return True
 
         return False
+
+    def probe_remote_versions(self, source=None):
+        if source is None:
+            source = self.source
+
+        # Convert a archive URL to a git URL
+        if source.endswith(tuple(TARBALL_SUPPORTED_EXTENSIONS)):
+            org, repo = github_org_name(source)
+
+            self.source = source = "%s/%s/%s.git" % (GITHUB_ORIGIN, org, repo)
+
+        return git_probe_remote_versions(source)
 
     def version_source_archive(self, varname=None):
         if varname is None:
@@ -59,15 +79,7 @@ class GitHubProvider(GitProvider):
 
         source = self.source
 
-        # Remove any url prefix that has "//"
-        for prefix in REPO_VALID_URL_PREFIXES:
-            if source.startswith(prefix):
-                source = source[len(prefix):]
-
-        github_parts = source.split('/')
-
-        org = github_parts[1]
-        repo = github_parts[2]
+        org, repo = github_org_name(source)
 
         if repo.endswith('.git'):
             repo = repo[:-4]

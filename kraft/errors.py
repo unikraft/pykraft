@@ -230,3 +230,39 @@ class CannotConnectURLError(KraftError):
         super(CannotConnectURLError, self).__init__(
             "Cannot connect to remote: %s: %s" % (url, msg)
         )
+
+
+class NonCompatibleUnikraftLibrary(KraftError):
+    def __init__(self, path):
+        super(NonCompatibleUnikraftLibrary, self).__init__(
+            "Not a Unikraft library at: %s" % path
+        )
+
+
+class UnknownLibraryOriginVersion(KraftError):
+    def __init__(self, desired_version, known_versions):
+        super(UnknownLibraryOriginVersion, self).__init__(
+            "Provided version '%s' not known in: {%s}" % (desired_version, ', '.join(known_versions))
+        )
+
+
+class BumpLibraryDowngrade(KraftError):
+    def __init__(self, current_version, desired_version):
+        super(BumpLibraryDowngrade, self).__init__(
+            "Attempting to downgrade library from %s to %s!  Use -f to override."
+            % (current_version, desired_version)
+        )
+
+
+class NoRemoteVersionsAvailable(KraftError):
+    def __init__(self, origin):
+        super(NoRemoteVersionsAvailable, self).__init__(
+            "Unable to retrieve remote versions for: %s" % origin
+        )
+
+
+class CannotDetermineRemoteVersion(KraftError):
+    def __init__(self, origin):
+        super(NoRemoteVersionsAvailable, self).__init__(
+            "Unable to determine latest version: %s" % origin
+        )

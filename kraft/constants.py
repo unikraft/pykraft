@@ -45,6 +45,7 @@ UK_GITHUB_ORG = 'unikraft'
 GIT_UNIKRAFT_TAG_PATTERN = re.compile(r'refs/tags/RELEASE-([\d\.]+)\^\{\}')
 GIT_TAG_PATTERN = re.compile(r'refs/tags/([\w\d\.-]+)[\^\{\}]?')
 GIT_BRANCH_PATTERN = re.compile(r'refs/heads/(.*)')
+VSEMVER_PATTERN = re.compile(r'^v\d')
 SEMVER_PATTERN = re.compile(
     r"""
         (?P<major>0|[1-9]\d*)
@@ -88,8 +89,18 @@ SUPPORTED_FILENAMES = [
 TARBALL_SUPPORTED_EXTENSIONS = [
     '.zip',
     '.tar.gz',
+    '.tar.xz',
     '.tar',
 ]
+
+SOURCEFORGE_PROJECT_NAME = re.compile(
+    r"""
+        sourceforge\.net\/projects\/([\w\d\-_]+)\/
+    """,
+    re.VERBOSE
+)
+SOURCEFORGE_PROJECT_FEED = "https://sourceforge.net/projects/%s/rss"
+SOURCEFORGE_DOWNLOAD = '/download'
 
 UNIKERNEL_IMAGE_FORMAT = "%s/build/%s_%s-%s"
 UNIKERNEL_IMAGE_FORMAT_DGB = "%s/build/%s_%s-%s.dbg"
@@ -104,6 +115,15 @@ UNIKRAFT_WORKDIR = ".unikraft"
 UNIKRAFT_COREDIR = "unikraft"
 UNIKRAFT_LIBSDIR = "libs"
 UNIKRAFT_APPSDIR = "apps"
+
+UNIKRAFT_LIB_MAKEFILE_VERSION_EXT = '_VERSION'
+UNIKRAFT_LIB_MAKEFILE_URL_EXT = '_URL'
+
+UNIKRAFT_LIB_KNOWN_MAKEFILE_VAR_EXTS = [
+    UNIKRAFT_LIB_MAKEFILE_VERSION_EXT,
+    UNIKRAFT_LIB_MAKEFILE_URL_EXT,
+    '_SRCS-y'
+]
 
 GITCONFIG_GLOBAL = "~/.gitconfig"
 GITCONFIG_LOCAL = ".git/config"
