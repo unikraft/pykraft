@@ -35,6 +35,7 @@ from enum import Enum
 
 from .git import GitProvider
 from .github import GitHubProvider
+from .sourceforge import SourceForgeProvider
 from .tarball import TarballProvider
 
 
@@ -53,9 +54,10 @@ def determine_provider(source=None):
 
 
 class ProviderType(Enum):
-    GITHUB  = ("github" , GitHubProvider)   # noqa
-    GIT     = ("git"    , GitProvider)      # noqa
-    TARBALL = ("tarball", TarballProvider)  # noqa
+    GITHUB      = ("github"     , GitHubProvider)       # noqa
+    GIT         = ("git"        , GitProvider)          # noqa
+    SOURCEFORGE = ("sourceforge", SourceForgeProvider)  # noqa
+    TARBALL     = ("tarball"    , TarballProvider)      # noqa
 
     @property
     def name(self):

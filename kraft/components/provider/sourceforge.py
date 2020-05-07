@@ -31,60 +31,64 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import htmllistparse
+import feedparser
 
-from .provider import Provider
+from .tarball import TarballProvider
 from kraft.constants import SEMVER_PATTERN
+from kraft.constants import SOURCEFORGE_DOWNLOAD
+from kraft.constants import SOURCEFORGE_PROJECT_FEED
+from kraft.constants import SOURCEFORGE_PROJECT_NAME
 from kraft.constants import TARBALL_SUPPORTED_EXTENSIONS
-from kraft.logger import logger
 
 
-def tarball_probe_remote_versions(source=None):
+def sourceforge_probe_remote_versions(source=None):
+    """
+    List known versions of a project on SourceForge.
+
+    Args:
+        source:  The remote source on SourceForge.
+
+    Returns:
+        Dictionary of versions and their url.
+
+    """
     versions = {}
+    project_name = SOURCEFORGE_PROJECT_NAME.search(source)
 
-    if source is None:
+    if project_name is None:
         return versions
 
-    # Remove everything after the $ (start of variable)
-    if '/$' in source:
-        source = source[:source.index('$')]
+    project_name = project_name.group(1)
+    feed = feedparser.parse(SOURCEFORGE_PROJECT_FEED % project_name)
 
-    # Remove the filename
-    else:
-        for ext in TARBALL_SUPPORTED_EXTENSIONS:
-            if source.endswith(ext):
-                filename = source.split('/')[-1]
-                source = source.replace(filename, '')
-                break
+    for entry in feed.entries:
+        url_parts = entry.links[0].href
 
-    try:
-        cwd, listings = htmllistparse.fetch_listing(source, timeout=30)
+        if url_parts.endswith(SOURCEFORGE_DOWNLOAD):
+            url_parts = url_parts[:-len(SOURCEFORGE_DOWNLOAD)]
 
-        for listing in listings:
-            if listing.name.endswith(tuple(TARBALL_SUPPORTED_EXTENSIONS)):
-                ver = SEMVER_PATTERN.search(listing.name)
-                if ver is not None and ver.group(0) not in versions.keys():
-                    versions[ver.group(0)] = listing.name
+        filename = url_parts.split('/')[-1]
 
-    except Exception as e:
-        logger.warn(e)
-        pass
+        for suffix in TARBALL_SUPPORTED_EXTENSIONS:
+            if filename.endswith(suffix):
+                filename = filename[:-len(suffix)]
 
-    print(versions)
+        semver = SEMVER_PATTERN.search(filename)
+        if semver is not None:
+            versions[semver.group(0)] = entry.links[0].href
 
     return versions
 
 
-class TarballProvider(Provider):
+class SourceForgeProvider(TarballProvider):
 
     @classmethod
     def is_type(cls, origin=None):
         if origin is None:
             return False
 
-        for ext in TARBALL_SUPPORTED_EXTENSIONS:
-            if origin.endswith(ext):
-                return True
+        if 'sourceforge.net' in origin:
+            return True
 
         return False
 
@@ -92,9 +96,7 @@ class TarballProvider(Provider):
         if source is None:
             source = self.source
 
-        return tarball_probe_remote_versions(source)
+        return sourceforge_probe_remote_versions(source)
 
-    def version_source_archive(self, varname=None):
-        ver = SEMVER_PATTERN.search(self.source)
-        source_archive = self.source.replace(ver.group(0), varname)
-        return source_archive
+    def version_source_url(self, varname=None):
+        return self.source

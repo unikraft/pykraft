@@ -35,6 +35,7 @@ from __future__ import unicode_literals
 from .git import GitProvider
 from .github import GitHubProvider
 from .provider import Provider
+from .sourceforge import SourceForgeProvider
 from .tarball import TarballProvider
 from .type import determine_provider
 from .type import ProviderType
