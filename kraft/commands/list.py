@@ -41,6 +41,11 @@ import click
 from atpbar import flush
 from github import Github
 
+from kraft.components.architecture import Architecture
+from kraft.components.core import Core
+from kraft.components.library import Library
+from kraft.components.platform import Platform
+from kraft.components.repository import passively_determine_type_and_name
 from kraft.components.repository import Repository
 from kraft.components.types import RepositoryType
 from kraft.constants import DATE_FORMAT
@@ -89,6 +94,7 @@ def list(ctx,
     if ctx.cache.is_stale() and not force_update:
         if click.confirm('kraft caches are out-of-date.  Would you like to update?', default=True):
             update()
+
     elif force_update:
         update()
 
@@ -205,7 +211,7 @@ def list(ctx,
             print(output)
 
 
-@kraft_context
+@kraft_context  # noqa: C901
 def update(ctx):
     if 'UK_KRAFT_GITHUB_TOKEN' in os.environ:
         github = Github(os.environ['UK_KRAFT_GITHUB_TOKEN'])
@@ -220,10 +226,19 @@ def update(ctx):
             logger.info("Probing %s..." % clone_url)
 
             try:
-                Repository.from_source_string(
-                    source=clone_url,
-                    force_update=True
-                )
+                repo_type, repo_name = passively_determine_type_and_name(clone_url)
+
+                if repo_type == RepositoryType.CORE:
+                    Core(source=clone_url, force_update=True)
+                elif repo_type == RepositoryType.LIB:
+                    Library(source=clone_url, force_update=True)
+                elif repo_type == RepositoryType.ARCH:
+                    Architecture(source=clone_url, force_update=True)
+                elif repo_type == RepositoryType.PLAT:
+                    Platform(source=clone_url, force_update=True)
+                else:
+                    Repository(source=clone_url, force_update=True)
+
             except KraftError as e:
                 logger.error("Could not add repository: %s: %s" % (repo.clone_url, str(e)))
 

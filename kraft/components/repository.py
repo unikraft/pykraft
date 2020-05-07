@@ -60,6 +60,32 @@ from kraft.errors import UnknownSourceProvider
 from kraft.logger import logger
 
 
+def passively_determine_type_and_name(source=None):
+    """
+    Determine the name and type of the repository by checking the name of
+    the repository against a well-known "type-name" syntax.  We can pass a
+    name into this method, whether it's a URL, a directory or a name.
+
+    Args:
+        source:  The source for the repository.
+
+    Returns:
+        (type, name) tuple.
+    """
+    if source is None:
+        return None, None
+
+    basename = os.path.basename(source)
+
+    for repository_type, member in RepositoryType.__members__.items():
+        ref = member.search(basename)
+
+        if ref is not None:
+            return member, ref.group(2)
+
+    return None, basename
+
+
 class GitProgressPrinter(RemoteProgress):
     def __init__(self, max_lines=10, label=None):
         RemoteProgress.__init__(self)
@@ -121,7 +147,7 @@ class Repository(object):
         # Initialize from a local directory
         if localdir is not None and os.path.exists(localdir) \
                 and (source is None or len(source) == 0):
-            self.type, self.name = self.passively_determine_type_and_name(localdir)
+            self.type, self.name = passively_determine_type_and_name(localdir)
             self.origin = self.intrusively_determine_origin(localdir)
             self.source = self.intrusively_determine_source(localdir)
 
@@ -138,7 +164,7 @@ class Repository(object):
             # Let's passively determine the name and type first before we clone,
             # as this helps us determine where to place the repository when we
             # want to clone it.
-            repo_type, repo_name = self.passively_determine_type_and_name(self.source)
+            repo_type, repo_name = passively_determine_type_and_name(self.source)
 
             if repo_type is not None:
                 self.type = repo_type
@@ -293,31 +319,6 @@ class Repository(object):
         return cls(
             localdir=localdir
         )
-
-    def passively_determine_type_and_name(self, source=None):
-        """
-        Determine the name and type of the repository by checking the name of
-        the repository against a well-known "type-name" syntax.  We can pass a
-        name into this method, whether it's a URL, a directory or a name.
-
-        Args:
-            source:  The source for the repositoru
-
-        Returns:
-            (type, name) tuple.
-        """
-        if source is None:
-            return None, None
-
-        basename = os.path.basename(source)
-
-        for repository_type, member in RepositoryType.__members__.items():
-            ref = member.search(basename)
-
-            if ref is not None:
-                return member, ref.group(2)
-
-        return None, basename
 
     # TODO: Intrusively determine type and name from a remote URL by fetching
     # its contents.
