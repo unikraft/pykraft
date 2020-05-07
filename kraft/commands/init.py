@@ -130,7 +130,7 @@ def kraft_init(ctx,
             )
 
         try:
-            core = Core.from_source_string(
+            core = Core.from_unikraft_origin(
                 source=unikraft_source,
                 version=unikraft_version
             )
@@ -149,7 +149,7 @@ def kraft_init(ctx,
             )
 
             archs = Architectures([])
-            archs.add(target_arch, Architecture.from_source_string(
+            archs.add(target_arch, Architecture.from_unikraft_origin(
                 name=target_arch,
                 source=arch_source,
             ), {})
@@ -168,7 +168,7 @@ def kraft_init(ctx,
             )
 
             plats = Platforms([])
-            plats.add(target_plat, Platform.from_source_string(
+            plats.add(target_plat, Platform.from_unikraft_origin(
                 name=target_plat,
                 source=plat_source,
             ), {})
