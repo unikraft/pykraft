@@ -49,6 +49,7 @@ from kraft.components.network import Networks
 
 from kraft.constants import UK_DBG_EXT
 
+WHICH='which'
 class Executor(object):
     _base_cmd = ''
     _cmd = []
@@ -118,6 +119,17 @@ class Executor(object):
     def open_gdb(self, port=None):
         if port and isinstance(port, int):
             self._cmd.extend(('-g', port))
+
+    @staticmethod
+    def which(cmd):
+        try:
+            cmd_list = [WHICH, cmd]
+            location = subprocess.run(cmd_list, check=True, capture_output=True)
+            cmd_path = location.stdout.decode().strip()
+        except:
+            raise ExecutorError("Could not find %s" % cmd)
+
+        return [cmd_path]
 
     @property
     def use_debug(self):
@@ -396,8 +408,7 @@ class KVMExecutor(Executor):
         if self.arguments:
             self._cmd.extend(('-a', self.arguments))
         
-        cmd = [QEMU_GUEST]
-
+        cmd = self.which(QEMU_GUEST)
         cmd.extend(self._cmd)
 
         for pre_up_cmd in self._pre_up:
@@ -444,7 +455,7 @@ class XenExecutor(Executor):
         if self.arguments:
             self._cmd.extend(('-a', self.arguments))
         
-        cmd = [XEN_GUEST]
+        cmd = self.which(XEN_GUEST)
         cmd.extend(self._cmd)
 
         for pre_up_cmd in self._pre_up:
