@@ -49,12 +49,12 @@ from .run import kraft_run
 @click.option('--gdb',         '-g', 'gdb',         help='Run a GDB server for the guest on specified port.', type=int)  # noqa: E501
 @click.option('--dbg',         '-d', 'dbg',         help='Use unstriped unikernel', is_flag=True)  # noqa: E501
 @click.option('--virtio-nic',  '-n', 'virtio_nic',  help='Attach a NAT-ed virtio-NIC to the guest.')  # noqa: E501
-@click.option('--bridge',      '-b', 'brdige',      help='Attach a NAT-ed virtio-NIC an existing bridge.')  # noqa: E501
+@click.option('--bridge',      '-b', 'bridge',      help='Attach a NAT-ed virtio-NIC an existing bridge.')  # noqa: E501
 @click.option('--interface',   '-V', 'interface',   help='Assign host device interface directly as virtio-NIC to the guest.')  # noqa: E501
 @click.option('--dry-run',     '-D', 'dry_run',     help='Perform a dry run.', is_flag=True)  # noqa: E501
 @click.option('--memory',      '-M', 'memory',      help="Assign MB memory to the guest.", type=int)  # noqa: E501
 @click.option('--cpu-sockets', '-s', 'cpu_sockets', help="Number of guest CPU sockets.", type=int)  # noqa: E501
-@click.option('--cpu-cores',   '-c', 'cpu_corers',  help="Number of guest cores per socket.", type=int)  # noqa: E501
+@click.option('--cpu-cores',   '-c', 'cpu_cores',   help="Number of guest cores per socket.", type=int)  # noqa: E501
 @click.option('--force',       '-F', 'force',       help='Overwrite any existing files in current working directory.', is_flag=True)  # noqa: E501
 @click.option('--fast',        '-j', 'fast',        help='Use all CPU cores to build the application.', is_flag=True)  # noqa: E501
 def up(name,
@@ -95,7 +95,6 @@ def up(name,
     )
 
     kraft_build(
-        libary=None,
         fast=fast
     )
 
