@@ -83,7 +83,7 @@ def kraft_run(ctx,
     target_platform = None
 
     for uk_platform in project.platforms.all():
-        if plat == platform.name:
+        if plat == uk_platform.name:
             target_platform = uk_platform
 
     if target_platform is None:
