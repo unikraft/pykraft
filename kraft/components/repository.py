@@ -684,6 +684,9 @@ class Repository(object):
         if not (self.type is RepositoryType.ARCH or self.type is RepositoryType.CORE):
             kconfig = self.intrusively_determine_kconfig()
 
+            if kconfig is None:
+                return None
+
             # Retrieve the top-most item which enables the feature
             if kconfig.top_node.is_menuconfig:
                 kconfig_item = kconfig.top_node.list.item.name
