@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
+#          Gaulthier Gain <gaulthier.gain@uliege.be>
 #
 # Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
 #
@@ -32,10 +33,22 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import shlex
 import subprocess
 
 from kraft.logger import logger
 
+def execute_command(command, parameters=' '):
+    """Run a specific command on the host."""
+    subprocess.call(shlex.split(command + ' ' + ' '.join(parameters)))
+
+
+def is_software_installed(program):
+    """Check if a program/software is installed on the host."""
+    rc = subprocess.call(['which', program], stdout=subprocess.DEVNULL)
+    if rc == 0:
+        return True
+    return False
 
 def merge_dicts(x, y):
     z = x.copy()

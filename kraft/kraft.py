@@ -36,6 +36,7 @@ import click
 from kraft.commands import build
 from kraft.commands import clean
 from kraft.commands import configure
+from kraft.commands import develdependency
 from kraft.commands import init
 from kraft.commands import libbump
 from kraft.commands import libinit
@@ -87,9 +88,19 @@ def lib(ctx):
     """
     pass
 
+@click.group(name='devel', short_help='Unikraft devel commands.')
+@kraft_context
+def devel(ctx):
+    """
+    Unikraft developer sub-commands useful for maintaing and working
+    directly with Unikraft source code.
+    """
+    pass
 
 lib.add_command(libinit)
 lib.add_command(libbump)
+
+devel.add_command(develdependency)
 
 kraft.add_command(up)
 kraft.add_command(run)
@@ -99,3 +110,4 @@ kraft.add_command(build)
 kraft.add_command(clean)
 kraft.add_command(configure)
 kraft.add_command(lib)
+kraft.add_command(devel)

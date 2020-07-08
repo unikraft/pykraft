@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
+#          Gaulthier Gain <gaulthier.gain@uliege.be>
 #
 # Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
 #
@@ -35,9 +36,17 @@ import os
 import shutil
 from shutil import copyfile
 from shutil import SameFileError
+from pathlib import Path
 
 from kraft.logger import logger
 
+def existing_path(path):
+    """Return a boolean of whether the provided `path` exists."""
+    return os.path.exists(path)  
+
+def get_home_dir():
+    """Return a string which represents the current home directory."""
+    return str(Path.home())
 
 def is_dir_empty(path=None):
     """Return a boolean of whether the provided directory `dir` is empty."""
