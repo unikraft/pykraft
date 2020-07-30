@@ -101,6 +101,26 @@ else
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 endif
 
+# GO build targets
+GO_VERSION        ?= 1.14.4
+
+.PHONY: docker-gotools
+docker-gotools: IMAGE_NAME ?= $(ORG)/gotools:$(GO_VERSION)
+docker-gotools:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [IMAGE_NAME=...] $(MAKE) $@                                            "
+	@echo "                                                                              "
+	@echo
+else
+	$(DOCKER) build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--tag $(IMAGE_NAME) \
+		--cache-from $(ORG)/gotools:$(GO_VERSION) \
+		--cache-from $(IMAGE_NAME) \
+		--file $(DOCKERDIR)/Dockerfile.gotools \
+		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
+endif
+
 # GCC build targets
 GCC_VERSION         ?= 9.2.0
 BINUTILS_VERSION    ?= 2.31.1
