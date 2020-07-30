@@ -38,6 +38,7 @@ from .configure import configure
 from .init import init
 from .lib.bump import bump as libbump
 from .lib.init import init as libinit
+from .devel.dependency import dependency as develdependency
 from .list import list
 from .run import run
 from .up import up
