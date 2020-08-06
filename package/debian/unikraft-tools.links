@@ -2,3 +2,5 @@ usr/share/unikraft-tools/bin/kraft usr/bin/kraft
 usr/share/unikraft-tools/bin/kraft-net usr/bin/kraft-net
 usr/share/unikraft-tools/bin/qemu-guest usr/bin/qemu-guest
 usr/share/unikraft-tools/bin/kvm-guest usr/bin/kvm-guest
+usr/share/unikraft-tools/bin/kvm-guest usr/bin/kvm-guest
+usr/share/unikraft-tools/usr/local/bin/ usr/bin/gotools
