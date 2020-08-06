@@ -1,0 +1,15 @@
+{
+  "typeTest": "exec",
+  "timeMsCommand": 2000,
+  "listCommands": [
+    "PGPASSWORD=postgres psql -U postgres -c \"\conninfo\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"\l\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"\dt\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"\dn\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"\df\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"\dv\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"\du\"",
+    "PGPASSWORD=postgres psql -U postgres -c \"SELECT version();\"",
+    "PGPASSWORD=postgres psql -U postgres -a -w -f queries_postgres.sql"
+  ]
+}
