@@ -385,9 +385,8 @@ properclean:
 	$(Q)$(RM) -Rfv $(DISTDIR)/*
 endif
 
-
+include $(KRAFTDIR)/contrib/Makefile
 include $(KRAFTDIR)/package/docker/Makefile
-
 
 .PHONY:
 no-help:

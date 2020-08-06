@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Authors: Alexander Jung <alexander.jung@neclab.eu>
+# Authors: Gaulthier Gain <gaulthier.gain@uliege.be>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, Université de Liège., ULiege. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,17 +28,42 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# flake8: noqa
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
-from .build import build
-from .clean import clean
-from .configure import configure
-from .init import init
-from .lib.bump import bump as libbump
-from .lib.init import init as libinit
-from .devel.dependency import dependency as develdependency
-from .list import list
-from .run import run
-from .up import up
+# Program arguments
+BINARY_NAME    ?= gotools
+BINARY_UNIX    ?= $(BINARY_NAME)_unix
+CONTAINER_NAME ?= unikraft/gotools:latest
+
+## Gotools
+DOCKER   ?= docker
+TARGET   ?= binary
+GO       ?= go
+GOBUILD  ?= $(GO) build
+GOCLEAN  ?= $(GO) clean
+GOGET    ?= $(GO) get
+
+# Targets
+all:	build
+container:
+	$(DOCKER) build \
+		-t $(CONTAINER_NAME) \
+		-f Dockerfile \
+		--target=$(TARGET) \
+		.
+build: deps
+	$(GOBUILD) -o $(BINARY_NAME)  -v
+clean: 
+	$(GOCLEAN)
+	rm  -f  $(BINARY_NAME)
+	rm  -f  $(BINARY_UNIX)
+run:
+	$(GOBUILD) -o $(BINARY_NAME) -v
+	./$(BINARY_NAME)
+deps:
+	$(GOGET) github.com/fatih/color
+	$(GOGET) github.com/akamensky/argparse
+	$(GOGET) github.com/awalterschulze/gographviz
+	$(GOGET) github.com/sergi/go-diff/...
+# Cross compilation
+build-linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v

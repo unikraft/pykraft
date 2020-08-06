@@ -31,8 +31,10 @@
 
 ARG UK_ARCH=x86_64
 ARG GCC_VERSION=9.2.0
+ARG GO_VERSION=1.14.4
 
 FROM unikraft/gcc:${GCC_VERSION}-${UK_ARCH} AS gcc
+FROM unikraft/gotools:${GO_VERSION} AS gotools
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
@@ -42,6 +44,8 @@ COPY --from=gcc /bin/ /bin
 COPY --from=gcc /lib/ /lib
 COPY --from=gcc /include/ /include
 COPY --from=gcc /libexec/ /libexec
+
+COPY --from=gotools /usr/local/bin/ /usr/local/bin/
 
 COPY . /usr/src/kraft
 

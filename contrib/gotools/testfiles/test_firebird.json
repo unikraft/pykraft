@@ -1,0 +1,7 @@
+{
+  "typeTest": "exec",
+  "timeMsCommand": 2000,
+  "listCommands": [
+    "gsec -user sysdba -password"
+  ]
+}
