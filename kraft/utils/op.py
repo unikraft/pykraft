@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
+#          Gaulthier Gain <gaulthier.gain@uliege.be>
 #
 # Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
 #
@@ -32,9 +33,32 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import stat
+import shlex
 import subprocess
 
 from kraft.logger import logger
+
+def which(program):
+    """Get the path of a program"""
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+def execute_command(command, parameters=' '):
+    """Run a specific command on the host."""
+    subprocess.call(shlex.split(command + ' ' + ' '.join(parameters)))
 
 
 def merge_dicts(x, y):

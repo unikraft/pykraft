@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Authors: Alexander Jung <alexander.jung@neclab.eu>
+# Authors: Gaulthier Gain <gaulthier.gain@uliege.be>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, Université de Liège., ULiege. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -28,17 +28,37 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# flake8: noqa
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .build import build
-from .clean import clean
-from .configure import configure
-from .init import init
-from .lib.bump import bump as libbump
-from .lib.init import init as libinit
-from .devel.dependency import dependency as develdependency
-from .list import list
-from .run import run
-from .up import up
+import os
+import sys
+
+import click
+
+from kraft.commands.list import update
+from kraft.components.library import Library
+from kraft.components.types import RepositoryType
+from kraft.context import kraft_context
+from kraft.errors import KraftError
+from kraft.logger import logger
+from kraft.utils import op, dir
+
+TOOLS = "./tools"
+
+@click.command('dependency', short_help='Gather the dependencies of a specific application.', context_settings=dict(
+    ignore_unknown_options=True, 
+    allow_extra_args=True))  # noqa: C901
+@click.pass_context
+def dependency(ctx):
+    """
+    Gather the dependencies of a specific application.
+    """
+    # check if bin/tools is PATH
+    path = op.which(TOOLS)
+    if path is not None:
+        # Execute the toolchain with unparsed arguments 
+        op.execute_command(path, ctx.args)
+    else:
+        logger.error('Program is not found in PATH')
+        sys.exit(1)
