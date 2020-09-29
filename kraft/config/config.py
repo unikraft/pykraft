@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -37,36 +38,67 @@ import re
 import sys
 from collections import namedtuple
 
-import six
 import yaml
 from cached_property import cached_property
 
 from .environment import Environment
 from .interpolation import interpolate_environment_variables
-from .interpolation import interpolate_source_version
 from .validation import validate_against_config_schema
-from .validation import validate_config_section
-from .validation import validate_executor_section
-from .validation import validate_libraries_section
+from .validation import validate_component_section
+from .validation import validate_run_section
 from .validation import validate_top_level_string
 from .validation import validate_top_level_string_or_list
 from .validation import validate_unikraft_section
 from .version import SpecificationVersion
-from kraft.components.types import RepositoryType
-from kraft.constants import KRAFT_SPEC_LATEST
-from kraft.constants import SUPPORTED_FILENAMES
-from kraft.errors import CannotReadKraftfile
-from kraft.errors import KraftError
-from kraft.errors import KraftFileNotFound
+from kraft.const import KRAFT_SPEC_LATEST
+from kraft.const import SUPPORTED_FILENAMES
+from kraft.error import CannotReadKraftfile
+from kraft.error import KraftError
+from kraft.error import KraftFileNotFound
 from kraft.logger import logger
+# from .interpolation import interpolate_source_version
+# from kraft.types import ComponentType
 
 
-class ConfigDetails(namedtuple('_ConfigDetails', 'working_dir config_files environment')):
+class Config(namedtuple(
+        '_Config', [
+            'specification',
+            'name',
+            'unikraft',
+            'architectures',
+            'platforms',
+            'libraries',
+            'executor'
+        ])):
+    """
+    :param specification: configuration version
+    :type  specification: int
+    :param name: name of the project
+    :type  name: string
+    :param unikraft: Unikraft's core configuration
+    :type  unikraft: :class:`dict`
+    :param architectures: Dictionary mapping architecture names to description dictionaries
+    :type  architectures: :class:`dict`
+    :param platforms: Dictionary mapping platform names to description dictionaries
+    :type  platforms: :class:`dict`
+    :param libraries: Dictionary mapping library names to description dictionaries
+    :type  libraries: :class:`dict`
+    :param executor: Dictionary mapping of execution description dictionaries
+    :type  executor: :class:`dict`
+    """
+
+
+class ConfigDetails(namedtuple(
+        '_ConfigDetails', [
+            'working_dir',
+            'config_files',
+            'environment',
+        ])):
     """
     :param working_dir: the directory to use for relative paths in the config
     :type  working_dir: string
     :param config_files: list of configuration files to load
-    :type  config_files: list of :class:`ConfigFile`
+    :type  config_files: list of :class:`KraftFile`
      """
     def __new__(cls, working_dir, config_files, environment=None):
         if environment is None:
@@ -76,7 +108,11 @@ class ConfigDetails(namedtuple('_ConfigDetails', 'working_dir config_files envir
         )
 
 
-class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
+class KraftFile(namedtuple(
+        '_KraftFile', [
+            'filename',
+            'config'
+        ])):
     """
     :param filename: filename of the config file
     :type  filename: string
@@ -93,7 +129,7 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
         if 'specification' not in self.config:
             return KRAFT_SPEC_LATEST
 
-        version = self.config['specification']
+        version = str(self.config['specification'])
 
         version_pattern = re.compile(r"^[0-9]+(\.\d+)?$")
         if not version_pattern.match(version):
@@ -139,36 +175,8 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
     # def get_networks(self):
     #     return self.config.get('networks', {})
 
-    def get_executor(self):
+    def get_run(self):
         return self.config.get('run', {})
-
-
-class Config(namedtuple(
-        '_Config',
-        'specification name unikraft architectures platforms libraries executor'
-        )):
-    """
-    :param specification: configuration version
-    :type  specification: int
-
-    :param name: name of the project
-    :type  name: string
-
-    :param unikraft: Unikraft's core configuration
-    :type  unikraft: :class:`dict`
-
-    :param architectures: Dictionary mapping architecture names to description dictionaries
-    :type  architectures: :class:`dict`
-
-    :param platforms: Dictionary mapping platform names to description dictionaries
-    :type  platforms: :class:`dict`
-
-    :param libraries: Dictionary mapping library names to description dictionaries
-    :type  libraries: :class:`dict`
-
-    :param executor: Dictionary mapping of execution description dictionaries
-    :type  executor: :class:`dict`
-    """
 
 
 def get_project_name(workdir, project_name=None, environment=None):
@@ -192,7 +200,7 @@ def get_project_name(workdir, project_name=None, environment=None):
 
 
 def process_top_level_string(config_file, config, environment, section, interpolate):
-    validate_top_level_string(config_file, config, section)
+    config = validate_top_level_string(config_file, config, section)
     if interpolate and isinstance(config, dict):
         return interpolate_environment_variables(
             config_file.version,
@@ -205,7 +213,7 @@ def process_top_level_string(config_file, config, environment, section, interpol
 
 
 def process_top_level_string_or_list(config_file, config, environment, section, interpolate):
-    validate_top_level_string_or_list(config_file, config, section)
+    config = validate_top_level_string_or_list(config_file, config, section)
     if interpolate and isinstance(config, dict):
         return interpolate_environment_variables(
             config_file.version,
@@ -218,56 +226,40 @@ def process_top_level_string_or_list(config_file, config, environment, section, 
 
 
 def process_unikraft(config_file, environment, interpolate):
-    config = config_file.get_unikraft()
-    validate_unikraft_section(config_file, config)
+    config = validate_unikraft_section(config_file, config_file.get_unikraft())
     if interpolate and isinstance(config, dict):
         return interpolate_environment_variables(
             config_file.version,
             config,
             "unikraft",
             environment
-            )
+        )
     else:
         return config
 
 
-def process_libraries(config_file, environment, interpolate):
-    config = config_file.get_libraries()
-    validate_libraries_section(config_file, config)
-    if interpolate and isinstance(config, dict):
-        return interpolate_environment_variables(
-            config_file.version,
-            config,
-            "libraries",
-            environment
-            )
-    else:
-        return config
-
-
-def process_config_section(config_file, config, section, environment, interpolate):
-    validate_config_section(config_file.filename, config, section)
+def process_component_section(config_file, config, section, environment, interpolate):
+    config = validate_component_section(config_file.filename, config, section)
     if interpolate:
         return interpolate_environment_variables(
             config_file.version,
             config,
             section,
             environment
-            )
+        )
     else:
         return config
 
 
-def process_executor_section(config_file, section, environment, interpolate):
-    config = config_file.get_executor()
-    validate_executor_section(config_file, config)
+def process_run_section(config_file, section, environment, interpolate):
+    config = validate_run_section(config_file, config_file.get_run())
     if interpolate and isinstance(config, dict):
         return interpolate_environment_variables(
             config_file.version,
             config,
             "run",
             environment
-            )
+        )
     else:
         return config
 
@@ -291,26 +283,28 @@ def process_config_file(config_file, environment, service_name=None, interpolate
         environment,
         interpolate,
     )
-    processed_config['architectures'] = process_config_section(
+    processed_config['architectures'] = process_component_section(
         config_file,
         config_file.get_architectures(),
         'architectures',
         environment,
         interpolate,
     )
-    processed_config['platforms'] = process_config_section(
+    processed_config['platforms'] = process_component_section(
         config_file,
         config_file.get_platforms(),
         'platforms',
         environment,
         interpolate,
     )
-    processed_config['libraries'] = process_libraries(
+    processed_config['libraries'] = process_component_section(
         config_file,
+        config_file.get_libraries(),
+        'libraries',
         environment,
         interpolate,
     )
-    processed_config['executor'] = process_executor_section(
+    processed_config['run'] = process_run_section(
         config_file,
         'run',
         environment,
@@ -356,11 +350,11 @@ def get_default_config_files(base_dir):
     return [os.path.join(path, winner)]
 
 
-def find(base_dir, filenames, environment, override_dir=None):
+def find_config(base_dir, filenames, environment, override_dir=None):
     if filenames == ['-']:
         return ConfigDetails(
             os.path.abspath(override_dir) if override_dir else os.getcwd(),
-            [ConfigFile(None, yaml.safe_load(sys.stdin))],
+            [KraftFile(None, yaml.safe_load(sys.stdin))],
             environment
         )
 
@@ -372,7 +366,7 @@ def find(base_dir, filenames, environment, override_dir=None):
     logger.debug("Using configuration files: %s" % (",".join(filenames)))
     return ConfigDetails(
         override_dir if override_dir else os.path.dirname(filenames[0]),
-        [ConfigFile.from_filename(f) for f in filenames],
+        [KraftFile.from_filename(f) for f in filenames],
         environment
     )
 
@@ -394,11 +388,10 @@ def load_mapping(config_files, get_func, entity_type, working_dir=None):
     return mapping
 
 
-def load(config_details):
+def load_config(config_details):
     """Load the configuration from a working directory and a list of
     configuration files.  Files are loaded in order, and merged on top
     of each other to create the final configuration.
-
     Return a fully interpolated, extended and validated configuration.
     """
 
@@ -427,26 +420,26 @@ def load(config_details):
         config_details.config_files, 'get_unikraft', 'unikraft', config_details.working_dir
     )
 
-    # Account for syntax variation
-    thought_source, thought_version = None, None
+    # # Account for syntax variation
+    # thought_source, thought_version = None, None
 
-    if isinstance(unikraft, six.string_types):
-        thought_source = unikraft
-        unikraft = {}
-    else:
-        if 'source' in unikraft:
-            thought_source = unikraft['source']
-        if 'version' in unikraft:
-            thought_version = unikraft['version']
+    # if isinstance(unikraft, six.string_types):
+    #     thought_source = unikraft
+    #     unikraft = {}
+    # else:
+    #     if 'source' in unikraft:
+    #         thought_source = unikraft['source']
+    #     if 'version' in unikraft:
+    #         thought_version = unikraft['version']
 
-    definite_source, definite_version = interpolate_source_version(
-        'unikraft',
-        thought_source,
-        thought_version,
-        RepositoryType.CORE
-    )
-    unikraft['source'] = definite_source
-    unikraft['version'] = definite_version
+    # definite_source, definite_version = interpolate_source_version(
+    #     'unikraft',
+    #     thought_source,
+    #     thought_version,
+    #     ComponentType.CORE
+    # )
+    # unikraft['source'] = definite_source
+    # unikraft['version'] = definite_version
 
     architectures = load_mapping(
         config_details.config_files,
@@ -467,27 +460,27 @@ def load(config_details):
         config_details.working_dir
     )
 
-    # Account for syntax variation
-    for library in libraries:
-        thought_source, thought_version = None, None
+    # # Account for syntax variation
+    # for library in libraries:
+    #     thought_source, thought_version = None, None
 
-        if isinstance(libraries[library], str):
-            thought_source = libraries[library]
-            libraries[library] = {}
-        else:
-            if 'source' in libraries[library]:
-                thought_source = libraries[library]['source']
-            if 'version' in libraries[library]:
-                thought_version = libraries[library]['version']
+    #     if isinstance(libraries[library], str):
+    #         thought_source = libraries[library]
+    #         libraries[library] = {}
+    #     else:
+    #         if 'source' in libraries[library]:
+    #             thought_source = libraries[library]['source']
+    #         if 'version' in libraries[library]:
+    #             thought_version = libraries[library]['version']
 
-        definite_source, definite_version = interpolate_source_version(
-            library,
-            thought_source,
-            thought_version,
-            RepositoryType.LIB
-        )
-        libraries[library]['source'] = definite_source
-        libraries[library]['version'] = definite_version
+    #     definite_source, definite_version = interpolate_source_version(
+    #         library,
+    #         thought_source,
+    #         thought_version,
+    #         RepositoryType.LIB
+    #     )
+    #     libraries[library]['source'] = definite_source
+    #     libraries[library]['version'] = definite_version
 
     # volumes = load_mapping(
     #     config_details.config_files,
@@ -504,7 +497,7 @@ def load(config_details):
 
     executor = load_mapping(
         config_details.config_files,
-        'get_executor',
+        'get_run',
         'run',
         config_details.working_dir
     )
