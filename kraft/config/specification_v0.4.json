@@ -6,7 +6,7 @@
 
   "properties": {
     "specification": {
-      "type": [ "string", "integer" ]
+      "type": [ "string", "number" ]
     },
 
     "name": { "type": "string" },
@@ -63,30 +63,30 @@
 
     "unikraft": {
       "id": "#/definitions/unikraft",
-      "type": [ "object", "string" ],
+      "type": [ "object", "string", "number" ],
       "properties": {
         "source": { "type": "string" },
-        "version": { "type": "string" },
+        "version": { "type": [ "string", "number" ] },
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
       }
     },
 
     "architecture": {
       "id": "#/definitions/architecture",
-      "type": [ "object", "boolean" ],
+      "type": [ "object", "boolean", "number", "string", "null" ],
       "properties": {
         "source": { "type": "string" },
-        "version": { "type": "string" },
+        "version": { "type": [ "string", "number" ] },
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
       }
     },
 
     "platform": {
       "id": "#/definitions/platform",
-      "type": [ "object", "boolean" ],
+      "type": [ "object", "boolean", "number", "string", "null" ],
       "properties": {
         "source": { "type": "string" },
-        "version": { "type": "string" },
+        "version": { "type": [ "string", "number" ] },
         "kconfig": { "$ref": "#/definitions/list_or_dict" },
         "pre_up": { "$ref": "#/definitions/command" },
         "post_down": { "$ref": "#/definitions/command" },
@@ -97,10 +97,10 @@
 
     "library": {
       "id": "#/definitions/library",
-      "type": [ "object", "string" ],
+      "type": [ "object", "boolean", "number", "string", "null" ],
       "properties": {
         "source": { "type": "string" },
-        "version": { "type": "string" },
+        "version": { "type": [ "string", "number" ] },
         "kconfig": { "$ref": "#/definitions/list_or_dict" }
       }
     },
