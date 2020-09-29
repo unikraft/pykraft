@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -32,47 +33,66 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import platform
-import subprocess
-import tarfile
-import tempfile
-from enum import Enum
-
 import six
 
-import kraft.utils as utils
-from kraft.components.network import Networks
-from kraft.components.volume import VolumeDriver
-from kraft.components.volume import Volumes
-from kraft.constants import QEMU_GUEST
-from kraft.constants import UK_DBG_EXT
-from kraft.constants import XEN_GUEST
-from kraft.errors import ExecutorError
+from kraft.plat.volume import Volume
+from kraft.plat.volume import VolumeManager
+from kraft.plat.network import NetworkDriver
+from kraft.plat.network import NetworkManager
+
 from kraft.logger import logger
 
+from kraft.error import RunnerError
 
-class Executor(object):
+import kraft.util as util
+
+
+class Runner(object):
     _base_cmd = ''
+    @property
+    def base_cmd(self): return self._base_cmd
+
     _cmd = []
+    @property
+    def cmd(self): return self._cmd
+
     _platform = None
+    @property
+    def platform(self): return self._platform
+
     _volumes = {}
+    @property
+    def volumes(self): return self._volumes
+
     _networks = {}
+    @property
+    def networks(self): return self._networks
+
     _start_paused = False
+    @property
+    def start_paused(self): return self._start_paused
+
     _background = False
+    @property
+    def background(self): return self._background
+
     _unikernel = None
+    @property
+    def unikernel(self): return self._unikernel
+
     _architecture = None
+    @property
+    def architecture(self): return self._architecture
+
     _pre_up = []
+    @property
+    def pre_up(self): return self._pre_up
+
     _post_down = []
+    @property
+    def post_down(self): return self._post_down
+
     _arguments = None
-    _use_debug = False
-
-    @property
-    def volumes(self):
-        return self._volumes
-
-    @property
-    def networks(self):
-        return self._networks
 
     @property
     def arguments(self):
@@ -83,10 +103,14 @@ class Executor(object):
         else:
             return None
 
+    _use_debug = False
+    @property
+    def use_debug(self): return self._use_debug
+
     def __init__(self, arguments=[], volumes=None, networks=None):
         self._arguments = arguments
-        self._volumes = volumes or Volumes([])
-        self._networks = networks or Networks([])
+        self._volumes = volumes or VolumeManager([])
+        self._networks = networks or NetworkManager([])
 
     def add_initrd(self, initrd=None):
         if initrd:
@@ -152,7 +176,7 @@ class Executor(object):
     @unikernel.setter
     def unikernel(self, unikernel=None):
         if not unikernel or not os.path.exists(unikernel):
-            raise ExecutorError("Could not find unikernel: %s" % unikernel)
+            raise RunnerError("Could not find unikernel: %s" % unikernel)
 
         self._unikernel = unikernel
 
@@ -166,7 +190,7 @@ class Executor(object):
             self._architecture = arch
 
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
-        raise ExecutorError('Using undefined executor driver')
+        raise RunnerError('Using undefined runner driver')
 
     def automount(self, dry_run=False):
         for vol in self.volumes.all():
@@ -218,7 +242,7 @@ class Executor(object):
                 env_str.append('%s=%s' % (var, env[var]))
 
             for cmd in net.pre_up:
-                utils.execute(cmd, env, dry_run)
+                util.execute(cmd, env, dry_run)
 
     @property
     def pre_up(self):
@@ -249,247 +273,47 @@ class Executor(object):
             self._post_down.extend(cmds)
 
     @classmethod
-    def from_config(cls, ctx, config=None, executor_base=None):
+    def from_config(cls, ctx, config=None, runner_base=None):
         assert ctx is not None, "ctx is undefined"
 
         arguments = None
         if config and 'arguments' in config:
             arguments = config['arguments']
-        elif executor_base is not None:
-            arguments = executor_base.arguments
+        elif runner_base is not None:
+            arguments = runner_base.arguments
 
         if config and 'volumes' in config:
-            volumes = Volumes.from_config(ctx.workdir, config['volumes'])
+            volumes = VolumeManager.from_config(
+                ctx.obj.workdir,
+                config['volumes']
+            )
         else:
-            volumes = Volumes([])
+            volumes = VolumeManager([])
 
         if config and 'networks' in config:
-            networks = Networks.from_config(config['networks'])
+            networks = NetworkManager.from_config(
+                config['networks']
+            )
         else:
-            networks = Networks([])
+            networks = NetworkManager([])
 
         # Override base with new configuration
-        if executor_base is not None:
-            executor_base.networks.add(networks)
-            networks = executor_base.networks
-            executor_base.volumes.add(volumes)
-            volumes = executor_base.volumes
+        if runner_base is not None:
+            runner_base.networks.add(networks)
+            networks = runner_base.networks
+            runner_base.volumes.add(volumes)
+            volumes = runner_base.volumes
 
-        executor = cls(
+        runner = cls(
             arguments=arguments,
             networks=networks,
             volumes=volumes
         )
 
         if config and 'pre_up' in config:
-            executor.append_pre_up(config['pre_up'])
+            runner.append_pre_up(config['pre_up'])
 
         if config and 'post_down' in config:
-            executor.append_post_down(config['post_down'])
+            runner.append_post_down(config['post_down'])
 
-        return executor
-
-
-class LinuxExecutor(Executor):
-    _base_cmd = ''
-
-    def add_initrd(self, initrd=None):
-        pass
-
-    def add_virtio_nic(self, virtio_nic=None):
-        pass
-
-    def add_bridge(self, bridge=None):
-        pass
-
-    def add_interface(self, interface=None):
-        pass
-
-    def add_virtio_raw(self, image=None):
-        pass
-
-    def add_virtio_qcow2(self, image=None):
-        pass
-
-    def add_virtio_9pfs(self, image=None):
-        pass
-
-    def open_gdb(self, port=None):
-        pass
-
-    def set_memory(self, memory=None):
-        pass
-
-    # TODO: Pin CPUs with isolcpus or taskset
-    def set_cpu_sockets(self, cpu_sockets=None):
-        pass
-
-    # TODO: Pin CPUs with isolcpus or taskset
-    def set_cpu_cores(self, cpu_cores=None):
-        pass
-
-    def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
-        logger.debug("Executing on Linux...")
-
-        cmd = [
-            self.unikernel
-        ]
-
-        if self.arguments:
-            cmd.append(self.arguments)
-
-        if extra_args:
-            cmd.extend(extra_args)
-
-        for pre_up_cmd in self._pre_up:
-            utils.execute(pre_up_cmd, dry_run=dry_run)
-
-        cmd = list(map(str, cmd))
-        logger.debug('Running: %s' % ' '.join(cmd))
-
-        if not dry_run:
-            process = subprocess.Popen(cmd)
-
-            try:
-                process.wait()
-
-            except KeyboardInterrupt:
-                try:
-                    process.terminate()
-                except OSError:
-                    pass
-                process.wait()
-
-        for post_down_cmd in self._post_down:
-            utils.execute(post_down_cmd, dry_run=dry_run)
-
-
-# TODO: Container runtime
-# RUNC_GUEST='runc'
-# class ContainerExecutor(Execeutor):
-#     pass
-
-
-class KVMExecutor(Executor):
-    def execute(self,  # noqa: C901
-                extra_args=None,
-                background=False,
-                paused=False,
-                dry_run=False):
-        logger.debug("Executing on KVM...")
-
-        self._cmd.extend(('-k', self.unikernel))
-
-        if background:
-            self._cmd.append('-x')
-        if paused:
-            self._cmd.append('-P')
-        if dry_run:
-            self._cmd.append('-D')
-        if extra_args:
-            self._cmd.extend(('-a', ' '.join(extra_args)))
-
-        self.automount(dry_run)
-        self.autoconnect(dry_run)
-
-        if self.architecture == "x86_64":
-            self._cmd.extend(('-t', 'x86pc'))
-        elif self.architecture == "arm64":
-            self._cmd.extend(('-t', 'arm64v'))
-
-        if platform.machine() != self.architecture:
-            self._cmd.append('-W')
-
-        if self.arguments:
-            self._cmd.extend(('-a', self.arguments))
-
-        cmd = [QEMU_GUEST]
-
-        cmd.extend(self._cmd)
-
-        for pre_up_cmd in self._pre_up:
-            utils.execute(pre_up_cmd, dry_run=dry_run)
-
-        cmd = list(map(str, cmd))
-        logger.debug('Running: %s' % ' '.join(cmd))
-
-        if not dry_run:
-            process = subprocess.Popen(cmd)
-
-            try:
-                process.wait()
-
-            except KeyboardInterrupt:
-                try:
-                    process.terminate()
-                except OSError:
-                    pass
-                process.wait()
-
-        for post_down_cmd in self._post_down:
-            utils.execute(post_down_cmd, dry_run=dry_run)
-
-
-class XenExecutor(Executor):
-    def execute(self,  # noqa: C901
-                extra_args=None,
-                background=False,
-                paused=False,
-                dry_run=False):
-        logger.debug("Executing on Xen...")
-
-        self._cmd.extend(('-k', self.unikernel))
-
-        if background:
-            self._cmd.append('-X')
-        if paused:
-            self._cmd.append('-P')
-        if dry_run:
-            self._cmd.append('-D')
-        if extra_args:
-            self._cmd.extend(('-a', ' '.join(extra_args)))
-
-        self.automount(dry_run)
-        self.autoconnect(dry_run)
-
-        if self.arguments:
-            self._cmd.extend(('-a', self.arguments))
-
-        cmd = [XEN_GUEST]
-        cmd.extend(self._cmd)
-
-        for pre_up_cmd in self._pre_up:
-            utils.execute(pre_up_cmd, dry_run=dry_run)
-
-        cmd = list(map(str, cmd))
-        logger.debug('Running: %s' % ' '.join(cmd))
-
-        if not dry_run:
-            process = subprocess.Popen(cmd)
-
-            try:
-                process.wait()
-
-            except KeyboardInterrupt:
-                try:
-                    process.terminate()
-                except OSError:
-                    pass
-                process.wait()
-
-        for post_down_cmd in self._post_down:
-            utils.execute(post_down_cmd, dry_run=dry_run)
-
-
-class ExecutorDriverEnum(Enum):
-    XEN    = ("xen"    , XenExecutor)    # noqa
-    KVM    = ("kvm"    , KVMExecutor)    # noqa
-    LINUXU = ("linuxu" , LinuxExecutor)  # noqa
-
-    @property
-    def name(self):
-        return self.value[0]
-
-    @property
-    def cls(self):
-        return self.value[1]
+        return runner
