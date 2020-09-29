@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -41,11 +42,11 @@ from kconfiglib import COMMENT
 from kconfiglib import MENU
 from kconfiglib import Symbol
 
-from kraft.constants import KCONFIG_ARCH_NAME
-from kraft.constants import KCONFIG_LIB_NAME
-from kraft.constants import KCONFIG_PLAT_NAME
-from kraft.errors import ConfigurationError
-from kraft.errors import KconfigFileNotFound
+from kraft.const import KCONFIG_ARCH_NAME
+from kraft.const import KCONFIG_LIB_NAME
+from kraft.const import KCONFIG_PLAT_NAME
+from kraft.error import ConfigurationError
+from kraft.error import KconfigFileNotFound
 from kraft.logger import logger
 
 
