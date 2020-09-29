@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,12 +32,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from kraft.components.provider import ProviderType
 
-SPECIFICATION_EXPLANATION = (
-    'You might be seeing this error because you\'re using the wrong kraft file version.\n'
-    'For more on the kraft file format versions, see: ttps://docs.unikraft.org/'
-)
+SPECIFICATION_EXPLANATION = ''.join([
+    'You might be seeing this error because you\'re using the wrong kraft file',
+    'version.\n For more on the kraft file format versions, see: ',
+    'https://docs.unikraft.org/'
+])
 
 
 class KraftError(Exception):
@@ -99,6 +100,13 @@ class CannotReadKraftfile(KraftError):
         )
 
 
+class CannotConfigureApplication(KraftError):
+    def __init__(self, workdir):
+        super(CannotConfigureApplication, self).__init__(
+            "Cannot configure the application at %s" % workdir 
+        )
+
+
 class InvalidInterpolation(KraftError):
     pass
 
@@ -140,32 +148,18 @@ class MismatchVersionRepo(KraftError):
 
 class MismatchTargetArchitecture(KraftError):
     def __init__(self, target_arch=None, supported_archs=[]):
-        if target_arch is None:
-            super(MismatchTargetArchitecture, self).__init__(
-                "Target architecture not set!  Supported architectures for this application include: %s"
-                % ", ".join(supported_archs)
-            )
-        else:
-            super(MismatchTargetArchitecture, self).__init__(
-                "Target architecture (%s) set does not match the supported architectures (%s).\n"
-                + "Please check your configuration."
-                % (target_arch, ", ".join(supported_archs))
-            )
+        super(MismatchTargetArchitecture, self).__init__(
+            "Supported architectures for this application include: %s"
+            % ", ".join(supported_archs)
+        )
 
 
 class MismatchTargetPlatform(KraftError):
     def __init__(self, target_plat=None, supported_plats=[]):
-        if target_plat is None:
-            super(MismatchTargetPlatform, self).__init__(
-                "Target platform not set!  Supported platforms for this application include: %s"
-                % ", ".join(supported_plats)
-            )
-        else:
-            super(MismatchTargetPlatform, self).__init__(
-                "The target platform (%s) does not match the supported platforms (%s).\n"
-                + "Please check your configuration."
-                % (target_plat, ", ".join(supported_plats))
-            )
+        super(MismatchTargetPlatform, self).__init__(
+            "Supported platforms for this application include: %s"
+            % ", ".join(supported_plats)
+        )
 
 
 class InvalidRepositorySource(KraftError):
@@ -211,16 +205,17 @@ class DNSMASQCannotStartServer(KraftError):
         )
 
 
-class ExecutorError(KraftError):
+class RunnerError(KraftError):
     pass
 
 
-class UnknownSourceProvider(KraftError):
+class UnknownLibraryProvider(KraftError):
     def __init__(self, name):
-        super(UnknownSourceProvider, self).__init__(
+        from kraft.lib.provider.type import LibraryProviderType
+        super(UnknownLibraryProvider, self).__init__(
             "The provided origin provider is not known: %s\nValid providers include: %s" % (
                 name,
-                ", ".join([member.name for _, member in ProviderType.__members__.items()])
+                ", ".join([member.name for _, member in LibraryProviderType.__members__.items()])
             )
         )
 
@@ -239,10 +234,85 @@ class NonCompatibleUnikraftLibrary(KraftError):
         )
 
 
-class UnknownLibraryOriginVersion(KraftError):
+class UnknownVersionError(KraftError):
     def __init__(self, desired_version, known_versions):
-        super(UnknownLibraryOriginVersion, self).__init__(
-            "Provided version '%s' not known in: {%s}" % (desired_version, ', '.join(known_versions))
+        from kraft.manifest import ManifestItem
+
+        component = None
+        if isinstance(known_versions, ManifestItem):
+            component = known_versions
+            known_versions = list()
+            for dist in component.dists:
+                for ver in component.dists[dist].versions:
+                    known_versions.append("%s:%s" % (dist, ver))
+
+        if component is None:
+            if len(known_versions) > 0:
+                super(UnknownVersionError, self).__init__(
+                    "Version not specified, choice of: {\n\t%s\n}" %
+                    ",\n\t".join(known_versions)
+                )
+            else:
+                super(UnknownVersionError, self).__init__(
+                    "Version not specified"
+                )
+        else:
+            if isinstance(known_versions, ManifestItem):
+                if desired_version is None:
+                    super(UnknownVersionError, self).__init__(
+                        "No version specified for %s. Choice of: {%s}" % (
+                            component.name,
+                            ", ".join(known_versions)
+                        )
+                    )
+                else:
+                    super(UnknownVersionError, self).__init__(
+                        "Provided version '%s' for %s.  Choice of: {%s}" % (
+                            desired_version,
+                            component.name,
+                            ", ".join(known_versions)
+                        )
+                    )
+            else:
+                super(UnknownVersionError, self).__init__(
+                    "No version specified for %s.  Choice of: {%s}" % (
+                        component.name,
+                        ", ".join(known_versions)
+                    )
+                )
+
+class DisabledComponentError(KraftError):
+    def __item__(self, name):
+        super(DisabledComponentError, self).__init__(
+            "Attempting to use component %s which has been disabled" % name
+        )
+
+class MissingManifest(KraftError):
+    def __init__(self, name):
+        super(MissingManifest, self).__init__(
+            "Cannot initialize component for %s without manifest" % name
+        )
+
+
+class MissingComponent(KraftError):
+    def __init__(self, name):
+        super(MissingComponent, self).__init__(
+            "Cannot initialize application without component: %s" % name
+        )
+
+
+class UnknownApplicationTemplateName(KraftError):
+    def __init__(self, name):
+        super(UnknownApplicationTemplateName, self).__init__(
+            "Unknown application name: %s" % name
+        )
+
+
+class UnknownVersionFormatError(KraftError):
+    def __init__(self, name):
+        super(UnknownVersionFormatError, self).__init__(
+            "String does not contain equality: %s"
+            % (name)
         )
 
 
