@@ -1,7 +1,7 @@
 {
   "project_name": "",
-  "library_name": "lib-template",
-  "library_kname": "LIBTEMPLATE",
+  "lib_name": "lib-template",
+  "lib_kname": "LIBTEMPLATE",
   "version": "",
   "description": "",
   "author_name": "",

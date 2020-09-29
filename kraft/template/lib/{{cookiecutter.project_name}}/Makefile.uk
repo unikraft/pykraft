@@ -38,62 +38,62 @@
 ################################################################################
 # Library registration
 ################################################################################
-$(eval $(call addlib_s,{{ cookiecutter.library_kname|lower }},$(CONFIG_{{ cookiecutter.library_kname|upper }})))
+$(eval $(call addlib_s,{{ cookiecutter.lib_kname|lower }},$(CONFIG_{{ cookiecutter.lib_kname|upper }})))
 
 ################################################################################
 # Sources
 ################################################################################]
 {%- if cookiecutter.commit != "" %}
-{{ cookiecutter.library_kname|upper }}_COMMIT = {{ cookiecutter.commit }}
+{{ cookiecutter.lib_kname|upper }}_COMMIT = {{ cookiecutter.commit }}
 {%- endif %}
 {%- if cookiecutter.version != "" %}
-{{ cookiecutter.library_kname|upper }}_VERSION = {{ cookiecutter.version }}
+{{ cookiecutter.lib_kname|upper }}_VERSION = {{ cookiecutter.version }}
 {%- endif %}
-{{ cookiecutter.library_kname|upper }}_URL = {{ cookiecutter.source_archive }}
-{{ cookiecutter.library_kname|upper }}_SUBDIR = {{ cookiecutter.project_name }}-$({{ cookiecutter.library_kname|upper }}_VERSION)
+{{ cookiecutter.lib_kname|upper }}_URL = {{ cookiecutter.source_archive }}
+{{ cookiecutter.lib_kname|upper }}_SUBDIR = {{ cookiecutter.project_name }}-$({{ cookiecutter.lib_kname|upper }}_VERSION)
 {%- if cookiecutter.with_patchedir %}
-{{ cookiecutter.library_kname|upper }}_PATCHDIR = $({{ cookiecutter.library_kname|upper }}_BASE)/patches
-$(eval $(call patch,{{ cookiecutter.library_kname|lower }},$({{ cookiecutter.library_kname|upper }}_PATCHDIR),$({{ cookiecutter.library_kname|upper }}_SUBDIR)))
+{{ cookiecutter.lib_kname|upper }}_PATCHDIR = $({{ cookiecutter.lib_kname|upper }}_BASE)/patches
+$(eval $(call patch,{{ cookiecutter.lib_kname|lower }},$({{ cookiecutter.lib_kname|upper }}_PATCHDIR),$({{ cookiecutter.lib_kname|upper }}_SUBDIR)))
 {%- endif %}
-$(eval $(call fetch,{{ cookiecutter.library_kname|lower }},$({{ cookiecutter.library_kname|upper }}_URL)))
+$(eval $(call fetch,{{ cookiecutter.lib_kname|lower }},$({{ cookiecutter.lib_kname|upper }}_URL)))
 
 ################################################################################
 # Helpers
 ################################################################################
-{{ cookiecutter.library_kname|upper }}_SRC = $({{ cookiecutter.library_kname|upper }}_ORIGIN)/$({{ cookiecutter.library_kname|upper }}_SUBDIR)
+{{ cookiecutter.lib_kname|upper }}_SRC = $({{ cookiecutter.lib_kname|upper }}_ORIGIN)/$({{ cookiecutter.lib_kname|upper }}_SUBDIR)
 
 ################################################################################
 # Library includes
 ################################################################################
-CINCLUDES-y += -I$({{ cookiecutter.library_kname|upper }}_BASE)/include
+CINCLUDES-y += -I$({{ cookiecutter.lib_kname|upper }}_BASE)/include
 
 ################################################################################
 # Flags
 ################################################################################
-{{ cookiecutter.library_kname|upper }}_FLAGS =
+{{ cookiecutter.lib_kname|upper }}_FLAGS =
 
 # Suppress some warnings to make the build process look neater
-{{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS =
+{{ cookiecutter.lib_kname|upper }}_FLAGS_SUPPRESS =
 
-{{ cookiecutter.library_kname|upper }}_CFLAGS-y += $({{ cookiecutter.library_kname|upper }}_FLAGS)
-{{ cookiecutter.library_kname|upper }}_CFLAGS-y += $({{ cookiecutter.library_kname|upper }}_FLAGS_SUPPRESS)
+{{ cookiecutter.lib_kname|upper }}_CFLAGS-y += $({{ cookiecutter.lib_kname|upper }}_FLAGS)
+{{ cookiecutter.lib_kname|upper }}_CFLAGS-y += $({{ cookiecutter.lib_kname|upper }}_FLAGS_SUPPRESS)
 
 ################################################################################
 # Glue code
 ################################################################################
 # Include paths
-# {{ cookiecutter.library_kname|upper }}_CINCLUDES-y   += $({{ cookiecutter.library_kname|upper }}_COMMON_INCLUDES-y)
-# {{ cookiecutter.library_kname|upper }}_CXXINCLUDES-y += $({{ cookiecutter.library_kname|upper }}_COMMON_INCLUDES-y)
+# {{ cookiecutter.lib_kname|upper }}_CINCLUDES-y   += $({{ cookiecutter.lib_kname|upper }}_COMMON_INCLUDES-y)
+# {{ cookiecutter.lib_kname|upper }}_CXXINCLUDES-y += $({{ cookiecutter.lib_kname|upper }}_COMMON_INCLUDES-y)
 
 {%- if cookiecutter.provide_main %}
-{{ cookiecutter.library_kname|upper }}SRCS-$(CONFIG_{{ cookiecutter.library_kname|upper }}_MAIN_FUNCTION) += $({{ cookiecutter.library_kname|upper }}_BASE)/main.c|unikraft
+{{ cookiecutter.lib_kname|upper }}SRCS-$(CONFIG_{{ cookiecutter.lib_kname|upper }}_MAIN_FUNCTION) += $({{ cookiecutter.lib_kname|upper }}_BASE)/main.c|unikraft
 {%- endif %}
 
 ################################################################################
 # Library sources
 ################################################################################
-# {{ cookiecutter.library_kname|upper }}_SRCS-y += # Include source files here
+# {{ cookiecutter.lib_kname|upper }}_SRCS-y += # Include source files here
 
 {%- for source_file in cookiecutter.source_files %}
-{{ cookiecutter.library_kname|upper }}_SRCS-y += {{ source_file }}
+{{ cookiecutter.lib_kname|upper }}_SRCS-y += {{ source_file }}
 {%- endfor %}
