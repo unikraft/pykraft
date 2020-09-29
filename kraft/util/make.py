@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

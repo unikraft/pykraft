@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -205,3 +206,37 @@ class ClickOptionMutex(click.Option):
                     self.prompt = None
 
         return super(ClickOptionMutex, self).handle_parse_result(ctx, opts, args)
+
+
+class ClickReaderOption(click.Option):
+    """
+    Mark this option as getting a _set option.
+    """
+    register_reader = True
+
+
+class ClickWriterOption(click.Option):
+    """
+    Fix the help for the _set suffix.
+    """
+    def get_help_record(self, ctx):
+        help = super(ClickWriterOption, self).get_help_record(ctx)
+        return (help[0].replace('_set ', '='),) + help[1:]
+
+
+class ClickWriterCommand(click.Group):
+    def parse_args(self, ctx, args):
+        """
+        Translate any opt= to opt_set= as needed.
+        """
+        options = [o for o in ctx.command.params
+                   if getattr(o, 'register_reader', None)]
+        prefixes = {p for p in sum([o.opts for o in options], [])
+                    if p.startswith('--')}
+        for i, a in enumerate(args):
+            a = a.split('=')
+            if a[0] in prefixes and len(a) > 1:
+                a[0] += '_set'
+                args[i] = '='.join(a)
+
+        return super(ClickWriterCommand, self).parse_args(ctx, args)
