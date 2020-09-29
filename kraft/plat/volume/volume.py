@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,42 +31,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 from __future__ import absolute_import
 from __future__ import unicode_literals
-
-import os
-from enum import Enum
-
-from kraft.errors import InvalidVolumeDriver
-from kraft.logger import logger
-
-
-class VolumeDriver(Enum):
-    VOL_INITRD = ("initrd", [""])
-    VOL_9PFS = ("9pfs", [
-        "CONFIG_LIBDEVFS=y"
-        "CONFIG_LIB9PFS=y"
-    ])
-    VOL_RAW = ("raw", [
-        "CONFIG_LIBDEVFS=y"
-    ])
-    VOL_QCOW2 = ("qcow2", [
-        "CONFIG_LIBDEVFS=y"
-    ])
-
-    @property
-    def name(self):
-        return self.value[0]
-
-    @property
-    def kconfig(self):
-        return self.kconfig[0]
-
-    @classmethod
-    def from_name(cls, name=None):
-        for vol in VolumeDriver.__members__.items():
-            if name == vol[1].name:
-                return vol
-
-        return None
 
 
 class Volume(object):
@@ -96,34 +61,8 @@ class Volume(object):
     def workdir(self):
         return self._workdir
 
-    @classmethod
-    def from_config(cls, name, driver, config=None, workdir=None):
-        source = None
 
-        if 'source' in config:
-            source = config['source']
-
-            # Check if the path exists and simply warn the user for anything
-            # not immediately retrievable
-            if os.path.exists(source):
-                pass
-            elif workdir and os.path.exists(os.path.join(workdir, source)):
-                source = os.path.join(workdir, source)
-            else:
-                logger.warn("The provide source path for '%s' could not be found: %s" % (name, source))
-
-        if driver is None and 'driver' in config:
-            driver = VolumeDriver.from_name(config['driver'])
-
-        return cls(
-            name=name,
-            driver=driver,
-            source=source,
-            workdir=workdir
-        )
-
-
-class Volumes(object):
+class VolumeManager(object):
     _volumes = []
 
     def __init__(self, volume_base=[]):
@@ -139,7 +78,7 @@ class Volumes(object):
 
             self._volumes.append(volume)
 
-        elif isinstance(volume, Volumes):
+        elif isinstance(volume, VolumeManager):
             for vol in volume.all():
                 self.add(vol)
 
@@ -152,25 +91,3 @@ class Volumes(object):
 
     def all(self):
         return self._volumes
-
-    @classmethod
-    def from_config(cls, workdir=None, config=None):
-        volumes = cls([])
-
-        for vol in config:
-
-            driver = None
-            if 'driver' in config[vol]:
-                driver = VolumeDriver.from_name(config[vol]['driver'])
-
-            if driver:
-                volumes.add(Volume.from_config(
-                    name=vol,
-                    driver=driver,
-                    config=config[vol],
-                    workdir=workdir,
-                ))
-            else:
-                raise InvalidVolumeDriver(vol)
-
-        return volumes
