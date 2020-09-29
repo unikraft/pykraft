@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -38,8 +39,8 @@ import six
 from jsonschema import Draft4Validator
 from jsonschema import RefResolver
 
-from kraft.errors import KraftError
-from kraft.errors import SPECIFICATION_EXPLANATION
+from kraft.error import KraftError
+from kraft.error import SPECIFICATION_EXPLANATION
 
 
 def python_type_to_yaml_type(type_):
@@ -53,6 +54,7 @@ def python_type_to_yaml_type(type_):
         'unicode': 'string',
         'str': 'string',
         'bytes': 'string',
+        'NoneType': 'null',
     }.get(type_name, type_name)
 
 
@@ -69,6 +71,8 @@ def validate_top_level_string(config_file, config, section):
                 config_file.filename,
                 type(config)))
 
+    return config
+
 
 def validate_top_level_string_or_list(config_file, config, section):
     if not isinstance(config, (six.string_types, list)):
@@ -77,13 +81,17 @@ def validate_top_level_string_or_list(config_file, config, section):
                 config_file.filename,
                 type(config)))
 
+    return config
+
 
 def validate_unikraft_section(config_file, config):
-    if not isinstance(config, (six.string_types, dict)):
+    if not isinstance(config, (six.string_types, dict, int, float)):
         raise KraftError(
             "Top level object in '{}' needs to be an object not '{}'.".format(
                 config_file.filename,
                 type(config)))
+
+    return config
 
 
 def validate_libraries_section(config_file, config):
@@ -94,8 +102,10 @@ def validate_libraries_section(config_file, config):
                 config_file.filename,
                 type(config)))
 
+    return config
 
-def validate_config_section(filename, config, section):
+
+def validate_component_section(filename, config, section):
     """Validate the structure of a configuration section. This must be done
     before interpolation so it's separate from schema validation.
     """
@@ -116,7 +126,14 @@ def validate_config_section(filename, config, section):
                     section=section,
                     name=key))
 
-        if not isinstance(value, (dict, bool)):
+        # Turn a None type into a boolean, so that listing it returns as True
+        if value is None:
+            value = True
+            config[key] = True
+
+        if not isinstance(value, (
+                    six.string_types, dict, bool, int, float
+                )):
             raise KraftError(
                 "In file '{filename}', {section} '{name}' must be a mapping not "
                 "{type}.".format(
@@ -125,13 +142,17 @@ def validate_config_section(filename, config, section):
                     name=key,
                     type=anglicize_json_type(python_type_to_yaml_type(value))))
 
+    return config
 
-def validate_executor_section(config_file, config):
+
+def validate_run_section(config_file, config):
     if not isinstance(config, dict):
         raise KraftError(
             "Top level object in '{}' needs to be an object not '{}'.".format(
                 config_file.filename,
                 type(config)))
+
+    return config
 
 
 def get_schema_path():
@@ -320,4 +341,5 @@ def validate_against_config_schema(config_file):
     handle_errors(
         validator.iter_errors(config_file.config),
         process_config_schema_errors,
-        config_file.filename)
+        config_file.filename
+    )
