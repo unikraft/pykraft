@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,45 +32,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from kraft.components.repository import Repository
-from kraft.components.types import RepositoryType
+from .component import Component
 
 
-class Core(Repository):
-    @classmethod
-    def from_config(cls, ctx, config=None, save_cache=True):
-        assert ctx is not None, "ctx is undefined"
-
-        source = None
-        version = None
-
-        if 'source' in config:
-            source = config['source']
-
-        if 'version' in config:
-            version = config['version']
-
-        return super(Core, cls).from_unikraft_origin(
-            name=None,
-            source=source,
-            version=version,
-            repository_type=RepositoryType.CORE,
-            save_cache=save_cache,
-        )
-
-    @classmethod
-    def from_unikraft_origin(cls, source=None, version=None, save_cache=True):
-        return super(Core, cls).from_unikraft_origin(
-            name=None,
-            source=source,
-            version=version,
-            repository_type=RepositoryType.CORE,
-            save_cache=save_cache,
-        )
-
-    # One day we will need this
-    # e.g.
-    #    if core.compatible(UK_COMPAT_CORE_v0_4_0):
-    #
-    def compatible(self, version):
-        return True
+class Unikraft(Component):
+    pass
