@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,13 +32,3 @@
 # flake8: noqa
 from __future__ import absolute_import
 from __future__ import unicode_literals
-
-from .build import build
-from .clean import clean
-from .configure import configure
-from .init import init
-from .lib.bump import bump as libbump
-from .lib.init import init as libinit
-from .list import list
-from .run import run
-from .up import up
