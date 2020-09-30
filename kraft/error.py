@@ -100,6 +100,13 @@ class CannotReadKraftfile(KraftError):
         )
 
 
+class CannotReadMakefilefile(KraftError):
+    def __init__(self, file):
+        super(CannotReadMakefilefile, self).__init__(
+            "The provided Makefile does not exist, is empty or is corrupt: %s" % file
+        )
+
+
 class CannotConfigureApplication(KraftError):
     def __init__(self, workdir):
         super(CannotConfigureApplication, self).__init__(
@@ -281,11 +288,20 @@ class UnknownVersionError(KraftError):
                     )
                 )
 
+
+class UnknownLibraryOriginVersion(KraftError):
+    def __init__(self, desired_version, known_versions):
+        super(UnknownLibraryOriginVersion, self).__init__(
+            "Provided version '%s' not known in: {%s}" % (desired_version, ', '.join(known_versions))
+        )
+
+
 class DisabledComponentError(KraftError):
     def __item__(self, name):
         super(DisabledComponentError, self).__init__(
             "Attempting to use component %s which has been disabled" % name
         )
+
 
 class MissingManifest(KraftError):
     def __init__(self, name):

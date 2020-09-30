@@ -34,7 +34,9 @@ from __future__ import unicode_literals
 
 import os
 import click
+import semver
 import datetime
+import fileinput
 
 from pathlib import Path
 from git import Repo as GitRepo
@@ -49,6 +51,8 @@ from kraft.const import TEMPLATE_LIB
 from kraft.const import UK_VERSION_VARNAME
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_VERSION_EXT
+from kraft.const import SEMVER_PATTERN
+from kraft.const import VSEMVER_PATTERN
 
 from cookiecutter.generate import generate_context
 from cookiecutter.generate import generate_files
@@ -64,8 +68,17 @@ from kraft.util import recursively_copy
 
 from .provider import determine_lib_provider
 
+from kraft.error import CannotReadMakefilefile
+from kraft.error import UnknownLibraryProvider
+from kraft.error import NoRemoteVersionsAvailable
+from kraft.error import CannotDetermineRemoteVersion
+from kraft.error import UnknownLibraryOriginVersion
+from kraft.error import BumpLibraryDowngrade
 
-def intrusively_determine_lib_origin(localdir=None, replace_var=True):
+from .provider import determine_lib_provider
+
+
+def intrusively_determine_lib_origin_url(localdir=None):
     """
     Intrusively determine the origin code's source URL if there is access to
     the Unikraft library directory.
@@ -82,39 +95,73 @@ def intrusively_determine_lib_origin(localdir=None, replace_var=True):
     makefile_uk = os.path.join(localdir, MAKEFILE_UK)
 
     if os.path.exists(makefile_uk) is False:
-        return
+        raise CannotReadMakefilefile(makefile_uk)
 
     makefile_vars = make_list_vars(makefile_uk)['makefile']
 
-    lib_url_var = None
-    lib_version_var = None
-
     for var in makefile_vars:
         if var.endswith(UNIKRAFT_LIB_MAKEFILE_URL_EXT):
-            lib_url_var = var
-            continue
-        if var.endswith(UNIKRAFT_LIB_MAKEFILE_VERSION_EXT):
-            lib_version_var = var
-            continue
+            return makefile_vars[var]
 
-    if lib_version_var is not None:
-        self.origin_version = makefile_vars[lib_version_var]
-    else:
-        return
+    return None
+
+
+def intrusively_determine_lib_origin_version(localdir=None):
+    """
+    Intrusively determine the origin code's source URL if there is access to
+    the Unikraft library directory.
+
+    Args:
+        localdir:  The local directory to read from.
+
+    Returns
+        origin url.
+    """
+    if localdir is None:
+        raise ValueError("expected localdir")
+
+    makefile_uk = os.path.join(localdir, MAKEFILE_UK)
+
+    if os.path.exists(makefile_uk) is False:
+        raise CannotReadMakefilefile(makefile_uk)
+
+    makefile_vars = make_list_vars(makefile_uk)['makefile']
+
+    for var in makefile_vars:
+        if var.endswith(UNIKRAFT_LIB_MAKEFILE_VERSION_EXT):
+            return makefile_vars[var]
+
+    return None
 
 
 class Library(Component):
     _origin_url = None
     @property
-    def origin_url(self): return self._origin_url
+    def origin_url(self):
+        if self._origin_url is None and os.path.exists(self.localdir):
+            self._origin_url = intrusively_determine_lib_origin_url(self._localdir)
+
+        return self._origin_url
 
     _origin_version = None
     @property
-    def origin_version(self): return self._origin_version
+    def origin_version(self):
+        if self._origin_version is None and os.path.exists(self.localdir):
+            self._origin_version = intrusively_determine_lib_origin_version(self._localdir)
+
+        return self._origin_version
 
     _origin_provider = None
     @property
-    def origin_provider(self): return self._origin_provider
+    def origin_provider(self):
+        if self._origin_provider is None and self.origin_url is not None:
+            provider_cls = determine_lib_provider(self._origin_url)
+            self._origin_provider = provider_cls(
+                source=self._origin_url,
+                current_version=self.origin_version
+            )
+
+        return self._origin_provider
 
     _dependencies = None
     @property
@@ -147,7 +194,6 @@ class Library(Component):
     def __init__(ctx, self, *args, **kwargs):
         super(Library, self).__init__(*args, **kwargs)
 
-        self._localdir = kwargs.get("localdir", None)
         self._origin_url = kwargs.get("origin_url", None)
         self._origin_version = kwargs.get("origin_version", None)
         self._template_value = dict()
@@ -163,6 +209,16 @@ class Library(Component):
         self.set_template_value('lib_name', self.libname)
         self.set_template_value('lib_kname', self.kname)
         self.set_template_value('commit', '')
+    
+    @classmethod
+    @click.pass_context
+    def from_workdir(ctx, cls, workdir=None):
+        if workdir is None:
+            workdir = ctx.obj.workdir
+        
+        return cls(
+            localdir=workdir,
+        )
 
     def set_template_value(self, key=None, val=None):
         if key is not None:
@@ -252,10 +308,153 @@ class Library(Component):
             NoRemoteVersionsAvailable:  No remote versions to select from.
             CannotDetermineRemoteVersion:  Unable to determine which version to
                 upgrade to.
+            UnknownLibraryProvider:  Undetermined origin provider.
             KraftError:  Miscellaneous error.
         """
-        pass
 
+        if self.origin_provider is None:
+            raise UnknownLibraryProvider(self.name)
+
+        # Retrieve known versions
+        versions = self.origin_provider.probe_remote_versions()
+
+        semversions = []
+
+        if len(versions) == 0:
+            raise NoRemoteVersionsAvailable(self.origin_provider.source)
+
+        # filter out non-semver versions
+        for known_version in list(versions.keys()):
+            found = SEMVER_PATTERN.search(known_version)
+
+            if found is not None:
+                semversions.append(known_version)
+
+        current_version = self.origin_version
+
+        if version is None:
+
+            # Pick the highest listed verson
+            if ctx.obj.assume_yes:
+
+                # There are no semversions
+                if len(semversions) == 0:
+                    raise CannotDetermineRemoteVersion(self.localdir)
+
+                current_not_semver = False
+
+                try:
+                    semver.VersionInfo.parse(current_version)
+                except ValueError as e:
+                    logger.warn(e)
+                    current_not_semver = True
+
+                # Remove non-semvers
+                latest_version = None
+                _semversions = semversions
+                semversions = list()
+                for checkv in _semversions:
+                    try:
+                        semver.VersionInfo.parse(checkv)
+                        semversions.append(checkv)
+                    except ValueError:
+                        continue
+
+                latest_version = sorted(semversions, reverse=True)[0]
+
+                # Pick the latest version
+                if fast_forward or current_not_semver:
+                    version = latest_version
+
+                # Check if we're already at the latest version
+                elif semver.compare(current_version, latest_version) == 0:
+                    version = latest_version
+
+                # Find the next version
+                else:
+                    semversions = sorted(semversions)
+
+                    for i in range(len(semversions)):
+                        try:
+                            comparison = semver.compare(
+                                semversions[i],
+                                current_version
+                            )
+                        except ValueError:
+                            logger.warn(e)
+                            continue
+
+                        if comparison == 0:
+                            # We should have never made it this far, but because we
+                            # did, we're at the latest version.
+                            if i + 1 == len(semversions):
+                                version = latest_version
+                                break
+
+                            # Select the next version
+                            else:
+                                version = semversions[i + 1]
+                                break
+
+            # Prompt user for a version
+            else:
+                version = read_user_choice('version',
+                    sorted(list(versions.keys()), reverse=True)
+                )
+
+        if version not in versions.keys():
+            if ctx.obj.assume_yes:
+                logger.warn(
+                    "Provided version '%s' not known in: {%s}"
+                    % (version, ', '.join(versions.keys()))
+                )
+            else:
+                raise UnknownLibraryOriginVersion(version, versions.keys())
+
+        if VSEMVER_PATTERN.search(version):
+            version = version[1:]
+
+        # Are we dealing with a semver pattern?
+        try:
+            if semver.compare(current_version, version) == 0:
+                logger.info("Library already latest version: %s" % version)
+                return version
+
+            if semver.compare(current_version, version) > 0:
+                if force_version:
+                    logger.warn(
+                        "Downgrading library from %s to %s..."
+                        % (current_version, version)
+                    )
+                else:
+                    raise BumpLibraryDowngrade(current_version, version)
+
+        except ValueError:
+            if current_version == version:
+                logger.info("Library already at version: %s" % version)
+                return version
+
+        # Actually perform the bump
+        makefile_uk = os.path.join(self.localdir, MAKEFILE_UK)
+        logger.debug("Reading %s..." % makefile_uk)
+
+        makefile_vars = make_list_vars(makefile_uk)['makefile']
+        version_var = None
+
+        for var in makefile_vars:
+            if var.endswith(UNIKRAFT_LIB_MAKEFILE_VERSION_EXT):
+                version_var = var
+                break
+
+        logger.info('Upgrading library from %s to %s...' % (current_version, version))
+
+        for line in fileinput.input(makefile_uk, inplace=1):
+            if line.startswith(version_var) and current_version in line:
+                print('%s = %s' % (version_var, version))
+            else:
+                print(line, end='')
+
+        return version
 
     def version_source_archive(self, varname=None):
         """
