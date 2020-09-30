@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -36,8 +37,36 @@ from pathlib import Path
 
 import dpath.util
 import toml
+from toml import TomlEncoder
 
 from kraft.logger import logger
+
+
+class TomlArraySeparatorEncoder(TomlEncoder):
+    def __init__(self, _dict=dict, preserve=False, separator=",\n"):
+        super(TomlArraySeparatorEncoder, self).__init__(_dict, preserve)
+        if separator.strip() == "":
+            separator = "," + separator
+        elif separator.strip(' \t\n\r,'):
+            raise ValueError("Invalid separator for arrays")
+        self.separator = separator
+
+    def dump_list(self, v):
+        t = []
+        retval = "[\n"
+        for u in v:
+            t.append(self.dump_value(u))
+        while t != []:
+            s = []
+            for u in t:
+                if isinstance(u, list):
+                    for r in u:
+                        s.append(r)
+                else:
+                    retval += "  " + str(u) + self.separator
+            t = s
+        retval += "]"
+        return retval
 
 
 class Settings(object):
@@ -56,7 +85,10 @@ class Settings(object):
     def save(self):
         # Write everything from the the start of the file
         with open(self._kraftconf, 'w+') as file:
-            file.write(toml.dumps(self._settings))
+            file.write(toml.dumps(
+                self._settings,
+                encoder=TomlArraySeparatorEncoder()
+            ))
 
     def get(self, prop, default=None):
         try:
