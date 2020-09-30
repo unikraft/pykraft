@@ -602,3 +602,39 @@ class ManifestIndex(object):
         
         self._index[checksum] = url
 
+
+@click.pass_context
+def maniest_from_name(ctx, name=None):
+    from kraft.types import break_component_naming_format
+
+    components = list()
+    if name is None:
+        return components
+
+    type, name, _, _ = break_component_naming_format(name)
+
+    for manifest_origin in ctx.obj.cache.all():
+        manifest = ctx.obj.cache.get(manifest_origin)
+
+        for _, component in manifest.items():
+            if (type is None or \
+                    (type is not None \
+                        and type.shortname == component.type)) \
+                    and component.name == name:
+                components.append(component)
+
+    return components
+
+@click.pass_context
+def manifest_from_localdir(ctx, localdir=None):
+    if localdir is None or not os.path.isdir(localdir):
+        return None
+
+    for manifest_origin in ctx.obj.cache.all():
+        manifest = ctx.obj.cache.get(manifest_origin)
+
+        for _, component in manifest.items():
+            if component.localdir == localdir:
+                return component
+    
+    return None
