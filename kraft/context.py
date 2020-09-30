@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -35,44 +36,54 @@ import logging
 import os
 from pathlib import Path
 
-import click
-
 from kraft.cache import Cache
-from kraft.constants import KRAFTCONF
-from kraft.constants import UNIKRAFT_APPSDIR
-from kraft.constants import UNIKRAFT_COREDIR
-from kraft.constants import UNIKRAFT_LIBSDIR
-from kraft.constants import UNIKRAFT_WORKDIR
-from kraft.environment import Environment
+from kraft.config.environment import Environment
+from kraft.const import KRAFTRC
+from kraft.const import UNIKRAFT_APPSDIR
+from kraft.const import UNIKRAFT_ARCHSDIR
+from kraft.const import UNIKRAFT_CACHEDIR
+from kraft.const import UNIKRAFT_COREDIR
+from kraft.const import UNIKRAFT_LIBSDIR
+from kraft.const import UNIKRAFT_PLATSDIR
+from kraft.const import UNIKRAFT_WORKDIR
 from kraft.logger import logger
 from kraft.settings import Settings
 
 
-class Context(click.Context):
+class KraftContext:
+    """
+    Context manager acts as a decorator and helps initialize and persist and
+    current state of affairs for the kraft utility.
+    """
+
     _verbose = False
-    _dont_checkout = False
     _timestamps = True
     _assume_yes = False
-    ignore_checkout_errors = False
+    _dont_checkout = False
+    _ignore_checkout_errors = False
 
-    """Context manager acts as a decorator and helps initialize and persist and
-    current state of affairs for the kraft utility."""
-    def __init__(self):
-        self._verbose = False
+    def __init__(self, verbose=False, dont_checkout=False,
+                 ignore_checkout_errors=False, assume_yes=False):
+        self.verbose = verbose
+        self._dont_checkout = dont_checkout
+        self._ignore_checkout_errors = ignore_checkout_errors
+        self._assume_yes = assume_yes
         self._workdir = os.getcwd()
-        self.init_env()
         self._depth = 0
         self._close_callbacks = []
-        self.obj = self
-        self._cache = Cache(self.env)
-        self._settings = Settings(os.environ['KRAFTCONF'])
         self._timestamps = True
+        self.obj = self
+        self.init_env()
 
     def init_env(self):  # noqa: C901
-        """Determines whether the integrity of the kraft application, namely
+        """
+        Determines whether the integrity of the kraft application, namely
         determining whether the kraft application can run under the given
-        runtime environment."""
+        runtime environment.
+        """
 
+        if 'UK_CACHEDIR' not in os.environ:
+            os.environ['UK_CACHEDIR'] = os.path.join(os.environ['HOME'], UNIKRAFT_CACHEDIR)
         if 'UK_WORKDIR' not in os.environ:
             os.environ['UK_WORKDIR'] = os.path.join(os.environ['HOME'], UNIKRAFT_WORKDIR)
         if os.path.isdir(os.environ['UK_WORKDIR']) is False:
@@ -81,6 +92,14 @@ class Context(click.Context):
             os.environ['UK_ROOT'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_COREDIR)
         if os.path.isdir(os.environ['UK_ROOT']) is False:
             os.mkdir(os.environ['UK_ROOT'])
+        if 'UK_ARCHS' not in os.environ:
+            os.environ['UK_ARCHS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_ARCHSDIR)
+        if os.path.isdir(os.environ['UK_ARCHS']) is False:
+            os.mkdir(os.environ['UK_ARCHS'])
+        if 'UK_PLATS' not in os.environ:
+            os.environ['UK_PLATS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_PLATSDIR)
+        if os.path.isdir(os.environ['UK_PLATS']) is False:
+            os.mkdir(os.environ['UK_PLATS'])
         if 'UK_LIBS' not in os.environ:
             os.environ['UK_LIBS'] = os.path.join(os.environ['UK_WORKDIR'], UNIKRAFT_LIBSDIR)
         if os.path.isdir(os.environ['UK_LIBS']) is False:
@@ -94,12 +113,15 @@ class Context(click.Context):
         if 'UK_BUILD_ENGINE' not in os.environ:
             os.environ['UK_BUILD_ENGINE'] = 'gcc'
 
-        if 'KRAFTCONF' not in os.environ:
-            os.environ['KRAFTCONF'] = os.path.join(os.environ['HOME'], KRAFTCONF)
-        if os.path.exists(os.environ['UK_APPS']) is False:
-            Path(os.environ['UK_APPS']).touch()
+        if 'KRAFTRC' not in os.environ:
+            os.environ['KRAFTRC'] = os.path.join(os.environ['HOME'], KRAFTRC)
+        if os.path.exists(os.environ['KRAFTRC']) is False:
+            # TODO: Copy default .kraftrc
+            Path(os.environ['KRAFTRC']).touch()
 
         self._env = Environment.from_env_file(self._workdir, None)
+        self._cache = Cache(self.env)
+        self._settings = Settings(os.environ['KRAFTRC'])
 
     @property
     def cache(self):
@@ -158,6 +180,3 @@ class Context(click.Context):
     @property
     def settings(self):
         return self._settings
-
-
-kraft_context = click.make_pass_decorator(Context, ensure=True)
