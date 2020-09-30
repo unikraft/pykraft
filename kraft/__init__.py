@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Laboraties Europe GmbH.,NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -32,7 +33,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 __program__ = 'kraft'
-__version__ = '0.4.0-34-g62f6520'
+__version__ = '0.4.1-alpha.0'
 __description__ = '''
 Define, configure, build and run unikernel applications.
 '''
