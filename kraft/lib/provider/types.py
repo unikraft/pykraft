@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,31 +34,30 @@ from __future__ import unicode_literals
 
 from enum import Enum
 
-from .git import GitProvider
-from .github import GitHubProvider
-from .sourceforge import SourceForgeProvider
-from .tarball import TarballProvider
+from .git import GitLibraryProvider
+from .github import GitHubLibraryProvider
+from .sourceforge import SourceForgeLibraryProvider
+from .tarball import TarballLibraryProvider
 
 
-def determine_provider(source=None):
+def determine_lib_provider(source=None):
     provider = None
 
     if source is None:
         return provider
 
-    for source_provider, member in ProviderType.__members__.items():
+    for _, member in LibraryProviderType.__members__.items():
         if member.is_type(source):
-            provider = member.cls(source=source)
-            return provider
+            return member.cls
 
     return provider
 
 
-class ProviderType(Enum):
-    GITHUB      = ("github"     , GitHubProvider)       # noqa
-    GIT         = ("git"        , GitProvider)          # noqa
-    SOURCEFORGE = ("sourceforge", SourceForgeProvider)  # noqa
-    TARBALL     = ("tarball"    , TarballProvider)      # noqa
+class LibraryProviderType(Enum):
+    GITHUB      = ("github"     , GitHubLibraryProvider)       # noqa
+    GIT         = ("git"        , GitLibraryProvider)          # noqa
+    SOURCEFORGE = ("sourceforge", SourceForgeLibraryProvider)  # noqa
+    TARBALL     = ("tarball"    , TarballLibraryProvider)      # noqa
 
     @property
     def name(self):
