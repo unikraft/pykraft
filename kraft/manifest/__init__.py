@@ -38,3 +38,6 @@ from .manifest import ManifestItem
 from .manifest import ManifestItemVersion
 from .manifest import ManifestItemDistribution
 from .manifest import ManifestVersionEquality
+
+from .manifest import maniest_from_name
+from .manifest import manifest_from_localdir
