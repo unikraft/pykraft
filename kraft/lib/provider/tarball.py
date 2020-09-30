@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,9 +34,9 @@ from __future__ import unicode_literals
 
 import htmllistparse
 
-from .provider import Provider
-from kraft.constants import SEMVER_PATTERN
-from kraft.constants import TARBALL_SUPPORTED_EXTENSIONS
+from .provider import LibraryProvider
+from kraft.const import SEMVER_PATTERN
+from kraft.const import TARBALL_SUPPORTED_EXTENSIONS
 from kraft.logger import logger
 
 
@@ -75,7 +76,7 @@ def tarball_probe_remote_versions(source=None):
     return versions
 
 
-class TarballProvider(Provider):
+class TarballLibraryProvider(LibraryProvider):
 
     @classmethod
     def is_type(cls, origin=None):
