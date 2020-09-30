@@ -56,7 +56,7 @@ from kraft.error import KraftError
     is_flag=True,
 )
 @click.pass_context
-def cmd_configure(ctx, workdir=None, proper=False):
+def cmd_clean(ctx, workdir=None, proper=False):
     """
     Clean the build artifacts of a Unikraft unikernel application.
     """
