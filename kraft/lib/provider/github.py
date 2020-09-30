@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -32,10 +33,10 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .git import git_probe_remote_versions
-from .git import GitProvider
-from kraft.constants import GITHUB_ORIGIN
-from kraft.constants import REPO_VALID_URL_PREFIXES
-from kraft.constants import TARBALL_SUPPORTED_EXTENSIONS
+from .git import GitLibraryProvider
+from kraft.const import GITHUB_ORIGIN
+from kraft.const import REPO_VALID_URL_PREFIXES
+from kraft.const import TARBALL_SUPPORTED_EXTENSIONS
 # from git.cmd import Git as GitCmd
 
 
@@ -49,27 +50,29 @@ def github_org_name(source=None):
     return github_parts[1], github_parts[2]
 
 
-class GitHubProvider(GitProvider):
+class GitHubLibraryProvider(GitLibraryProvider):
 
     @classmethod
     def is_type(cls, origin=None):
         if origin is None:
             return False
 
-        if 'github.com' in origin:
+        if GITHUB_ORIGIN in origin:
             return True
 
         return False
 
     def probe_remote_versions(self, source=None):
         if source is None:
-            source = self.source
+            source = self._source
 
         # Convert a archive URL to a git URL
         if source.endswith(tuple(TARBALL_SUPPORTED_EXTENSIONS)):
             org, repo = github_org_name(source)
 
-            self.source = source = "%s/%s/%s.git" % (GITHUB_ORIGIN, org, repo)
+            self._source = source = "https://%s/%s/%s.git" % (
+                GITHUB_ORIGIN, org, repo
+            )
 
         return git_probe_remote_versions(source)
 
