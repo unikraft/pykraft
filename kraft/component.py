@@ -134,8 +134,10 @@ class Component(object):
     def __init__(ctx, self, *args, **kwargs):
         self._name = kwargs.get("name", None)
         self._manifest = kwargs.get("manifest", None)
+        self._localdir = kwargs.get("localdir", None)
         self._kconfig = list()
 
+        version = None
         config = kwargs.get("config", None)
 
         if isinstance(config, (six.string_types, int, float)):
@@ -146,9 +148,16 @@ class Component(object):
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
         
         elif isinstance(config, bool) and config is False:
-            raise DisabledComponentError(self._name) 
+            raise DisabledComponentError(self._name)
+
+        if self._manifest is None and self._localdir is not None:
+            from kraft.manifest import manifest_from_localdir
+            self._manifest = manifest_from_localdir(self._localdir)
 
         if self._manifest is not None:
+
+            if self._name is None:
+                self._name = self._manifest.name
 
             # Attempt to select the latest version from stable or staging
             if version is None:
