@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -35,12 +36,12 @@ from git import GitCommandError
 from git import Repo as GitRepo
 from git.cmd import Git as GitCmd
 
-from .provider import Provider
-from kraft.constants import GIT_BRANCH_PATTERN
-from kraft.constants import GIT_TAG_PATTERN
-from kraft.constants import GIT_UNIKRAFT_TAG_PATTERN
-from kraft.constants import UNIKRAFT_ORIGIN
-from kraft.constants import VSEMVER_PATTERN
+from .provider import LibraryProvider
+from kraft.const import GIT_BRANCH_PATTERN
+from kraft.const import GIT_TAG_PATTERN
+from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
+from kraft.const import UNIKRAFT_ORIGIN
+from kraft.const import VSEMVER_PATTERN
 from kraft.logger import logger
 
 
@@ -109,7 +110,7 @@ def git_probe_remote_versions(source=None):  # noqa: C901
     return versions
 
 
-class GitProvider(Provider):
+class GitLibraryProvider(LibraryProvider):
 
     @classmethod
     def is_type(cls, source=None):
