@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,25 +32,28 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import os
+import threading
 
 import six
 from fcache.cache import FileCache
 
 from kraft import __program__
 from kraft.logger import logger
+from kraft.manifest import Manifest
 
 
 class Cache(object):
     _cache = {}
-    _cachedir = []
+    _cachedir = None
 
     def __init__(self, environment):
-        """Initializes the cache so that kraft does not have to constantly
+        """
+        Initializes the cache so that kraft does not have to constantly
         retrieve informational lists about unikraft, its available
-        architectures, platforms, libraries and supported applications."""
+        architectures, platforms, libraries and supported applications.
+        """
 
-        self._cachedir = os.path.join(environment.get('UK_WORKDIR'), 'kraft.cache')
+        self._cachedir = environment.get('UK_CACHEDIR')
 
         # Initiaize a cache instance
         self._cache = FileCache(
@@ -58,43 +62,54 @@ class Cache(object):
             flag='cs'
         )
 
+        self._cache_lock = threading.Lock()
+
     @property
     def cache(self):
         return self._cache
 
-    def get(self, source=None):
-        if isinstance(source, six.string_types) and source in self._cache:
-            logger.debug("Retrieving %s from cache..." % source)
-            return self._cache[source]
+    def get(self, origin=None):
+        if isinstance(origin, six.string_types) and origin in self._cache:
+            logger.debug("Retrieving %s from cache..." % origin)
+            return self._cache[origin]
 
         return None
 
-    def find_by_name(self, name=None):
-        for source in self._cache:
-            if self._cache[source].name == name:
-                return self._cache[source]
+    def find_item_by_name(self, type=None, name=None):
+        for origin in self._cache:
+            for item in self._cache[origin].items():
+                if ((type is not None and item[1].type == type)
+                        or type is None) and item[1].name == name:
+                    return item[1]
 
         return None
 
     def all(self):
         return self._cache
 
-    def set(self, source, repository):
-        if isinstance(source, six.string_types):
-            logger.debug("Saving %s into cache..." % repository)
-            self._cache[source] = repository
+    def save(self, origin, manifest):
+        if not isinstance(origin, six.string_types):
+            raise TypeError("origin is not string")
+        if not isinstance(manifest, Manifest):
+            raise TypeError("Invalid manifest")
+
+        with self._cache_lock:
+            logger.debug("Saving %s into cache..." % manifest)
+            self._cache[origin] = manifest
 
     def sync(self):
         logger.debug("Synchronizing cache with filesystem...")
-        pass
+        self._cache.sync()
+
+    def purge(self):
+        logger.debug("Purging cache...")
+        self._cache.clear()
 
     def is_stale(self):
-        """Determine if the list of remote repositories is stale.  Return a
-        boolean value if at least one repository is marked as stale."""
+        """
+        Determine if the list of remote repositories is stale.  Return a boolean
+        value if at least one repository is marked as stale.
+        """
 
         logger.debug("Checking cache for staleness...")
-
-        if len(self.all()) == 0:
-            return True
-
-        return False
+        return True if len(self.all()) == 0 else False
