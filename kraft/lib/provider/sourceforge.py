@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,12 +34,12 @@ from __future__ import unicode_literals
 
 import feedparser
 
-from .tarball import TarballProvider
-from kraft.constants import SEMVER_PATTERN
-from kraft.constants import SOURCEFORGE_DOWNLOAD
-from kraft.constants import SOURCEFORGE_PROJECT_FEED
-from kraft.constants import SOURCEFORGE_PROJECT_NAME
-from kraft.constants import TARBALL_SUPPORTED_EXTENSIONS
+from .tarball import TarballLibraryProvider
+from kraft.const import SEMVER_PATTERN
+from kraft.const import SOURCEFORGE_DOWNLOAD
+from kraft.const import SOURCEFORGE_PROJECT_FEED
+from kraft.const import SOURCEFORGE_PROJECT_NAME
+from kraft.const import TARBALL_SUPPORTED_EXTENSIONS
 
 
 def sourceforge_probe_remote_versions(source=None):
@@ -80,7 +81,7 @@ def sourceforge_probe_remote_versions(source=None):
     return versions
 
 
-class SourceForgeProvider(TarballProvider):
+class SourceForgeLibraryProvider(TarballLibraryProvider):
 
     @classmethod
     def is_type(cls, origin=None):
