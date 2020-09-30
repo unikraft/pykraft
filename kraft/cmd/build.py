@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,77 +32,87 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import os
 import sys
 
 import click
 
+from kraft.app import Application
 from kraft.config import config
-from kraft.context import kraft_context
-from kraft.errors import KraftError
+from kraft.error import KraftError
 from kraft.logger import logger
-from kraft.project import Project
 
+from kraft.cmd.list import kraft_list_preflight
 
-@kraft_context
-def kraft_build(ctx, fetch=True, prepare=True, target=None, fast=False):
-    logger.debug("Building %s..." % ctx.workdir)
+@click.pass_context
+def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
+        fast=False):
+    """
+    """
+    if workdir is None or os.path.exists(workdir) is False:
+        raise ValueError("working directory is empty: %s" % workdir)
 
-    try:
-        project = Project.from_config(
-            ctx.workdir,
-            config.load(
-                config.find(ctx.workdir, None, ctx.env)
-            )
-        )
+    logger.debug("Building %s..." % workdir)
 
-    except KraftError as e:
-        logger.error(str(e))
-        sys.exit(1)
+    app = Application.from_workdir(workdir)
 
-    if not project.is_configured():
+    if not app.is_configured():
         if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
-            try:
-                project.configure(force_configure=True)
-
-            except KraftError as e:
-                logger.error(str(e))
-                sys.exit(1)
-
+            app.configure()
+    
     n_proc = None
     if fast:
         # This simply set the `-j` flag which signals to make to use all cores.
-        n_proc = ""
+        n_proc = 0
 
-    try:
-        project.build(
-            fetch=fetch,
-            prepare=prepare,
-            target=target,
-            n_proc=n_proc
-        )
+    app.build(
+        fetch=fetch,
+        prepare=prepare,
+        target=target,
+        n_proc=n_proc
+    )
 
-    except KraftError as e:
-        logger.error(str(e))
-        sys.exit(1)
 
 
 @click.command('build', short_help='Build the application.')
-@click.option('--fetch/--no-fetch',           'fetch',   help='Run fetch step before build.', default=True)  # noqa: E501
-@click.option('--prepare/--no-prepare',       'prepare', help='Run prepare step before build.',  default=True)  # noqa: E501
-@click.option('--fast',                 '-j', 'fast',    help='Use all CPU cores to build the application.', is_flag=True)  # noqa: E501
-@click.option('--noop',                 '-q', 'noop',    help='Do not run the build.', is_flag=True)  # noqa: E501
+@click.option(
+    '--fetch/--no-fetch','fetch',
+    help='Run fetch step before build.',
+    default=True
+)
+@click.option(
+    '--prepare/--no-prepare','prepare',
+    help='Run prepare step before build.',
+    default=True
+)
+@click.option(
+    '--fast','-j', 'fast',
+    help='Use all CPU cores to build the application.',
+    is_flag=True
+)
 @click.argument('target', required=False)
-def build(fetch=True, prepare=True, target=None, fast=False, noop=False):
+@click.pass_context
+def cmd_build(ctx, fetch=True, prepare=True, target=None, fast=False):
     """
     Builds the Unikraft application for the target architecture and platform.
     """
 
-    if noop:
-        target = False
+    kraft_list_preflight()
 
-    kraft_build(
-        fetch=fetch,
-        prepare=prepare,
-        target=target,
-        fast=fast
-    )
+    try:
+        kraft_build(
+            workdir=ctx.obj.workdir,
+            fetch=fetch,
+            prepare=prepare,
+            target=target,
+            fast=fast
+        )
+
+    except Exception as e:
+        logger.critical(str(e))
+
+        if ctx.obj.verbose:
+            import traceback
+            logger.critical(traceback.format_exc())
+
+        sys.exit(1)
