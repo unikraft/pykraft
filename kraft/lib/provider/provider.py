@@ -32,12 +32,23 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+PROVIDER_STATUS_AVAILABLE = "available"
+PROVIDER_STATUS_OUTOFDATE = "outofdate"
+PROVIDER_STATUS_EMPTY = "empty"
+
 
 class LibraryProvider(object):
     _source = None
+    @property
+    def source(self): return self._source
 
-    def __init__(self, source=None):
-        self.source = source
+    _current_version = None
+    @property
+    def current_version(self): return self._current_version
+
+    def __init__(self, source=None, current_version=None):
+        self._source = source
+        self._current_version = current_version
 
     @classmethod
     def is_type(self):
@@ -48,11 +59,3 @@ class LibraryProvider(object):
 
     def version_source_archive(self, varname=None):
         return self.source
-
-    @property
-    def source(self):
-        return self._source
-
-    @source.setter
-    def source(self, source=None):
-        self._source = source
