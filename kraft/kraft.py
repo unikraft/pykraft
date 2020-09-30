@@ -2,7 +2,8 @@
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Ltd., NEC Corporation. All rights reserved.
+# Copyright (c) 2020, NEC Laboratories Europe GmbH., NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -33,24 +34,39 @@ from __future__ import unicode_literals
 
 import click
 
-from kraft.commands import build
-from kraft.commands import clean
-from kraft.commands import configure
-from kraft.commands import init
-from kraft.commands import libbump
-from kraft.commands import libinit
-from kraft.commands import list
-from kraft.commands import run
-from kraft.commands import up
-from kraft.context import kraft_context
-from kraft.utils.cli import CONTEXT_SETTINGS
-from kraft.utils.cli import KraftHelpGroup
+from kraft.cmd import cmd_build
+from kraft.cmd import cmd_clean
+from kraft.cmd import cmd_configure
+from kraft.cmd import cmd_init
+from kraft.cmd import cmd_list
+from kraft.cmd import cmd_run
+from kraft.cmd import cmd_up
+from kraft.cmd import grp_lib
+from kraft.context import KraftContext
+from kraft.logger import logger
+from kraft.util.cli import CONTEXT_SETTINGS
+from kraft.util.cli import KraftHelpGroup
 
 
-@click.option('--verbose',                    '-v', 'verbose',                help='Enables verbose mode.', is_flag=True)  # noqa: E501,E261
-@click.option('--no-checkout',                '-X', 'dont_checkout',          help='Toggle checking-out repositories before any action.', is_flag=True)  # noqa: E501,E261
-@click.option('--ignore-git-checkout-errors', '-C', 'ignore_checkout_errors', help='Ignore checkout errors.', is_flag=True)  # noqa: E501,E261
-@click.option('--assume-yes',                 '-Y', 'assume_yes',             help='Assume yes to any binary prompts.', is_flag=True)  # noqa: E501,E261
+@click.option(
+    '--verbose', '-v', 'verbose',
+    help='Enables verbose mode.', is_flag=True
+)
+@click.option(
+    '--yes', '-Y', 'assume_yes',
+    help='Assume yes to any binary prompts.',
+    is_flag=True
+)
+@click.option(
+    '--timestamps', '-T', 'use_timestamps',
+    help='Show timestamps in output logs.',
+    is_flag=True
+)
+@click.option(
+    '--no-color', '-C', 'no_color',
+    help='Do not use colour in output logs.',
+    is_flag=True
+)
 @click.group(cls=KraftHelpGroup, context_settings=CONTEXT_SETTINGS, epilog="""
 Influential Environmental Variables:
   env::UK_WORKDIR The working directory for all Unikraft
@@ -61,7 +77,7 @@ Influential Environmental Variables:
              libraries [default: $UK_WORKDIR/libs]
   env::UK_APPS    The directory of all the template applications
              [default: $UK_WORKDIR/apps]
-  env::KRAFTCONF  The location of kraft's preferences file
+  env::KRAFTRC  The location of kraft's preferences file
              [default: ~/.kraftrc]
 
 Help:
@@ -69,33 +85,25 @@ Help:
   https://github.com/unikraft/kraft
 """)
 @click.version_option()
-@kraft_context
-def kraft(ctx, verbose, dont_checkout, ignore_checkout_errors, assume_yes):
-    ctx.verbose = verbose
-    ctx.dont_checkout = dont_checkout
-    ctx.ignore_checkout_errors = ignore_checkout_errors
-    ctx.assume_yes = assume_yes
-    ctx.cache.sync()
+@click.pass_context
+def kraft(ctx, verbose=False, assume_yes=False, use_timestamps=False,
+          no_color=False):
+    logger.use_timestamps = use_timestamps
+    logger.use_color = not no_color
+
+    ctx.obj = KraftContext(
+        verbose=verbose,
+        assume_yes=assume_yes
+    )
+
+    ctx.obj.cache.sync()
 
 
-@click.group(name='lib', short_help='Unikraft library commands.')
-@kraft_context
-def lib(ctx):
-    """
-    Unikraft library sub-commands are useful for maintaining and working
-    directly with Unikraft libraries.
-    """
-    pass
-
-
-lib.add_command(libinit)
-lib.add_command(libbump)
-
-kraft.add_command(up)
-kraft.add_command(run)
-kraft.add_command(init)
-kraft.add_command(list)
-kraft.add_command(build)
-kraft.add_command(clean)
-kraft.add_command(configure)
-kraft.add_command(lib)
+kraft.add_command(cmd_list)
+kraft.add_command(cmd_up)
+kraft.add_command(cmd_init)
+kraft.add_command(cmd_configure)
+kraft.add_command(cmd_build)
+kraft.add_command(cmd_run)
+kraft.add_command(cmd_clean)
+kraft.add_command(grp_lib)
