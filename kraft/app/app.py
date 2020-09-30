@@ -485,23 +485,6 @@ class Application(Component):
         else:
             self.make("clean")
 
-    # def checkout(self):
-    #     """
-    #     Check out a particular version of the repository.
-    #     """
-    #     self.core.checkout()
-    #     self.architectures.checkout()
-    #     self.platforms.checkout()
-    #     self.libraries.checkout()
-
-    # def __str__(self):
-    #     text = " App name....... %s\n" % self.name \
-    #          + " Core........... %s\n" % self.core \
-    #          + " Libraries...... "
-    #     for lib in self.libraries.all():
-    #         text += "%s\n%17s" % (lib.repository, " ")
-    #     return text
-
     def get_config(self):
         if 'specification' not in self._config:
             self._config['specification'] = KRAFT_SPEC_LATEST
