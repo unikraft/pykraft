@@ -37,13 +37,13 @@ from enum import Enum
 
 from .git import GitListProvider
 from .github import GitHubListProvider
-from .index import IndexListProvider
-from .xenbits import XenBitsListProvider
+from .tarball import TarballListProvider
 
 
 class ListProviderType(Enum):
     GITHUB  = ("github"  , GitHubListProvider)   # noqa
     GIT     = ("git"     , GitListProvider)      # noqa
+    TARBALL = ("tarball" , TarballListProvider)  # noqa
 
     @property
     def name(self):
