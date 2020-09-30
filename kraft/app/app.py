@@ -474,16 +474,16 @@ class Application(Component):
             with open(kraft_yaml, 'w+') as file:
                 file.write(self.to_yaml())
 
-    # def clean(self, proper=False):
-    #     """
-    #     Clean the application.
-    #     """
+    def clean(self, proper=False):
+        """
+        Clean the application.
+        """
 
-    #     if proper:
-    #         self.make("properclean")
+        if proper:
+            self.make("properclean")
 
-    #     else:
-    #         self.make("clean")
+        else:
+            self.make("clean")
 
     # def checkout(self):
     #     """
