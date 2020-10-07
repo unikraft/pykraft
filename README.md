@@ -18,6 +18,8 @@ To install `kraft` simply run:
 
     pip3 install git+https://github.com/unikraft/kraft.git
 
+`kraft` is installed under `~/.local/bin`. Make sure it is added to your PATH.
+
 You can then type `kraft` to see its help menu
 
 ## Building an Application
