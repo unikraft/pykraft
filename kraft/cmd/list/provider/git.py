@@ -36,16 +36,27 @@ from __future__ import unicode_literals
 import os
 import sys
 import uuid
+import click
 
+from datetime import datetime
+from queue import Queue
+from git.cmd import Git
 from git import RemoteProgress
 from git import Repo as GitRepo
 from git import InvalidGitRepositoryError
 from git import GitCommandError
 from git import NoSuchPathError
 from atpbar import find_reporter
+from urllib.parse import urlparse
 
+from kraft.types import break_component_naming_format
+from kraft.util import ErrorPropagatingThread
 from kraft.logger import logger
 from kraft.const import GIT_UNIKRAFT_TAG_RELEASE
+from kraft.const import UNIKRAFT_RELEASE_STABLE
+from kraft.const import UNIKRAFT_RELEASE_STABLE_VARIATIONS
+from kraft.const import UNIKRAFT_RELEASE_STAGING
+from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
 
 from .provider import ListProvider
 
@@ -70,6 +81,54 @@ class GitProgressBar(RemoteProgress):
 
 
 class GitListProvider(ListProvider):
+    @classmethod
+    def is_type(cls, origin=None):
+        if origin is None:
+            return False
+
+        g = Git()
+
+        try:
+            g.ls_remote(origin)
+        except GitCommandError:
+            return False
+        
+        return True
+
+    @click.pass_context
+    def probe(ctx, self, origin=None, items=None, return_threads=False):
+        # TODO: There should be a work around to fix this import loop cycle
+        from kraft.manifest import Manifest
+
+        if self.is_type(origin) is False:
+            return []
+            
+        threads = list()
+        if items is None:
+            items = Queue()
+        
+        manifest = ctx.obj.cache.get(origin)
+        
+        if manifest is None:
+            manifest = Manifest(
+                manifest=origin
+            )
+
+        if return_threads:
+            thread = ErrorPropagatingThread(
+                target=lambda *arg: items.put(get_component_from_git_repo(*arg)),
+                args=(
+                    ctx,
+                    origin
+                )
+            )
+            threads.append(thread)
+            thread.start()
+        else:
+            items.put(get_component_from_git_repo(ctx, origin))
+        
+        return items, threads
+
     @classmethod
     def download(cls, manifest=None, localdir=None, version=None,
             override_existing=False):
@@ -107,3 +166,103 @@ class GitListProvider(ListProvider):
 
         if version.git_sha is not None:
             repo.git.checkout(version.git_sha)
+
+
+def get_component_from_git_repo(ctx, origin=None):
+    if origin is None:
+        raise ValueError("expected origin")
+
+    # TODO: There should be a work around to fix this import loop cycle
+    from kraft.manifest import ManifestItem
+    from kraft.manifest import ManifestItemVersion
+    from kraft.manifest import ManifestItemDistribution
+    from .types import ListProviderType
+    
+    # This is a best-effort guess at the type and name of the git repository
+    # using the path to determine if it's namespaced.
+    uri = urlparse(origin)
+    pathparts = uri.path.split('/')
+    if len(pathparts) >= 2:
+        potential_typename = '/'.join(pathparts[-2:])
+        _type, _name, _, _ = break_component_naming_format(potential_typename)
+    elif len(pathparts) == 1:
+        _type, _name, _, _ = break_component_naming_format(uri.path)
+
+    if _type is None:
+        raise ValueError("".join([    
+            "Cannot determine the type of the repository: %s\n\n",
+            "Please ensure it is of the naming convention <type>-<name> or ",
+            "that it is namespaced in a directory <type>/<name>."
+            ]) % origin
+        )
+
+    localdir = None
+    if os.path.exists(origin):
+        localdir = origin
+
+    repo = GitRepo(origin)
+    item = ManifestItem(
+        provider=ListProviderType.GIT, 
+        name=_name,
+        type=_type.shortname,
+        dist=UNIKRAFT_RELEASE_STABLE,
+        git=origin,
+        manifest=origin,
+        localdir=localdir
+    )
+
+    stable = ManifestItemDistribution(
+        name=UNIKRAFT_RELEASE_STABLE
+    )
+
+    staging = ManifestItemDistribution(
+        name=UNIKRAFT_RELEASE_STAGING
+    )
+
+    for version in repo.tags:
+        commit = repo.commit(version)
+        
+        # interpret the tag name for symbolic distributions
+        ref = GIT_UNIKRAFT_TAG_PATTERN.match(str(version))
+        if ref is not None:
+            version = ref.group(1)
+
+        stable.add_version(ManifestItemVersion(
+            git_sha=str(commit),
+            version=version,
+            timestamp=datetime.fromtimestamp(int(commit.committed_date))
+        ))
+
+    item.add_distribution(stable)
+
+    for ref in repo.git.branch('-r').split('\n'):
+        # skip fast forwards
+        if "->" in ref:
+            continue
+
+        branch = ref.strip().replace("origin/", "")
+        if branch in UNIKRAFT_RELEASE_STABLE_VARIATIONS:
+            continue # we've done this one seperately
+
+        # Add this commit to the staging branch (this usually happens when
+        # commits have been applied on top of a HEAD)
+        if ref.strip() == "":
+            dist = staging
+
+        # Add the branch as a distribution
+        else:
+            dist = ManifestItemDistribution(
+                name=branch,
+            )
+
+        # Add the latest commit to that branch as the only version
+        commit = repo.commit(ref.strip())
+        dist.add_version(ManifestItemVersion(
+            git_sha=str(commit),
+            version=str(commit)[:7],
+            timestamp=datetime.fromtimestamp(int(commit.committed_date))
+        ))
+
+        item.add_distribution(dist)
+
+    return item
