@@ -198,11 +198,6 @@ class Library(Component):
         self._origin_version = kwargs.get("origin_version", None)
         self._template_value = dict()
 
-        if self._origin_url is not None:
-            self._origin_provider = determine_lib_provider(self._origin_url)
-
-        # dependencies = kwargs.get("dependencies", None)
-
         self.set_template_value('year', datetime.datetime.now().year)
         self.set_template_value('project_name', self._name)
         self.set_template_value('version', self._origin_version)
