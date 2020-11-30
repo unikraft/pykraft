@@ -70,7 +70,7 @@ RUN set -xe; \
       debhelper \
       devscripts \
       equivs \
-      libparse-debianchangelog-perl \
+      libdpkg-perl \
       python \
       python-setuptools \
       python-dev \
