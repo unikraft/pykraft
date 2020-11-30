@@ -38,10 +38,9 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 UNIKRAFT_RELEASE_STABLE = "stable"
 UNIKRAFT_RELEASE_STAGING = "staging"
-UNIKRAFT_RELEASE_BRANCHES = {
-    UNIKRAFT_RELEASE_STABLE: "master",
-    UNIKRAFT_RELEASE_STAGING: "staging"
-}
+UNIKRAFT_RELEASE_STABLE_VARIATIONS = [
+    "stable", "master", "main"
+]
 
 UK_GITHUB_ORG = 'unikraft'
 
