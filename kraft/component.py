@@ -208,10 +208,27 @@ class Component(object):
 
         return None
 
-    def get_config(self):
-        config = dict()
-        if self._manifest is not None:
-            print(self._manifest)
+    def repr(self):
+        config = {}
+
+        if self._kconfig is not None and len(self._kconfig) > 0:
+            config['kconfig'] = self._kconfig
+        
+        if self.version is not None:
+            config['version'] = self.version.version
+
+        elif self.version is None and self.manifest is not None:
+            if UNIKRAFT_RELEASE_STABLE in self._manifest.dists.keys():
+                config['version'] = self._manifest.get_distribution(
+                    UNIKRAFT_RELEASE_STAGING
+                ).latest.version
+            elif UNIKRAFT_RELEASE_STAGING in self._manifest.dists.keys():
+                config['version'] = self._manifest.get_distribution(
+                    UNIKRAFT_RELEASE_STAGING
+                ).latest.version
+
+        if self.origin is not None:
+            config['source'] = self.origin
 
         return True if not config else config
 
