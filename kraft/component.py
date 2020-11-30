@@ -167,8 +167,9 @@ class Component(object):
             # Attempt to select the latest version from stable or staging
             if version is None:
                 if UNIKRAFT_RELEASE_STABLE in self._manifest.dists.keys():
-                    self._version = self._manifest.get_distribution(UNIKRAFT_RELEASE_STAGING).latest
-                elif UNIKRAFT_RELEASE_STAGING in self._manifest.dists.keys():
+                    self._version = self._manifest.get_distribution(UNIKRAFT_RELEASE_STABLE).latest
+                
+                if self._version is None and UNIKRAFT_RELEASE_STAGING in self._manifest.dists.keys():
                     self._version = self._manifest.get_distribution(UNIKRAFT_RELEASE_STAGING).latest
 
             # Is the version actually a distribution name?
