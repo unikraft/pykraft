@@ -235,7 +235,12 @@ class Library(Component):
         context['cookiecutter'] = prompt_for_config(context, no_input)
 
         self._description = context['cookiecutter']['description']
-        self._template_values = dict(context['cookiecutter'])
+        self._template_values = {
+            **self._template_values,
+            **dict(context['cookiecutter'])
+        }
+
+        # Set additional template values
 
         # Fix the starting "v" in the version string
         if context['cookiecutter']['version'].startswith('v'):
