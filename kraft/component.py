@@ -156,7 +156,7 @@ class Component(object):
         elif isinstance(config, bool) and config is False:
             raise DisabledComponentError(self._name)
 
-        if self._manifest is None and self._localdir is not None:
+        if self._manifest is None and self.localdir is not None:
             from kraft.manifest import manifest_from_localdir
             self._manifest = manifest_from_localdir(self._localdir)
 
