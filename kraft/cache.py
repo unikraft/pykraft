@@ -86,7 +86,7 @@ class Cache(object):
     def find_item_by_name(self, type=None, name=None):
         for origin in self._cache:
             for item in self._cache[origin].items():
-                if ((type is not None and item[1].type == type)
+                if ((type is not None and item[1].type.shortname == type)
                         or type is None) and item[1].name == name:
                     return item[1]
 
