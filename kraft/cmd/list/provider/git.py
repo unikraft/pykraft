@@ -131,7 +131,7 @@ class GitListProvider(ListProvider):
 
     @classmethod
     def download(cls, manifest=None, localdir=None, version=None,
-            override_existing=False):
+            override_existing=False, **kwargs):
         
         try:
             repo = GitRepo(localdir)
