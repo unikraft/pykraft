@@ -137,6 +137,7 @@ class Component(object):
     @click.pass_context
     def __init__(ctx, self, *args, **kwargs):
         self._name = kwargs.get("name", None)
+        self._type = kwargs.get("type", None)
         self._manifest = kwargs.get("manifest", None)
         self._localdir = kwargs.get("localdir", None)
         self._workdir = kwargs.get("workdir", None)
