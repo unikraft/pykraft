@@ -45,6 +45,9 @@ from kraft.manifest import Manifest
 class Cache(object):
     _cache = {}
     _cachedir = None
+    _cache_lock = None
+    @property
+    def cache_lock(self): return self._cache_lock
 
     def __init__(self, environment):
         """
@@ -66,14 +69,19 @@ class Cache(object):
 
     @property
     def cache(self):
-        return self._cache
+        ret = None
+        with self._cache_lock:
+            ret = self._cache
+        return ret
 
     def get(self, origin=None):
+        ret = None
         if isinstance(origin, six.string_types) and origin in self._cache:
             logger.debug("Retrieving %s from cache..." % origin)
-            return self._cache[origin]
+            with self._cache_lock:
+                ret = self._cache[origin]
 
-        return None
+        return ret
 
     def find_item_by_name(self, type=None, name=None):
         for origin in self._cache:
@@ -85,7 +93,7 @@ class Cache(object):
         return None
 
     def all(self):
-        return self._cache
+        return self.cache
 
     def save(self, origin, manifest):
         if not isinstance(origin, six.string_types):
@@ -99,11 +107,15 @@ class Cache(object):
 
     def sync(self):
         logger.debug("Synchronizing cache with filesystem...")
-        self._cache.sync()
+
+        with self._cache_lock:
+            self._cache.sync()
 
     def purge(self):
         logger.debug("Purging cache...")
-        self._cache.clear()
+
+        with self._cache_lock:
+            self._cache.clear()
 
     def is_stale(self):
         """
