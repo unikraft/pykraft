@@ -93,6 +93,10 @@ class Component(object):
     @property
     def description(self): return self._description
 
+    _workdir = None
+    @property
+    def workdir(self): return self._workdir
+
     _localdir = None
     @property
     @click.pass_context
@@ -135,6 +139,7 @@ class Component(object):
         self._name = kwargs.get("name", None)
         self._manifest = kwargs.get("manifest", None)
         self._localdir = kwargs.get("localdir", None)
+        self._workdir = kwargs.get("workdir", None)
         self._kconfig = list()
 
         version = None
