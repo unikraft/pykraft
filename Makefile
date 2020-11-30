@@ -40,10 +40,11 @@ HASH                 ?= $(shell git update-index -q --refresh && \
 
 # Others can't be dirty by definition
 ifneq ($(HASH_COMMIT),HEAD)
+HASH_COMMIT          ?= HEAD
+endif
 DIRTY                ?= $(shell git update-index -q --refresh && \
                                 git diff-index --quiet HEAD -- $(KRAFTDIR) || \
                                 echo "-dirty")
-endif
 endif
 
 APP_NAME             ?= kraft
