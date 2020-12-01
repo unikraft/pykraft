@@ -432,6 +432,60 @@ class Application(Component):
             os.remove(path)
 
     @click.pass_context
+    def add_arch(ctx, self, arch=None):
+        from kraft.types import ComponentType
+        self.add_component(ComponentType.ARCH, arch)
+
+    @click.pass_context
+    def add_plat(ctx, self, plat=None):
+        from kraft.types import ComponentType
+        self.add_component(ComponentType.PLAT, plat)
+
+    @click.pass_context
+    def add_lib(ctx, self, lib=None):
+        from kraft.types import ComponentType
+        return self.add_component(ComponentType.LIB, lib)
+
+    @click.pass_context
+    def add_component(ctx, self, type=None, component=None):
+        from kraft.manifest import maniest_from_name
+
+        components = list()
+
+        if component is None or str(component) == "":
+            logger.warn("No component to add")
+            return False
+        
+        elif isinstance(component, six.string_types):
+            from kraft.types import break_component_naming_format
+            _, name, _, version = break_component_naming_format(component)
+            manifests = maniest_from_name(component)
+            if len(manifests) == 0:
+                logger.warn("Unknown component: %s" % component)
+                return False
+            
+            for manifest in manifests:
+                components.append(type.cls(
+                    name=name,
+                    version=version,
+                    manifest=manifest,
+                ))
+
+        elif isinstance(component, (dict, list)):
+            return self.add_component(type, list(component))
+        
+        elif isinstance(component, Component):
+            components.append(component)
+
+        manager = getattr(self, "_%s" % type.plural)
+        for component in components:
+            manager.add(component)
+
+        self.save_yaml()
+
+        return True
+
+    @click.pass_context
     def build(ctx, self, fetch=True, prepare=True, target=None, n_proc=0):
 
         extra = []
