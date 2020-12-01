@@ -34,7 +34,13 @@ from __future__ import unicode_literals
 import six
 import yaml
 
-import kraft.config.types as types
+from kraft.config import Config
+from kraft.config.types import ArchitectureConfig
+from kraft.config.types import PlatformConfig
+from kraft.config.types import LibraryConfig
+from kraft.config.types import RunnerConfig
+
+from kraft.config.version import SpecificationVersion
 
 
 def serialize_config_type(dumper, data):
@@ -57,7 +63,7 @@ def serialize_string(dumper, data):
         # Empirically only y/n appears to be an issue, but this might change
         # depending on which PyYaml version is being used. Err on safe side.
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')
-    return representer(data)
+    return representer(data) 
 
 
 def serialize_string_escape_dollar(dumper, data):
@@ -66,9 +72,12 @@ def serialize_string_escape_dollar(dumper, data):
     return serialize_string(dumper, data)
 
 
-yaml.SafeDumper.add_representer(types.ArchitectureConfig, serialize_dict_type)
-yaml.SafeDumper.add_representer(types.PlatformConfig, serialize_dict_type)
-yaml.SafeDumper.add_representer(types.LibraryConfig, serialize_dict_type)
+yaml.SafeDumper.add_representer(Config, serialize_dict_type)
+yaml.SafeDumper.add_representer(SpecificationVersion, serialize_config_type)
+yaml.SafeDumper.add_representer(ArchitectureConfig, serialize_dict_type)
+yaml.SafeDumper.add_representer(PlatformConfig, serialize_dict_type)
+yaml.SafeDumper.add_representer(LibraryConfig, serialize_dict_type)
+yaml.SafeDumper.add_representer(RunnerConfig, serialize_dict_type)
 
 
 def serialize_config(config, escape_dollar=False):
@@ -83,5 +92,6 @@ def serialize_config(config, escape_dollar=False):
         default_flow_style=False,
         indent=2,
         width=80,
-        allow_unicode=True
+        allow_unicode=True,
+        sort_keys=False
     )
