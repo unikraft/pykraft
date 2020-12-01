@@ -46,9 +46,10 @@ class ListProvider(object):
         return False
 
     @click.pass_context
-    def probe(ctx, self, origin=None):
+    def probe(ctx, self, origin=None, items=None, return_threads=False):
         logger.warning("%s did not replace probe()" %
             self.__class__.__name__)
+        return None, None
 
     @click.pass_context
     def download(ctx, self, manifest=None, localdir=None, version=None,
