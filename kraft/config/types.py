@@ -36,7 +36,13 @@ from collections import namedtuple
 import six
 
 
-class ComponentConfigBase(namedtuple('_ComponentConfigBase', 'source version kconfig')):
+class ComponentConfigBase(namedtuple(
+        '_ComponentConfigBase', [
+            'source',
+            'version',
+            'kconfig'
+        ])):
+
     @classmethod
     def parse(cls, spec):
         if isinstance(spec, six.string_types):
