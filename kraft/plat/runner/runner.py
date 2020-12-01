@@ -35,6 +35,8 @@ from __future__ import unicode_literals
 import os
 import six
 
+from kraft.config import Config
+
 from kraft.plat.volume import Volume
 from kraft.plat.volume import VolumeManager
 from kraft.plat.network import NetworkDriver
@@ -273,9 +275,7 @@ class Runner(object):
             self._post_down.extend(cmds)
 
     @classmethod
-    def from_config(cls, ctx, config=None, runner_base=None):
-        assert ctx is not None, "ctx is undefined"
-
+    def from_config(cls, config=None, runner_base=None):
         arguments = None
         if config and 'arguments' in config:
             arguments = config['arguments']
@@ -283,17 +283,12 @@ class Runner(object):
             arguments = runner_base.arguments
 
         if config and 'volumes' in config:
-            volumes = VolumeManager.from_config(
-                ctx.obj.workdir,
-                config['volumes']
-            )
+            volumes = VolumeManager.from_config(config['volumes'])
         else:
             volumes = VolumeManager([])
 
         if config and 'networks' in config:
-            networks = NetworkManager.from_config(
-                config['networks']
-            )
+            networks = NetworkManager.from_config(config['networks'])
         else:
             networks = NetworkManager([])
 
@@ -317,3 +312,21 @@ class Runner(object):
             runner.append_post_down(config['post_down'])
 
         return runner
+
+    def repr(self):
+        config = {}
+
+        if self.arguments is not None:
+            config['arguments'] = self.arguments
+
+        if self.volumes is not None and isinstance(self.volumes, VolumeManager):
+            volumes_config = self.volumes.repr()
+            if volumes_config is not None and len(volumes_config) > 0:
+                config['volumes'] = volumes_config
+
+        if self.networks is not None and isinstance(self.networks, NetworkManager):
+            networks_config = self.networks.repr()
+            if networks_config is not None and len(networks_config) > 0:
+                config['networks'] = networks_config
+
+        return config
