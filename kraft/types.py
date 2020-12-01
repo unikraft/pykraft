@@ -56,6 +56,7 @@ from kraft.const import UNIKRAFT_ARCHSDIR
 from kraft.const import UNIKRAFT_PLATSDIR
 from kraft.const import UNIKRAFT_LIBSDIR
 from kraft.const import UNIKRAFT_APPSDIR
+from kraft.const import UNIKRAFT_WORKDIR
 
 
 class ComponentType(Enum):
@@ -94,6 +95,20 @@ class ComponentType(Enum):
     
     @click.pass_context
     def localdir(ctx, self, name=None):
+        # First check if there is a ./.unikraft directory present
+        if self == ComponentType.CORE:
+            localdir = os.path.join(
+                ctx.obj.workdir, UNIKRAFT_WORKDIR, self.workdir
+            )
+        elif name is not None:
+            localdir = os.path.join(
+                ctx.obj.workdir, UNIKRAFT_WORKDIR, self.workdir, name
+            )
+
+        if os.path.exists(localdir):
+            return localdir
+
+        # Return the default location based on environmental variables
         if name is None:
             return ctx.obj.env.get(self.env)
         else:
