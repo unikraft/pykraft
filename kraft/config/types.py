@@ -63,7 +63,7 @@ class ComponentConfigBase(namedtuple(
         )
 
 
-class UnikraftConfig(object):
+class UnikraftConfig(ComponentConfigBase):
     pass
 
 
