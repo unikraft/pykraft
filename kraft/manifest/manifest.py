@@ -356,7 +356,13 @@ class ManifestItem(object):
 
     _provider = None
     @property
-    def provider(self): return self._provider
+    def provider(self):
+        if self._provider is not None and isinstance(self._provider, six.string_types):
+            from kraft.cmd.list.provider.types import provider_name_to_enum
+            provider = provider_name_to_enum(self._provider)
+            if provider is not None:
+                self._provider = provider
+        return self._provider
 
     _localdir = None
     @property
@@ -370,9 +376,7 @@ class ManifestItem(object):
             string: The directory on disk for the manifest.
         """
         if self._localdir is None:
-            from kraft.types import str_to_component_type
-            type = str_to_component_type(self.type)
-            self._localdir = type.localdir(self.name)
+            self._localdir = self.type.localdir(self.name)
 
         return self._localdir
 
@@ -483,11 +487,9 @@ class ManifestItem(object):
             raise UnknownVersionError(version, self)
 
         if localdir is None:
-            from kraft.types import str_to_component_type
-            type = str_to_component_type(self._type)
-            localdir = type.localdir(self.name)
+            localdir = self.type.localdir(self.name)
 
-        provider = self._provider.cls()
+        provider = self.provider.cls()
         provider.download(
             manifest=self,
             localdir=localdir,
@@ -497,7 +499,7 @@ class ManifestItem(object):
         )
 
     def __str__(self):
-        return "%s/%s" % (self.type, self.name)
+        return "%s/%s" % (self.type.shortname, self.name)
     
     def __setstate__(self, state):
         if "meta" in state:
@@ -509,7 +511,6 @@ class ManifestItem(object):
             if self._last_checked is not None:
                 self._last_checked = dateutil.parser.parse(self._last_checked)
             self._provider = meta.get("provider", None)
-            self._localdir = meta.get("localdir", None)
         
         if "data" in state:
             data = state["data"]
@@ -530,18 +531,19 @@ class ManifestItem(object):
         """
         Return state values to be pickled.
         """
+        from kraft.cmd.list.provider.types import ListProviderType
         return {
             "meta": {
                 "name": self._name,
                 "manifest": self._manifest,
                 "manifest_checksum": self._manifest_checksum,
-                "last_checked": self._last_checked,
-                "provider": self._provider,
-                "localdir": self._localdir
+                "last_checked": str(self._last_checked),
+                "provider": self.provider.name,
+                "localdir": self.localdir
             },
             "data": {
                 "description": self._description,
-                "type": self._type,
+                "type": self.type.shortname,
                 "dists": { 
                     d: self._dists[d].__getstate__() for d in self._dists
                 },
