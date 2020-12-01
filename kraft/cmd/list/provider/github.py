@@ -39,6 +39,7 @@ import click
 import fnmatch
 import threading
 
+from queue import queue
 from github import Github
 from github.Repository import Repository
 from urllib.parse import urlparse
