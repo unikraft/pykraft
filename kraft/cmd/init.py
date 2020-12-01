@@ -39,6 +39,7 @@ import click
 from pathlib import Path
 
 import kraft.util as util
+from kraft.util import ClickOptionMutex
 
 from kraft.app import Application
 from kraft.logger import logger
@@ -49,8 +50,10 @@ from kraft.error import UnknownVersionError
 from kraft.error import UnknownApplicationTemplateName
 
 from kraft.cmd.list import kraft_list_preflight
+from kraft.cmd.list import kraft_list_pull
 from kraft.cmd.list import kraft_download_component
 
+from kraft.const import UNIKRAFT_WORKDIR
 from kraft.const import UNIKRAFT_RELEASE_STABLE
 from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
 from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
@@ -59,7 +62,7 @@ from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
 @click.pass_context
 def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
         template_app=None, template_app_version=None, force_init=False,
-        create_makefile=False):
+        pull_dependencies=False, dumps_local=False, create_makefile=False):
     """
 
     """
@@ -95,6 +98,19 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
             manifest=app_manifest,
             version=version.version
         )
+
+        if pull_dependencies or dumps_local:
+            workdir = None
+            if dumps_local:
+                workdir = os.path.join(appdir, UNIKRAFT_WORKDIR)
+
+            kraft_list_pull(
+                name=str(app_manifest),
+                appdir=appdir,
+                workdir=workdir,
+                pull_dependencies=True,
+                skip_app=True
+            )
 
         logger.info('Initialized new unikraft application: %s' % appdir)
 
@@ -157,6 +173,20 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
     is_flag=True
 )
 @click.option(
+    '--no-deps', '-D', 'no_dependencies',
+    help='Do not download additional dependencies for application components.',
+    is_flag=True,
+    cls=ClickOptionMutex,
+    not_required_if=['dumps_local'],
+)
+@click.option(
+    '--dump', '-d', 'dumps_local',
+    help='Dump dependencies into project directory.',
+    is_flag=True,
+    cls=ClickOptionMutex,
+    not_required_if=['no_dependencies'],
+)
+@click.option(
     '--force','-F', 'force_init',
     help='Overwrite any existing files.',
     is_flag=True
@@ -165,7 +195,7 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
 @click.pass_context
 def cmd_init(ctx, name=None, plat=None, arch=None, template_app=None,
         template_app_version=None, workdir=None, create_makefile=False,
-        force_init=False):
+        no_dependencies=False, dumps_local=False, force_init=False):
     """
     Initializes a new unikraft application.
 
@@ -215,7 +245,9 @@ def cmd_init(ctx, name=None, plat=None, arch=None, template_app=None,
             template_app=template_app,
             template_app_version=template_app_version,
             create_makefile=create_makefile,
-            force_init=force_init
+            force_init=force_init,
+            pull_dependencies=not no_dependencies,
+            dumps_local=dumps_local
         )
     except Exception as e:
         logger.critical(str(e))
