@@ -44,6 +44,7 @@ import threading
 
 from enum import Enum
 from datetime import datetime
+import dateutil.parser
 
 from kraft.logger import logger
 
@@ -118,6 +119,8 @@ class ManifestItemVersion(object):
         self._version = kwargs.get('version', None)
         self._git_sha = kwargs.get('git_sha', None)
         self._timestamp = kwargs.get('timestamp', None)
+        if self._timestamp is not None and isinstance(self._timestamp, six.string_types):
+            self._timestamp = dateutil.parser.parse(self._timestamp)
         self._tarball = kwargs.get('tarball', None)
         self._tarball_size = kwargs.get('tarball_size', None)
         self._tarball_checksum = kwargs.get('tarball_checksum', None)
@@ -134,6 +137,8 @@ class ManifestItemVersion(object):
             data = state["data"]
             self._git_sha = data.get("git_sha", None)
             self._timestamp = data.get("timestamp", None)
+            if self._timestamp is not None and isinstance(self._timestamp, six.string_types):
+                self._timestamp = dateutil.parser.parse(self._timestamp)
             self._tarball = data.get("tarball", None)
             self._tarball_size = data.get("tarball_size", None)
             self._tarball_checksum = data.get("tarball_checksum", None)
@@ -148,7 +153,7 @@ class ManifestItemVersion(object):
             },
             "data": {
                 "git_sha": self._git_sha,
-                "timestamp": self._timestamp,
+                "timestamp": str(self._timestamp),
                 "tarball": self._tarball,
                 "tarball_size": self._tarball_size,
                 "tarball_checksum": self._tarball_checksum
@@ -282,7 +287,7 @@ class ManifestItemDistribution(object):
         if self._latest is not None:
             data["latest_git_sha"] = self._latest.git_sha
             data["latest_version"] = self._latest.version
-            data["latest_timestamp"] = self._latest.timestamp
+            data["latest_timestamp"] = str(self._latest.timestamp)
             data["latest_tarball"] = self._latest.tarball
             data["latest_tarball_size "] = self._latest.tarball_size
             data["latest_tarball_checksum"] = self._latest.tarball_checksum
@@ -487,6 +492,8 @@ class ManifestItem(object):
             self._manifest = meta.get("manifest", None)
             self._manifest_checksum = meta.get("manifest_checksum", None)
             self._last_checked = meta.get("last_checked", None)
+            if self._last_checked is not None:
+                self._last_checked = dateutil.parser.parse(self._last_checked)
             self._provider = meta.get("provider", None)
             self._localdir = meta.get("localdir", None)
         
