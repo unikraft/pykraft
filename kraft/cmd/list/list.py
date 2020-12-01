@@ -48,6 +48,7 @@ from kraft.arch import Architecture
 from kraft.const import DATE_FORMAT
 from kraft.const import UK_GITHUB_ORG
 from kraft.const import UNIKRAFT_RELEASE_STABLE
+from kraft.const import UNIKRAFT_RELEASE_STAGING
 from kraft.error import KraftError
 from kraft.lib import Library
 from kraft.logger import logger
@@ -222,32 +223,23 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
                         logger.warn("%s directory is empty: %s "
                             % (row.name, localdir))
 
+                latest_release = None
+                if UNIKRAFT_RELEASE_STABLE in row.dists.keys():
+                    latest_release = row.dists[UNIKRAFT_RELEASE_STABLE].latest
+                elif UNIKRAFT_RELEASE_STAGING in row.dists.keys():
+                    latest_release = row.dists[UNIKRAFT_RELEASE_STAGING].latest
+
                 if return_json:
                     if member.plural not in data_json:
                         data_json[member.plural] = []
 
-                    row_json = {
-                        'name': row.name,
-                        'latest': row.latest_release,
-                        'last_checked': row.last_checked.strftime(DATE_FORMAT),
-                        'known_versions': row.known_versions
-                    }
-
-                    if show_local:
-                        if hasattr(row, 'localdir'):
-                            row_json.update({'localdir': row.localdir})
+                    row_json = row.__getstate__()
 
                     if not show_installed or (installed and show_installed):
                         data_json[member.plural].append(row_json)
                         components_showing += 1
 
                 else:
-                    latest_release = None
-                    if UNIKRAFT_RELEASE_STABLE in row.dists.keys():
-                        latest_release = row.dists[UNIKRAFT_RELEASE_STABLE].latest
-                    else:
-                        pass
-
                     line = [
                         click.style(row.name, fg='yellow' if install_error else 'green' if installed else 'red'),
                         click.style(latest_release.version if latest_release is not None else "", fg='white'),
