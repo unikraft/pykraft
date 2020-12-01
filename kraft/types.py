@@ -125,7 +125,7 @@ class ComponentType(Enum):
 
 def str_to_component_type(name=None):
     for t in ComponentType.__members__.values():
-        if name == t.shortname:
+        if name == t.shortname or (name == t.shortname + "s"):
             return t
 
     return None
