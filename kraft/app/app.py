@@ -138,6 +138,7 @@ class Application(Component):
                 name="unikraft",
                 config=unikraft_config,
                 manifest=unikraft_manifest,
+                workdir=self.localdir
             )
         
         # Deal with other component types: {arch, plat, lib}
@@ -180,8 +181,9 @@ class Application(Component):
                         components.add(InternalArchitecture(
                             core=self._core,
                             name=component,
-                            config=config[component]
-                    ))
+                            config=config[component],
+                            workdir=self.localdir
+                        ))
                     
                     elif manifest is None and type == ComponentType.PLAT and \
                             component in UK_CORE_PLATS and \
@@ -189,7 +191,8 @@ class Application(Component):
                         components.add(InternalPlatform(
                             core=self._core,
                             name=component,
-                            config=config[component]
+                            config=config[component],
+                            workdir=self.localdir
                         ))
 
                     elif manifest is None:
@@ -223,6 +226,7 @@ class Application(Component):
                             name=component,
                             config=config[component],
                             manifest=manifest,
+                            workdir=self.localdir
                         ))
                 
             if components is not None:
