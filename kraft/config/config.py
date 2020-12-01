@@ -36,7 +36,9 @@ import io
 import os
 import re
 import sys
+import six
 from collections import namedtuple
+from collections import OrderedDict
 
 import yaml
 from cached_property import cached_property
@@ -68,7 +70,7 @@ class Config(namedtuple(
             'architectures',
             'platforms',
             'libraries',
-            'executor'
+            'runner'
         ])):
     """
     :param specification: configuration version
@@ -83,10 +85,13 @@ class Config(namedtuple(
     :type  platforms: :class:`dict`
     :param libraries: Dictionary mapping library names to description dictionaries
     :type  libraries: :class:`dict`
-    :param executor: Dictionary mapping of execution description dictionaries
-    :type  executor: :class:`dict`
+    :param runner: Dictionary mapping of execution description dictionaries
+    :type  runner: :class:`dict`
     """
-
+    def repr(self):
+        return dict(
+            [(k, v) for k, v in zip(self._fields, self) if v is not None]
+        )
 
 class ConfigDetails(namedtuple(
         '_ConfigDetails', [
@@ -495,14 +500,14 @@ def load_config(config_details):
     #     config_details.working_dir
     # )
 
-    executor = load_mapping(
+    runner = load_mapping(
         config_details.config_files,
         'get_run',
         'run',
         config_details.working_dir
     )
 
-    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, executor)
+    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, runner)
 
 
 def load_yaml(filename, encoding=None, binary=True):
