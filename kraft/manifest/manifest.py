@@ -50,7 +50,6 @@ from kraft.logger import logger
 
 from kraft.const import UNIKRAFT_RELEASE_STABLE
 from kraft.const import UNIKRAFT_RELEASE_STAGING
-from kraft.const import UNIKRAFT_RELEASE_BRANCHES 
 
 from kraft.error import KraftError
 from kraft.error import UnknownVersionError
