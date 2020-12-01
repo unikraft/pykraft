@@ -67,6 +67,7 @@ from kraft.error import KraftFileNotFound
 from kraft.error import MismatchTargetArchitecture
 from kraft.error import CannotConfigureApplication
 
+from kraft.config import SpecificationVersion
 from kraft.config.config import get_default_config_files
 from kraft.config.serialize import serialize_config
 
@@ -473,10 +474,7 @@ class Application(Component):
             filenames = []
 
         if len(filenames) == 0 or force_create:
-            kraft_yaml = os.path.join(self.path, SUPPORTED_FILENAMES[0])
-            logger.debug("Creating: %s" % kraft_yaml)
-            with open(kraft_yaml, 'w+') as file:
-                file.write(self.to_yaml())
+            self.save_yaml()
 
     def clean(self, proper=False):
         """
@@ -489,38 +487,60 @@ class Application(Component):
         else:
             self.make("clean")
 
-    def get_config(self):
-        if 'specification' not in self._config:
-            self._config['specification'] = KRAFT_SPEC_LATEST
+    def repr(self):
+        config = {
+            'name': self.name,
+            'unikraft': self.core.repr()
+        }
+
+        if self.config is None or not isinstance(self.config, Config):
+            config['specification'] = SpecificationVersion(
+                KRAFT_SPEC_LATEST
+            )
+        else:
+            config['specification'] = self.config.specification
 
         for arch in self.architectures.all():
             dpath_util.new(
-                self.config,
+                config,
                 'architectures/%s' % arch.name,
-                arch.get_config()
+                arch.repr()
             )
 
         for plat in self.platforms.all():
             dpath_util.new(
-                self.config,
+                config,
                 'platforms/%s' % plat.name,
-                plat.get_config()
+                plat.repr()
             )
 
         for lib in self.libraries.all():
             dpath_util.new(
-                self.config,
+                config,
                 'libraries/%s' % lib.name,
-                lib.get_config()
+                lib.repr()
             )
+        
+        if "libraries" not in config:
+            config["libraries"] = {}
+        
+        if self.runner is not None:
+            config['runner'] = self.runner.repr()
+        else:
+            config['runner'] = {}
 
-        return self._config
+        return Config(**config)
 
     def to_yaml(self):
         """
         Return a YAML with the serialized string of this object.
         """
+        return serialize_config(self.repr())
 
-        config = self.get_config()
+    def save_yaml(self, file=None):
+        if file is None:
+            file = os.path.join(self.localdir, SUPPORTED_FILENAMES[0])
 
-        return serialize_config(config)
+        logger.debug("Saving: %s" % file)
+        with open(file, 'w+') as f:
+            f.write(self.to_yaml())
