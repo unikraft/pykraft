@@ -245,15 +245,15 @@ class UnknownVersionError(KraftError):
     def __init__(self, desired_version, known_versions):
         from kraft.manifest import ManifestItem
 
-        component = None
+        manifest = None
         if isinstance(known_versions, ManifestItem):
-            component = known_versions
+            manifest = known_versions
             known_versions = list()
-            for dist in component.dists:
-                for ver in component.dists[dist].versions:
+            for dist in manifest.dists:
+                for ver in manifest.dists[dist].versions:
                     known_versions.append("%s:%s" % (dist, ver))
 
-        if component is None:
+        if manifest is None:
             if len(known_versions) > 0:
                 super(UnknownVersionError, self).__init__(
                     "Version not specified, choice of: {\n\t%s\n}" %
@@ -267,24 +267,24 @@ class UnknownVersionError(KraftError):
             if isinstance(known_versions, ManifestItem):
                 if desired_version is None:
                     super(UnknownVersionError, self).__init__(
-                        "No version specified for %s. Choice of: {%s}" % (
-                            component.name,
-                            ", ".join(known_versions)
+                        "No version specified for %s. Choice of: {\n\t%s\n}" % (
+                            manifest.name,
+                            ",\n\t".join(known_versions)
                         )
                     )
                 else:
                     super(UnknownVersionError, self).__init__(
-                        "Provided version '%s' for %s.  Choice of: {%s}" % (
+                        "Provided version '%s' for %s.  Choice of: {\n\t%s\n}" % (
                             desired_version,
-                            component.name,
-                            ", ".join(known_versions)
+                            manifest.name,
+                            ",\n\t".join(known_versions)
                         )
                     )
             else:
                 super(UnknownVersionError, self).__init__(
-                    "No version specified for %s.  Choice of: {%s}" % (
-                        component.name,
-                        ", ".join(known_versions)
+                    "No version specified for %s.  Choice of: {\n\t%s\n}" % (
+                        manifest.name,
+                        ",\n\t".join(known_versions)
                     )
                 )
 
