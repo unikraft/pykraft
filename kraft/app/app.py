@@ -50,6 +50,7 @@ from kraft.arch import ArchitectureManager
 from kraft.plat import Platform
 from kraft.plat import InternalPlatform
 from kraft.plat import PlatformManager
+from kraft.plat import Runner
 from kraft.lib import Library
 from kraft.lib import LibraryManager
 
