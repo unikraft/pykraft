@@ -50,11 +50,11 @@ from .list import kraft_list_preflight
 
 
 @click.command('show', short_help='Show a unikraft component.')
+@click.option('--json', '-j', 'return_json',
+    help='Return output as JSON.', is_flag=True)  # noqa: E501
 @click.argument('name')
-# @click.option('--json', '-j', 'return_json',
-#     help='Return output as JSON.', is_flag=True)  # noqa: E501
 @click.pass_context
-def cmd_list_show(ctx, name=None): # , return_json=False):
+def cmd_list_show(ctx, return_json=False, name=None):
     """
     Show the details of a component in a remote repository.
     """
@@ -70,7 +70,7 @@ def cmd_list_show(ctx, name=None): # , return_json=False):
         for _, component in manifest.items():
             if (type is None or \
                     (type is not None \
-                        and type.shortname == component.type)) \
+                        and type == component.type)) \
                     and component.name == name:
                 components.append(component)
     
@@ -78,55 +78,59 @@ def cmd_list_show(ctx, name=None): # , return_json=False):
         logger.error("Unknown component name: %s" % name)
         sys.exit(1)
 
-    for i, component in enumerate(components):
 
-        # print seperator
-        if len(components) > 1 and i > 0:
-            click.echo("---")
-
-        table = list()
-        table.append(['name', component.name])
-        table.append(['type', component.type])
-
-        desc = textwrap.wrap(component.description, LIST_DESC_WIDTH)
-        for i, line in enumerate(desc):
-            table.append([
-                'description' if i == 0 else '',
-                line
-            ])
+    if return_json:
+        data_json = []
+        for _, component in enumerate(components):
+            data_json.append(component.__getstate__())
         
-        for i, dist in enumerate(component.dists):
-            dist = component.dists[dist]
-            table.append([
-                ('distributions' \
-                    if len(component.dists) > 1 else \
-                'distribution') \
-                    if i == 0 else '',
-                '%s@%s' % (dist.name, dist.latest.version)
-            ])
-        
-        if component.git is not None:
-            table.append(['git', component.git])
+        click.echo(json.dumps(data_json))
 
-        if component.manifest is not None:
-            table.append(['manifest', component.manifest])
-        
-        table.append(['last checked', prettydate(component.last_checked)])
+    else:
+        for i, component in enumerate(components):
 
-        localdir = str_to_component_type(component.type).localdir()
+            # print seperator
+            if len(components) > 1 and i > 0 and not return_json:
+                click.echo("---")
 
-        if component.type != ComponentType.CORE:
-            localdir = os.path.join(localdir, component.name)
+            table = list()
+            table.append(['name', component.name])
+            table.append(['type', component.type.shortname])
 
-        if os.path.isdir(localdir) and len(os.listdir(localdir)) != 0:
-            table.append(['located at', localdir])
+            desc = textwrap.wrap(component.description, LIST_DESC_WIDTH)
+            for i, line in enumerate(desc):
+                table.append([
+                    'description' if i == 0 else '',
+                    line
+                ])
+            
+            for i, dist in enumerate(component.dists):
+                dist = component.dists[dist]
+                table.append([
+                    ('distributions' \
+                        if len(component.dists) > 1 else \
+                    'distribution') \
+                        if i == 0 else '',
+                    '%s@%s' % (dist.name, dist.latest.version)
+                ])
+            
+            if component.git is not None:
+                table.append(['git', component.git])
 
-        for i, data in enumerate(table):
-            table[i] = [
-                click.style(data[0] + ':' if len(data[0]) > 0 else '', fg="white"),
-                data[1]
-            ]
+            if component.manifest is not None:
+                table.append(['manifest', component.manifest])
+            
+            table.append(['last checked', prettydate(component.last_checked)])
 
-        # print and remove last new line
-        click.echo(pretty_columns(table)[:-1])
+            localdir = component.localdir
+            if os.path.isdir(localdir) and len(os.listdir(localdir)) != 0:
+                table.append(['located at', localdir])
 
+            for i, data in enumerate(table):
+                table[i] = [
+                    click.style(data[0] + ':' if len(data[0]) > 0 else '', fg="white"),
+                    data[1]
+                ]
+
+            # print and remove last new line
+            click.echo(pretty_columns(table)[:-1])
