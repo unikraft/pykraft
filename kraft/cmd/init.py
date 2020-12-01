@@ -43,7 +43,8 @@ from kraft.util import ClickOptionMutex
 
 from kraft.app import Application
 from kraft.logger import logger
-from kraft.util import ClickOptionMutex
+
+from kraft.types import ComponentType
 
 from kraft.error import KraftError
 from kraft.error import UnknownVersionError
@@ -79,7 +80,7 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
             manifest = ctx.obj.cache.get(manifest_origin)
 
             for _, item in manifest.items():
-                if item.name == template_app:
+                if item.name == template_app and item.type == ComponentType.APP:
                     app_manifest = item
                     
         if app_manifest is None:
