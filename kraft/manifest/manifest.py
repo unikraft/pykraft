@@ -175,7 +175,16 @@ class ManifestItemDistribution(object):
 
     _latest = None
     @property
-    def latest(self): return self._latest
+    def latest(self):
+        # Pick the latest version if we have known versions, ordered by semver
+        if self._latest is None and \
+                self._versions is not None and \
+                len(self._versions) > 0:
+            self._latest = self.versions[
+                sorted(self._versions.keys(), reverse=True)[0]
+            ]
+            
+        return self._latest
 
     _versions = None
     @property
