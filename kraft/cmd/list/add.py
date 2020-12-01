@@ -54,6 +54,8 @@ def kraft_list_add(ctx, origin=None):
 
     new_uri = urlparse(origin)
     existing_origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
+    if existing_origins is None:
+        existing_origins = list()
     for o in existing_origins:
         cur_uri = urlparse(o)
         if new_uri.netloc == cur_uri.netloc and new_uri.path == cur_uri.path:
