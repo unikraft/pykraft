@@ -43,6 +43,7 @@ from github import Github
 from github.Repository import Repository
 from urllib.parse import urlparse
 
+from kraft.util import ErrorPropagatingThread
 from kraft.types import break_component_naming_format
 from kraft.const import GITHUB_ORIGIN
 from kraft.const import GITHUB_TARBALL
@@ -82,6 +83,8 @@ class GitHubListProvider(GitListProvider):
             return []
             
         threads = list()
+        if items is None:
+            items = Queue()
         
         manifest = ctx.obj.cache.get(origin)
         
@@ -111,8 +114,8 @@ class GitHubListProvider(GitListProvider):
 
                 for repo in repos:
                     if return_threads:
-                        thread = threading.Thread(
-                            target=get_component_from_github,
+                        thread = ErrorPropagatingThread(
+                            target=lambda *arg: items.put(get_component_from_github(*arg)),
                             args=(
                                 ctx,
                                 origin,
@@ -135,8 +138,8 @@ class GitHubListProvider(GitListProvider):
                 logger.info("Using direct repository: %s" % origin)
 
                 if return_threads:
-                    thread = threading.Thread(
-                        target=get_component_from_github,
+                    thread = ErrorPropagatingThread(
+                        target=lambda *arg: items.put(get_component_from_github(*arg)),
                         args=(
                             ctx,
                             origin,

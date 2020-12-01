@@ -46,6 +46,7 @@ from atpbar import flush
 from kraft.app import Application
 from kraft.util import pretty_columns
 from kraft.util import prettydate
+from kraft.util import ErrorPropagatingThread
 from kraft.logger import logger
 from kraft.error import UnknownVersionError
 from kraft.error import KraftError
@@ -229,31 +230,6 @@ def kraft_download_component(ctx, localdir=None, manifest=None,
             override_existing=override_existing,
             use_git=use_git,
         )
-
-
-class ErrorPropagatingThread(threading.Thread):
-    def run(self):
-        self.exc = None
-        try:
-            # Thread uses name mangling prior to Python 3.
-            if hasattr(self, '_Thread__target'):
-                self.ret = self._Thread__target(
-                    *self._Thread__args,
-                    **self._Thread__kwargs
-                )
-            else:
-                self.ret = self._target(*self._args, **self._kwargs)
- 
-        except BaseException as e:
-            self.exc = e
-
-    def join(self):
-        super(ErrorPropagatingThread, self).join()
-        
-        if self.exc:
-            raise self.exc
-        
-        return self.ret
 
 
 @click.command('pull', short_help='Pull the remote component to disk.')

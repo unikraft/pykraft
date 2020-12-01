@@ -29,27 +29,32 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# flake8: noqa
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .cli import ClickOptionMutex
-from .cli import KraftHelpCommand
-from .cli import KraftHelpGroup
-from .cli import ClickReaderOption
-from .cli import ClickWriterOption
-from .cli import ClickWriterCommand
+import threading
 
-from .dir import delete_resource
-from .dir import is_dir_empty
-from .dir import recursively_copy
 
-from .make import make_list_vars
+class ErrorPropagatingThread(threading.Thread):
+    def run(self):
+        self.exc = None
+        try:
+            # Thread uses name mangling prior to Python 3.
+            if hasattr(self, '_Thread__target'):
+                self.ret = self._Thread__target(
+                    *self._Thread__args,
+                    **self._Thread__kwargs
+                )
+            else:
+                self.ret = self._target(*self._args, **self._kwargs)
+ 
+        except BaseException as e:
+            self.exc = e
 
-from .op import execute
-from .op import merge_dicts
-
-from .text import pretty_columns
-from .text import prettydate
-
-from .threading import ErrorPropagatingThread
+    def join(self):
+        super(ErrorPropagatingThread, self).join()
+        
+        if self.exc:
+            raise self.exc
+        
+        return self.ret
