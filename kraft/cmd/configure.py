@@ -70,9 +70,14 @@ from kraft.cmd.list import kraft_list_preflight
     help='Use Unikraft\'s ncurses Kconfig editor.',
     is_flag=True
 )
+@click.option(
+    '--workdir', '-w', 'workdir',
+    help='Specify an alternative directory for the application [default is cwd].',
+    metavar="PATH"
+)
 @click.pass_context
 def cmd_configure(ctx, plat=None, arch=None,
-        force_configure=False, show_menuconfig=False):
+        force_configure=False, show_menuconfig=False, workdir=None):
     """
     Configure the unikernel using the KConfig options set in the kraft.yaml
     file.  Alternatively, you can use the -k|--menuconfig flag to open the TUI
@@ -84,10 +89,13 @@ def cmd_configure(ctx, plat=None, arch=None,
 
     kraft_list_preflight()
 
+    if workdir is None:
+        workdir = os.getcwd()
+
     try:
         kraft_configure(
             env=ctx.obj.env,
-            workdir=ctx.obj.workdir,
+            workdir=workdir,
             plat=plat,
             arch=arch,
             force_configure=force_configure,
