@@ -79,7 +79,7 @@ class LibraryConfig(ComponentConfigBase):
     pass
 
 
-class ExecutorConfig(object):
+class RunnerConfig(object):
     pass
 
 
