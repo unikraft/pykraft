@@ -82,10 +82,3 @@ class LibraryConfig(ComponentConfigBase):
 class RunnerConfig(object):
     pass
 
-
-class VolumeConfig(object):
-    pass
-
-
-class NetworkConfig(object):
-    pass
