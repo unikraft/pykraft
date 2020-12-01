@@ -74,7 +74,7 @@ class GitHubListProvider(GitListProvider):
         return False
 
     @click.pass_context
-    def probe(ctx, self, origin=None, return_threads=False):
+    def probe(ctx, self, origin=None, items=None, return_threads=False):
         # TODO: There should be a work around to fix this import loop cycle
         from kraft.manifest import Manifest
 
@@ -118,7 +118,6 @@ class GitHubListProvider(GitListProvider):
                             args=(
                                 ctx,
                                 origin,
-                                manifest,
                                 github_org,
                                 repo.name,
                             )
@@ -126,13 +125,12 @@ class GitHubListProvider(GitListProvider):
                         threads.append(thread)
                         thread.start()
                     else:
-                        get_component_from_github(
+                        items.put(get_component_from_github(
                             ctx,
                             origin,
-                            manifest,
                             github_org,
                             repo.name
-                        )
+                        ))
             else:
                 logger.info("Using direct repository: %s" % origin)
 
@@ -142,7 +140,6 @@ class GitHubListProvider(GitListProvider):
                         args=(
                             ctx,
                             origin,
-                            manifest,
                             github_org,
                             github_repo,
                         )
@@ -150,18 +147,14 @@ class GitHubListProvider(GitListProvider):
                     threads.append(thread)
                     thread.start()
                 else:
-                    get_component_from_github(
+                    items.put(get_component_from_github(
                         ctx,
                         origin,
-                        manifest,
                         github_org,
                         github_repo
-                    )
+                    ))
         
-        if return_threads:
-            return threads
-        
-        return manifest
+        return items, threads
     
     @click.pass_context
     def download(ctx, self, manifest=None, localdir=None, version=None,
@@ -177,8 +170,7 @@ class GitHubListProvider(GitListProvider):
         )
 
 
-def get_component_from_github(ctx, origin=None, manifest=None, org=None,
-        repo=None):
+def get_component_from_github(ctx, origin=None, org=None, repo=None):
     if origin is None:
         raise ValueError("expected origin")
     elif org is None:
@@ -313,7 +305,7 @@ def get_component_from_github(ctx, origin=None, manifest=None, org=None,
             ))
         
         item.add_distribution(dist)
-    
+
     logger.info(
         "Found %s/%s via %s..." % (
             click.style(item.type, fg="blue"),
