@@ -227,7 +227,7 @@ def kraft_download_component(ctx, localdir=None, manifest=None,
 
     path = Path(localdir)
     if not os.path.exists(str(path.parent)):
-        os.mkdir(str(path.parent))
+        os.makedirs(str(path.parent), exist_ok=True)
 
     with ctx:
         manifest.download(
