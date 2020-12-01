@@ -168,7 +168,7 @@ def load_jsonschema(config_file):
     if not os.path.exists(filename):
         raise KraftError(
             'Specification in "{}" is unsupported. {}'
-            .format(config_file.filename, SPECIFICATION_EXPLANATION))
+            .format(filename, SPECIFICATION_EXPLANATION))
 
     with open(filename, "r") as fh:
         return json.load(fh)
