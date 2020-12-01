@@ -145,11 +145,12 @@ def break_component_naming_format(name=None):
         name_parts = name.split("/")
         _type = str_to_component_type(name_parts[0])
         if _type is None:
-            _name = name
+            _name = name_parts[-1]
+            name = _name
         else:
             _name = "/".join(name_parts[1:])
 
-    elif name.count("-") > 0:
+    if name.count("-") > 0 and _type is None:
         name_parts = name.split("-")
         _type = str_to_component_type(name_parts[0])
         if _type is None:
@@ -157,11 +158,11 @@ def break_component_naming_format(name=None):
         else:
             _name = "-".join(name_parts[1:])
 
-    elif name == "unikraft":
+    if name == "unikraft":
         _type = ComponentType.CORE
         _name = "unikraft"
 
-    else:
+    if _name is None:
         _name = name
 
     try:
