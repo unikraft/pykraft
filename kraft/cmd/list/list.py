@@ -99,11 +99,6 @@ from .update import kraft_update
     '--apps', '-a', 'show_apps',
     help='List supported application runtime execution environments.', is_flag=True
 )
-# @click.option(
-# '--json', '-j', 'show_json',
-#   help='Return values in JSON format.',
-#   is_flag=True
-# )
 @click.option(
     '--show-local', '-d', 'show_local',
     help='Show local source path.',
