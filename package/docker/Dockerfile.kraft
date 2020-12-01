@@ -86,7 +86,7 @@ RUN set -xe; \
     mkdir -p /usr/src/unikraft/libs; \
     mkdir -p /usr/src/unikraft/apps/app; \
     cd /usr/src/kraft; \
-    python setup.py install
+    pip3 install .
 
 ENTRYPOINT [ "kraft" ]
 
