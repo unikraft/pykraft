@@ -32,23 +32,72 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import os
+import sys
 import click
 
-from .bump import cmd_lib_bump
-from .init import cmd_lib_init
-from .add import cmd_lib_add
+from kraft.app import Application
+from kraft.error import KraftError
+from kraft.logger import logger
 
+from kraft.const import UNIKRAFT_WORKDIR
 
-@click.group(name='lib',
-  short_help='Unikraft library commands.')
+from kraft.cmd.list import kraft_list_pull
+
 @click.pass_context
-def grp_lib(ctx):
-    """
-    Unikraft library sub-commands are useful for maintaining and working
-    directly with Unikraft libraries.
-    """
-    pass
+def kraft_lib_add(ctx, workdir=None, lib=None):
+    if workdir is None or os.path.exists(workdir) is False:
+        raise ValueError("working directory is empty: %s" % workdir)
+    
+    if isinstance(lib, tuple):
+        lib = list(lib)
 
-grp_lib.add_command(cmd_lib_bump)
-grp_lib.add_command(cmd_lib_init)
-grp_lib.add_command(cmd_lib_add)
+    if isinstance(lib, list):
+        for l in lib:
+            if not kraft_lib_add(workdir, l):
+                return False
+        return True
+
+    app = Application.from_workdir(workdir)
+    return app.add_lib(lib)
+
+
+@click.command('add', short_help='Add a library to the project.')
+@click.option(
+    '--workdir', '-w', 'workdir',
+    help='Specify an alternative directory for the application [default is cwd].',
+    metavar="PATH"
+)
+@click.option(
+    '--dump', '-d', 'dumps_local',
+    help='Save libraries into project directory.',
+    is_flag=True,
+)
+@click.argument('lib', required=False, nargs=-1)
+@click.pass_context
+def cmd_lib_add(ctx, workdir=None, lib=None, dumps_local=False):
+    """
+    Add a library to the unikraft application project.
+    """
+
+    if workdir is None:
+        workdir = os.getcwd()
+
+    try:
+        if dumps_local:
+            kraft_list_pull(
+                name=lib,
+                workdir=os.path.join(workdir, UNIKRAFT_WORKDIR)
+            )
+
+        if not kraft_lib_add(workdir=workdir, lib=lib):
+            sys.exit(1)
+
+    except Exception as e:
+        logger.critical(str(e))
+
+        if ctx.obj.verbose:
+            import traceback
+            logger.critical(traceback.format_exc())
+
+        sys.exit(1)
