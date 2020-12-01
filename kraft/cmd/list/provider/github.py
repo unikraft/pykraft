@@ -180,9 +180,9 @@ class GitHubListProvider(GitListProvider):
 def get_component_from_github(ctx, origin=None, manifest=None, org=None,
         repo=None):
     if origin is None:
-        raise ValueError("expected repo")
+        raise ValueError("expected origin")
     elif org is None:
-        raise ValueError("expected repo")
+        raise ValueError("expected org")
     elif repo is None:
         raise ValueError("expected repo")
 
