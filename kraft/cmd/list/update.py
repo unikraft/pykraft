@@ -37,12 +37,15 @@ import sys
 import click
 import threading
 
+from queue import Queue
 from urllib.parse import urlparse
 
 from kraft.manifest import Manifest
 from kraft.manifest import ManifestItem
 from kraft.manifest import ManifestItemVersion
 from kraft.manifest import ManifestItemDistribution
+
+from github.GithubException import RateLimitExceededException
 
 from kraft.const import KRAFTRC_LIST_ORIGINS
 from kraft.const import GITHUB_ORIGIN
@@ -69,8 +72,39 @@ def kraft_update(ctx):
         sys.exit(1)
 
     try:
-        kraft_update_from_source_threads(origins)
-    
+        for origin in origins:
+            manifest = ctx.obj.cache.get(origin)
+            
+            if manifest is None:
+                manifest = Manifest(
+                    manifest=origin
+                )
+
+            threads, items = kraft_update_from_source_threads(origin)
+
+            for thread in threads:
+                thread.join()
+
+            # Check thread's return value
+            while not items.empty():
+                result = items.get()
+                if result is not None:
+                    manifest.add_item(result)
+                    logger.info(
+                        "Found %s/%s via %s..." % (
+                            click.style(result.type.shortname, fg="blue"),
+                            click.style(result.name, fg="blue"),
+                            manifest.manifest
+                        )
+                    )
+                    ctx.obj.cache.save(origin, manifest)
+
+    except RateLimitExceededException as e:
+        logger.error("".join([
+            "GitHub rate limit exceeded.  You can tell kraft to use a ",
+            "personal access token by setting the UK_KRAFT_GITHUB_TOKEN ",
+            "environmental variable."]))
+
     except Exception as e:
         logger.critical(str(e))
         
@@ -83,27 +117,24 @@ def kraft_update(ctx):
 
 @click.pass_context
 def kraft_update_from_source_threads(ctx, origin=None):
-    if isinstance(origin, list):
-        for o in origin:
-            kraft_update_from_source_threads(o)
-        return
-    
     threads = list()
+    items = Queue()
    
     for _, provider in ListProviderType.__members__.items():
         if provider.is_type(origin):
             provider = provider.cls()
-            extra_threads = provider.probe(
-                origin=origin,
-                return_threads=True
-            )
+            with ctx:
+                extra_items, extra_threads = provider.probe(
+                    origin=origin,
+                    items=items,
+                    return_threads=True
+                )
             if extra_threads is not None and isinstance(extra_threads, list):
                 threads.extend(extra_threads)
 
             break
-
-    for thread in threads:
-        thread.join()
+    
+    return threads, items
 
 
 @click.pass_context
