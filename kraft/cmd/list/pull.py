@@ -126,7 +126,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
 
                         if (type is None or \
                                 (type is not None \
-                                    and type.shortname == manifest.type)) \
+                                    and type == manifest.type)) \
                                 and manifest.name == name:
                             manifests.append((manifest, eq, version))
 
@@ -156,7 +156,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
     
     if pull_dependencies and len(names) > 0:
         for manifest in manifests:
-            if manifest[0].type == ComponentType.APP.shortname:
+            if manifest[0].type == ComponentType.APP:
                 kraft_list_pull(
                     appdir=appdir,
                     workdir=workdir,
