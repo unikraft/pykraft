@@ -100,9 +100,9 @@ class Application(Component):
     @property
     def libraries(self): return self._libraries
     
-    _executors = None
+    _runner = None
     @property
-    def executors(self): return self._executors
+    def runner(self): return self._runner
 
     @click.pass_context
     def __init__(ctx, self, **kwargs):
@@ -124,6 +124,7 @@ class Application(Component):
         
         elif isinstance(self._config, Config):
             unikraft_config = getattr(self._config, "unikraft")
+            self._runner = Runner.from_config(self._config.runner)
 
         if isinstance(unikraft_config, ManifestItem):
             unikraft_manifest = unikraft_config
