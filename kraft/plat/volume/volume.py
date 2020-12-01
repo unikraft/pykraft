@@ -35,9 +35,17 @@ from __future__ import unicode_literals
 
 class Volume(object):
     _name = None
+    @property
+    def name(self): return self._name
     _source = None
+    @property
+    def source(self): return self._source
     _driver = None
+    @property
+    def driver(self): return self._driver
     _workdir = None
+    @property
+    def workdir(self): return self._workdir
 
     def __init__(self, name=None, driver=None, source=None, workdir=None):
         self._name = name
@@ -55,12 +63,29 @@ class Volume(object):
 
     @property
     def driver(self):
-        return self._driver[1]
+        return self._driver
 
     @property
     def workdir(self):
         return self._workdir
 
+    @classmethod
+    def from_config(cls, name=None, config={}):
+        return cls(
+            name=name,
+            driver=config.get('driver', None),
+            source=config.get('source', None),
+            workdir=config.get('workdir', None),
+        )
+    
+    def repr(self):
+        config = {}
+        if self.driver is not None:
+            config['driver'] = self.driver
+        if self.source is not None:
+            config['source'] = self.source
+
+        return config    
 
 class VolumeManager(object):
     _volumes = []
@@ -91,3 +116,20 @@ class VolumeManager(object):
 
     def all(self):
         return self._volumes
+
+    @classmethod
+    def from_config(cls, config=None):
+        volumes = cls([])
+
+        for vol in config:
+            volumes.add(Volume.from_config(vol, config[vol]))
+
+        return volumes
+
+    def repr(self):
+        config = {}
+        
+        for volume in self.all():
+            config[volume.name] = volume.repr()
+
+        return config
