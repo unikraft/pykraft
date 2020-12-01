@@ -153,7 +153,8 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
         for manifest in manifests:
             if manifest[0].type == ComponentType.APP.shortname:
                 kraft_list_pull(
-                    appdir=manifest[0].localdir,
+                    appdir=appdir,
+                    workdir=workdir,
                     use_git=use_git,
                     pull_dependencies=True,
                     skip_verify=skip_verify
@@ -177,9 +178,10 @@ def kraft_download_via_manifest(ctx, workdir=None, manifest=None,
 
     if workdir is None:
         localdir = manifest.localdir
+    elif manifest.type == ComponentType.CORE:
+        localdir = os.path.join(workdir, manifest.type.workdir)
     else:
-        localdir = os.path.join(workdir, type.workdir, manifest.name)
-
+        localdir = os.path.join(workdir, manifest.type.workdir, manifest.name)
 
     thread = ErrorPropagatingThread(
         target=kraft_download_component_thread,
