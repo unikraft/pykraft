@@ -41,7 +41,7 @@ from kraft.const import UK_CORE_PLAT_DIR
 from kraft.component import Component
 from kraft.component import ComponentManager
 
-from .runner import RunnerTypes
+from .runner import Runner
 
 
 class Platform(Component):
@@ -52,13 +52,6 @@ class Platform(Component):
     @click.pass_context
     def __init__(ctx, self, *args, **kwargs):
         self._name = kwargs.get("name", None)
-        self._runner = kwargs.get("runner", None)
-
-        if self._runner is None:
-            for r in RunnerTypes.__members__.values():
-                if self._name == r.name:
-                    self._runner = r.cls
-                    break
 
 
 class InternalPlatform(Platform):
@@ -97,6 +90,9 @@ class InternalPlatform(Platform):
         if isinstance(config, dict):
             version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
+
+            if "run" in config:
+                self._runner = Runner.from_config(config["run"])
 
 
 class PlatformManager(ComponentManager):
