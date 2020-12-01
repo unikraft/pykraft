@@ -53,7 +53,7 @@ UK_ARCHS            ?= x86_64 \
 LINUXK_TARGETS      ?=
 
 DEB_DISTS           ?= debian ubuntu
-DEB_DISTS_debian    ?= sid buster stretch
+DEB_DISTS_debian    ?= buster stretch
 DEB_DISTS_ubuntu    ?= focal bionic xenial trusty
 
 ifeq ($(HASH),)
