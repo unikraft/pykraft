@@ -33,6 +33,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import sys
 import subprocess
 
 from kraft.logger import logger
@@ -51,12 +52,18 @@ def execute(cmd="", env={}, dry_run=False):
     logger.debug("Running: %s" % cmd)
 
     if not dry_run:
-        cmd = subprocess.Popen(
+        popen = subprocess.Popen(
             cmd,
             shell=True,
             stdout=subprocess.PIPE,
             env=merge_dicts(os.environ, env)
         )
 
-        for line in cmd.stdout:
+        for line in popen.stdout:
             logger.info(line.strip().decode('ascii'))
+
+        popen.stdout.close()
+        return_code = popen.wait()
+        if return_code is not None and int(return_code) > 0:
+            logger.error("Command '%s' returned %d" % (cmd, return_code))
+            sys.exit(return_code)
