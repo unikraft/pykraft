@@ -326,7 +326,13 @@ class ManifestItem(object):
 
     _type = None
     @property
-    def type(self): return self._type
+    def type(self):
+        if self._type is not None and isinstance(self._type, six.string_types):
+            from kraft.types import str_to_component_type
+            type = str_to_component_type(self._type)
+            if type is not None:
+                self._type = type
+        return self._type
 
     _manifest = None
     @property
