@@ -79,7 +79,7 @@ from kraft.config import load_config
 from kraft.component import Component
 
 class Application(Component):
-    _config = {}
+    _config = None
     @property
     def config(self): return self._config
     
