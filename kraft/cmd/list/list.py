@@ -167,9 +167,9 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
                 app = Application.from_workdir(workdir)
                 
                 for manifest in app.manifests:
-                    if manifest.type not in components:
-                        components[manifest.type] = []
-                    components[manifest.type].append(manifest)
+                    if manifest.type.shortname not in components:
+                        components[manifest.type.shortname] = []
+                    components[manifest.type.shortname].append(manifest)
 
             except KraftError as e:
                 logger.error(str(e))
@@ -180,10 +180,10 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
                 manifest = ctx.obj.cache.get(manifest_origin)
 
                 for _, item in manifest.items():
-                    if item.type not in components:
-                        components[item.type] = []
+                    if item.type.shortname not in components:
+                        components[item.type.shortname] = []
                 
-                    components[item.type].append(item)
+                    components[item.type.shortname].append(item)
 
         for type, member in ComponentType.__members__.items():
             columns = [
