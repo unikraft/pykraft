@@ -213,10 +213,7 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
             for row in rows:
                 installed = False
                 install_error = False
-                localdir = str_to_component_type(row.type).localdir()
-
-                if row.type != ComponentType.CORE:
-                    localdir = os.path.join(localdir, row.name)
+                localdir = row.localdir
 
                 if os.path.isdir(localdir):
                     installed = True
