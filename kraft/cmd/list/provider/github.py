@@ -49,7 +49,6 @@ from kraft.const import GITHUB_ORIGIN
 from kraft.const import GITHUB_TARBALL
 from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
 from kraft.const import UNIKRAFT_RELEASE_STABLE
-from kraft.const import UNIKRAFT_RELEASE_BRANCHES
 from kraft.logger import logger
 
 from .git import GitListProvider
@@ -234,7 +233,7 @@ def get_component_from_github(ctx, origin=None, manifest=None, org=None,
     )
 
     for branch in repo.get_branches():
-        if branch.name in UNIKRAFT_RELEASE_BRANCHES[UNIKRAFT_RELEASE_STABLE]:
+        if branch.name == UNIKRAFT_RELEASE_STABLE:
             dist = ManifestItemDistribution(
                 name=UNIKRAFT_RELEASE_STABLE
             )
