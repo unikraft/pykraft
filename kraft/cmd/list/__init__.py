@@ -43,6 +43,7 @@ from .update import cmd_list_update
 from .show import cmd_list_show
 
 from .pull import kraft_download_component
+from .pull import kraft_list_pull
 
 from kraft.manifest import ManifestIndex
 from kraft.manifest import Manifest
