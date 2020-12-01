@@ -88,7 +88,7 @@ class InternalPlatform(Platform):
             raise DisabledComponentError(self._name)
 
         if isinstance(config, dict):
-            version = config.get("version", None)
+            self._version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
 
             if "run" in config:
