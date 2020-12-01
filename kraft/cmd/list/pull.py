@@ -62,7 +62,8 @@ from .list import kraft_list_preflight
 
 @click.pass_context
 def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
-        pull_dependencies=False, skip_verify=False, appdir=None):
+        pull_dependencies=False, skip_verify=False, appdir=None,
+        skip_app=False):
     """
     Pull a particular component from a known manifest.  This will retrieve
     the contents to either the automatically determined directory or to an
@@ -94,7 +95,8 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
         not_found.append(name)
     
     # Pull the dependencies for the application at workdir or cwd
-    if pull_dependencies and len(names) == 0:
+    if pull_dependencies and (len(names) == 0 or \
+        appdir is not None and len(names) == 1):
         app = Application.from_workdir(
             appdir if appdir is not None
             else workdir if workdir is not None
@@ -140,6 +142,9 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
         sys.exit(1)
     
     for manifest in manifests:
+        if skip_app and manifest[0].type == ComponentType.APP:
+            continue
+
         kraft_download_via_manifest(
             workdir=workdir,
             manifest=manifest[0],
