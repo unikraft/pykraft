@@ -188,7 +188,6 @@ test test-unit test-coverage test-lint: docker-kraft
 else
 test test-unit test-coverage test-lint:
 endif
-	$(Q)pre-commit install -f
 	$(info Running target via Docker ($(ORG)/$(APP_NAME):latest-dev)...)
 	$(Q)$(call DOCKER_RUN,$(VARS),kraft:latest-dev) $(MAKE) -e $@;
 	$(Q)exit 0
