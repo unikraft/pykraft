@@ -249,6 +249,12 @@ class Network(object):
 
         return text
 
+    def repr(self):
+        return {
+            'pre_up': self.pre_up,
+            'post_down': self.post_down
+        }
+
 
 class NetworkManager(object):
     _networks = []
@@ -289,6 +295,14 @@ class NetworkManager(object):
             networks.add(Network.from_config(net, config[net]))
 
         return networks
+
+    def repr(self):
+        config = {}
+
+        for network in self.all():
+            config[network.name] = network.repr()
+
+        return config
 
 # def start_dnsmasq_server(bridge=None, listen_addr=None, ip_range=None, netmask=None, lease_time=None):
 #     """Instantiate a new Dnsmasq server running as a user-space daemon."""
