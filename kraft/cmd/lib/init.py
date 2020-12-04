@@ -41,12 +41,16 @@ import click
 from git import GitConfigParser
 
 import kraft.util as util
+from kraft.cmd.list.provider import ListProviderType
 from kraft.const import GITCONFIG_GLOBAL
 from kraft.const import GITCONFIG_LOCAL
+from kraft.const import UNIKRAFT_RELEASE_STAGING
 from kraft.const import URL_VERSION
 from kraft.lib import Library
 from kraft.logger import logger
 from kraft.manifest import Manifest
+from kraft.manifest import ManifestItem
+from kraft.types import ComponentType
 
 
 @click.pass_context
@@ -86,17 +90,15 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
             origin="file://%s" % lib.localdir
         )
 
-        print(lib.description)
+        item = ManifestItem(
+            provider=ListProviderType.GIT,
+            name=name,
+            description=lib.description,
+            type=ComponentType.LIB.shortname,
+            dist=UNIKRAFT_RELEASE_STAGING,
+        )
 
-        # item = ManifestItem(
-        #     provider=ListProviderType.GITHUB,
-        #     name=name,
-        #     description=lib.description,
-        #     type=,
-        #     dist=UNIKRAFT_RELEASE_STAGING,
-        # )
-
-        # manifest.add_item(item)
+        manifest.add_item(item)
 
 
 @click.command('init', short_help='Initialize a new Unikraft library.')  # noqa: C901
@@ -146,7 +148,7 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
 )
 @click.option(
     '--soft-pack', '-S', 'soft_pack',
-    help="Softly pack the component so that it is available via kraft.",
+    help="Softly pack the component so that it is available via kraft list.",
     is_flag=True
 )
 @click.argument('name', required=False)
