@@ -43,6 +43,7 @@ from kraft.const import UK_DBG_EXT
 from kraft.error import RunnerError
 from kraft.logger import logger
 from kraft.plat.network import NetworkManager
+from kraft.plat.volume import VolumeDriver
 from kraft.plat.volume import VolumeManager
 
 

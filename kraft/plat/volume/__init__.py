@@ -34,4 +34,5 @@ from __future__ import unicode_literals
 
 from .types import VolumeTypes  # noqa: F401
 from .volume import Volume  # noqa: F401
+from .volume import VolumeDriver  # noqa: F401
 from .volume import VolumeManager  # noqa: F401
