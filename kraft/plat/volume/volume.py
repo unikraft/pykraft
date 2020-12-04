@@ -32,6 +32,38 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from enum import Enum
+
+
+class VolumeDriver(Enum):
+    VOL_INITRD = ("initrd", [""])
+    VOL_9PFS = ("9pfs", [
+        "CONFIG_LIBDEVFS=y"
+        "CONFIG_LIB9PFS=y"
+    ])
+    VOL_RAW = ("raw", [
+        "CONFIG_LIBDEVFS=y"
+    ])
+    VOL_QCOW2 = ("qcow2", [
+        "CONFIG_LIBDEVFS=y"
+    ])
+
+    @property
+    def name(self):
+        return self.value[0]
+
+    @property
+    def kconfig(self):
+        return self.kconfig[0]
+
+    @classmethod
+    def from_name(cls, name=None):
+        for vol in VolumeDriver.__members__.items():
+            if name == vol[1].name:
+                return vol
+
+        return None
+
 
 class Volume(object):
     _name = None
