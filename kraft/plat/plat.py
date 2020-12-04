@@ -34,14 +34,11 @@ from __future__ import unicode_literals
 
 import click
 
-from kraft.error import DisabledComponentError
-
-from kraft.const import UK_CORE_PLAT_DIR
-
+from .runner import Runner
 from kraft.component import Component
 from kraft.component import ComponentManager
-
-from .runner import Runner
+from kraft.const import UK_CORE_PLAT_DIR
+from kraft.error import DisabledComponentError
 
 
 class Platform(Component):
@@ -65,6 +62,7 @@ class InternalPlatform(Platform):
         return False
 
     _localdir = None
+
     @property
     @click.pass_context
     def localdir(ctx, self):

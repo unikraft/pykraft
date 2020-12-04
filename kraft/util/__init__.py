@@ -34,22 +34,17 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .cli import ClickOptionMutex
+from .cli import ClickReaderOption
+from .cli import ClickWriterCommand
+from .cli import ClickWriterOption
 from .cli import KraftHelpCommand
 from .cli import KraftHelpGroup
-from .cli import ClickReaderOption
-from .cli import ClickWriterOption
-from .cli import ClickWriterCommand
-
 from .dir import delete_resource
 from .dir import is_dir_empty
 from .dir import recursively_copy
-
 from .make import make_list_vars
-
 from .op import execute
 from .op import merge_dicts
-
 from .text import pretty_columns
 from .text import prettydate
-
 from .threading import ErrorPropagatingThread

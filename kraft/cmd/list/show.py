@@ -32,26 +32,27 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import json
 import os
 import sys
-import json
-import click
 import textwrap
 
-from kraft.logger import logger
-from kraft.util import prettydate
-from kraft.util import pretty_columns
-from kraft.const import LIST_DESC_WIDTH
-from kraft.types import ComponentType
-from kraft.types import str_to_component_type
-from kraft.types import break_component_naming_format
+import click
 
 from .list import kraft_list_preflight
+from kraft.const import LIST_DESC_WIDTH
+from kraft.logger import logger
+from kraft.types import break_component_naming_format
+from kraft.util import pretty_columns
+from kraft.util import prettydate
 
 
-@click.command('show', short_help='Show a unikraft component.')
-@click.option('--json', '-j', 'return_json',
-    help='Return output as JSON.', is_flag=True)  # noqa: E501
+@click.command('show', short_help='Show a unikraft component.')  # noqa: C901
+@click.option(
+    '--json', '-j', 'return_json',
+    help='Return output as JSON.',
+    is_flag=True
+)
 @click.argument('name')
 @click.pass_context
 def cmd_list_show(ctx, return_json=False, name=None):
@@ -68,22 +69,21 @@ def cmd_list_show(ctx, return_json=False, name=None):
         manifest = ctx.obj.cache.get(manifest_origin)
 
         for _, component in manifest.items():
-            if (type is None or \
-                    (type is not None \
+            if (type is None or
+                    (type is not None
                         and type == component.type)) \
                     and component.name == name:
                 components.append(component)
-    
+
     if len(components) == 0:
         logger.error("Unknown component name: %s" % name)
         sys.exit(1)
-
 
     if return_json:
         data_json = []
         for _, component in enumerate(components):
             data_json.append(component.__getstate__())
-        
+
         click.echo(json.dumps(data_json))
 
     else:
@@ -103,23 +103,22 @@ def cmd_list_show(ctx, return_json=False, name=None):
                     'description' if i == 0 else '',
                     line
                 ])
-            
+
             for i, dist in enumerate(component.dists):
                 dist = component.dists[dist]
                 table.append([
-                    ('distributions' \
-                        if len(component.dists) > 1 else \
-                    'distribution') \
-                        if i == 0 else '',
+                    ('distributions'
+                        if len(component.dists) > 1 else 'distribution')
+                    if i == 0 else '',
                     '%s@%s' % (dist.name, dist.latest.version)
                 ])
-            
+
             if component.git is not None:
                 table.append(['git', component.git])
 
             if component.manifest is not None:
                 table.append(['manifest', component.manifest])
-            
+
             table.append(['last checked', prettydate(component.last_checked)])
 
             localdir = component.localdir

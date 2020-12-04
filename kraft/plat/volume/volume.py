@@ -35,15 +35,22 @@ from __future__ import unicode_literals
 
 class Volume(object):
     _name = None
+
     @property
     def name(self): return self._name
+
     _source = None
+
     @property
     def source(self): return self._source
+
     _driver = None
+
     @property
     def driver(self): return self._driver
+
     _workdir = None
+
     @property
     def workdir(self): return self._workdir
 
@@ -53,22 +60,6 @@ class Volume(object):
         self._source = source
         self._workdir = workdir
 
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def source(self):
-        return self._source
-
-    @property
-    def driver(self):
-        return self._driver
-
-    @property
-    def workdir(self):
-        return self._workdir
-
     @classmethod
     def from_config(cls, name=None, config={}):
         return cls(
@@ -77,7 +68,7 @@ class Volume(object):
             source=config.get('source', None),
             workdir=config.get('workdir', None),
         )
-    
+
     def repr(self):
         config = {}
         if self.driver is not None:
@@ -85,7 +76,8 @@ class Volume(object):
         if self.source is not None:
             config['source'] = self.source
 
-        return config    
+        return config
+
 
 class VolumeManager(object):
     _volumes = []
@@ -128,7 +120,7 @@ class VolumeManager(object):
 
     def repr(self):
         config = {}
-        
+
         for volume in self.all():
             config[volume.name] = volume.repr()
 

@@ -32,9 +32,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .runner import Runner
-from .kvm import KVMRunner
-from .linuxu import LinuxuRunner
-from .xen import XenRunner
-
-from .types import RunnerTypes
+from .kvm import KVMRunner  # noqa: F401
+from .linuxu import LinuxuRunner  # noqa: F401
+from .runner import Runner  # noqa: F401
+from .types import RunnerTypes  # noqa: F401
+from .xen import XenRunner  # noqa: F401

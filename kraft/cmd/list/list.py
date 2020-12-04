@@ -35,37 +35,24 @@ from __future__ import unicode_literals
 import json
 import os
 import sys
-import threading
-from datetime import datetime
 
 import click
-from atpbar import flush
-from github import Github
 
-from kraft.component import Component
+from .update import kraft_update
 from kraft.app import Application
-from kraft.arch import Architecture
-from kraft.const import DATE_FORMAT
-from kraft.const import UK_GITHUB_ORG
 from kraft.const import UNIKRAFT_RELEASE_STABLE
 from kraft.const import UNIKRAFT_RELEASE_STAGING
 from kraft.error import KraftError
-from kraft.lib import Library
 from kraft.logger import logger
-from kraft.plat import Platform
 from kraft.types import ComponentType
-from kraft.types import str_to_component_type
+from kraft.util import ClickReaderOption
+from kraft.util import ClickWriterCommand
+from kraft.util import ClickWriterOption
 from kraft.util import pretty_columns
 from kraft.util import prettydate
-from kraft.unikraft import Unikraft
-from kraft.util import ClickReaderOption
-from kraft.util import ClickWriterOption
-from kraft.util import ClickWriterCommand
-
-from .update import kraft_update
 
 
-@click.group(
+@click.group(  # noqa: C901
     'list',
     short_help='List architectures, platforms, libraries or applications.',
     invoke_without_command=True,
@@ -129,8 +116,8 @@ from .update import kraft_update
 )
 @click.pass_context
 def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
-        show_libs=False, show_apps=False, show_local=False, paginate=False,
-        this=False, this_set=None, return_json=False):
+             show_libs=False, show_apps=False, show_local=False, paginate=False,
+             this=False, this_set=None, return_json=False):
     """
     Retrieves lists of available architectures, platforms, libraries and
     applications supported by unikraft.  Use this command if you wish to
@@ -144,13 +131,13 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
         kraft_list_preflight()
 
         show_archs = False
-        
+
         # If no flags are set, show everything
-        if show_core is False \
-            and show_archs is False \
-            and show_plats is False \
-            and show_libs is False \
-            and show_apps is False:
+        if (show_core is False
+                and show_archs is False
+                and show_plats is False
+                and show_libs is False
+                and show_apps is False):
             show_core = show_archs = show_plats = show_libs = show_apps = True
 
         # Populate a matrix with all relevant columns and rows for each
@@ -166,7 +153,7 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
 
             try:
                 app = Application.from_workdir(workdir)
-                
+
                 for manifest in app.manifests:
                     if manifest.type.shortname not in components:
                         components[manifest.type.shortname] = []
@@ -183,7 +170,7 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
                 for _, item in manifest.items():
                     if item.type.shortname not in components:
                         components[item.type.shortname] = []
-                
+
                     components[item.type.shortname].append(item)
 
         for type, member in ComponentType.__members__.items():
@@ -200,12 +187,12 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
             rows = []
             components_showing = 0
 
-            if member.shortname in components and (\
-                (show_core and member is ComponentType.CORE) or \
-                (show_archs and member is ComponentType.ARCH) or \
-                (show_plats and member is ComponentType.PLAT) or \
-                (show_libs and member is ComponentType.LIB) or \
-                (show_apps and member is ComponentType.APP)):
+            if member.shortname in components and (
+                    (show_core and member is ComponentType.CORE) or
+                    (show_archs and member is ComponentType.ARCH) or
+                    (show_plats and member is ComponentType.PLAT) or
+                    (show_libs and member is ComponentType.LIB) or
+                    (show_apps and member is ComponentType.APP)):
                 rows = components[member.shortname]
 
             # if len(rows) > 0:
@@ -220,8 +207,9 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
                     installed = True
                     if len(os.listdir(localdir)) == 0:
                         install_error = True
-                        logger.warn("%s directory is empty: %s "
-                            % (row.name, localdir))
+                        logger.warn("%s directory is empty: %s " % (
+                            row.name, localdir
+                        ))
 
                 latest_release = None
                 if UNIKRAFT_RELEASE_STABLE in row.dists.keys():
@@ -241,14 +229,14 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
 
                 else:
                     line = [
-                        click.style(row.name, fg='yellow' if install_error else 'green' if installed else 'red'),
-                        click.style(latest_release.version if latest_release is not None else "", fg='white'),
-                        click.style(prettydate(latest_release.timestamp) if latest_release is not None else "", fg='white'),
+                        click.style(row.name, fg='yellow' if install_error else 'green' if installed else 'red'),  # noqa: E501
+                        click.style(latest_release.version if latest_release is not None else "", fg='white'),  # noqa: E501
+                        click.style(prettydate(latest_release.timestamp) if latest_release is not None else "", fg='white'),  # noqa: E501
                         click.style(prettydate(row.last_checked), fg='white'),
                     ]
 
                     if show_local:
-                        line.append(click.style(localdir if installed else '', fg='white'))
+                        line.append(click.style(localdir if installed else '', fg='white'))  # noqa: E501
 
                     if not show_installed or (installed and show_installed):
                         data.append(line)
@@ -264,7 +252,7 @@ def cmd_list(ctx, show_installed=False, show_core=False, show_plats=False,
 
         if return_json:
             click.echo(json.dumps(data_json))
-            
+
         else:
             output = pretty_columns(data)
 
@@ -282,5 +270,5 @@ def kraft_list_preflight(ctx):
     if ctx.obj.cache.is_stale():
         if click.confirm(
             'kraft caches are out-of-date. Would you like to update?',
-            default=True):
+                default=True):
             kraft_update()

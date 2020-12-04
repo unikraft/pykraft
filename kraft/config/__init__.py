@@ -36,3 +36,4 @@ from __future__ import unicode_literals
 from .config import Config
 from .config import find_config
 from .config import load_config
+from .version import SpecificationVersion

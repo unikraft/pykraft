@@ -81,4 +81,3 @@ class LibraryConfig(ComponentConfigBase):
 
 class RunnerConfig(object):
     pass
-

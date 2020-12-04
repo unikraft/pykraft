@@ -110,7 +110,7 @@ class CannotReadMakefilefile(KraftError):
 class CannotConfigureApplication(KraftError):
     def __init__(self, workdir):
         super(CannotConfigureApplication, self).__init__(
-            "Cannot configure the application at %s" % workdir 
+            "Cannot configure the application at %s" % workdir
         )
 
 

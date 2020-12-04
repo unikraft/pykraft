@@ -37,15 +37,13 @@ from .build import cmd_build
 from .clean import cmd_clean
 from .configure import cmd_configure
 from .init import cmd_init
-from .run import cmd_run
-from .up import cmd_up
-
-from .lib import grp_lib
 from .lib import cmd_lib_bump
 from .lib import cmd_lib_init
-
+from .lib import grp_lib
 from .list import cmd_list
 from .list import cmd_list_add
+from .list import cmd_list_pull
 from .list import cmd_list_remove
 from .list import cmd_list_update
-from .list import cmd_list_pull
+from .run import cmd_run
+from .up import cmd_up

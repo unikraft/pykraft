@@ -34,26 +34,24 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import six
-import sys
-import uuid
-import click
-import semver
 import pickle
+import sys
 import threading
-
-from enum import Enum
+import uuid
 from datetime import datetime
-import dateutil.parser
+from enum import Enum
 
-from kraft.logger import logger
+import click
+import dateutil.parser
+import semver
+import six
 
 from kraft.const import UNIKRAFT_RELEASE_STABLE
 from kraft.const import UNIKRAFT_RELEASE_STAGING
-
 from kraft.error import KraftError
 from kraft.error import UnknownVersionError
 from kraft.error import UnknownVersionFormatError
+from kraft.logger import logger
 
 
 class ManifestVersionEquality(Enum):
@@ -66,7 +64,7 @@ class ManifestVersionEquality(Enum):
             raise TypeError("name expected string")
 
         ret = None
-        
+
         for eq in cls.__members__.items():
             for val in eq[1].value:
                 if val in name:
@@ -75,14 +73,14 @@ class ManifestVersionEquality(Enum):
 
         if not isinstance(ret, tuple):
             raise UnknownVersionFormatError(name)
-        
+
         return ret
 
     @classmethod
     def eq(cls, name=None):
         name = ManifestVersionEquality.split(name)
         return True if name[1] is ManifestVersionEquality.EQ else False
-    
+
     @classmethod
     def gt(cls, name=None):
         name = ManifestVersionEquality.split(name)
@@ -93,7 +91,7 @@ class ManifestItemVersion(object):
     _version = None
     @property
     def version(self): return self._version
-    
+
     _git_sha = None
     @property
     def git_sha(self): return self._git_sha
@@ -126,7 +124,7 @@ class ManifestItemVersion(object):
 
     def __str__(self):
         return "<ManifestItemVersion %s>" % (self._version)
-    
+
     def __setstate__(self, state):
         if "meta" in state:
             meta = state["meta"]
@@ -141,7 +139,7 @@ class ManifestItemVersion(object):
             self._tarball = data.get("tarball", None)
             self._tarball_size = data.get("tarball_size", None)
             self._tarball_checksum = data.get("tarball_checksum", None)
-    
+
     def __getstate__(self):
         """
         Return state values to be pickled.
@@ -183,20 +181,20 @@ class ManifestItemDistribution(object):
             self._latest = self.versions[
                 sorted(self._versions.keys(), reverse=True)[0]
             ]
-            
+
         return self._latest
 
     _versions = None
     @property
     def versions(self): return self._versions
-    
+
     @latest.setter
     def latest(self, version=None):
         if version is None:
             return
         if not isinstance(version, ManifestItemVersion):
             raise TypeError("expected ManifestItemVersion")
-        
+
         self._latest = version.version
 
     def __init__(self, **kwargs):
@@ -218,21 +216,21 @@ class ManifestItemDistribution(object):
                 tarball_size=kwargs.get("latest_tarball_size", None),
                 tarball_checksum=kwargs.get("latest_tarball_checksum", None)
             )
-        
+
         self._versions = dict()
-    
+
     def add_version(self, version=None):
         if isinstance(version, list):
             for i in version:
                 self.add_version(i)
             return
-        
+
         if not isinstance(version, ManifestItemVersion):
             raise TypeError("expected ManifestItemVersion")
-            
+
         if version.version not in self.versions.keys():
             self._versions[version.version] = version
-        
+
         if self._latest is None:
             self._latest = version
             return
@@ -254,7 +252,7 @@ class ManifestItemDistribution(object):
         # If not a semantic version, maybe it's a commit sha
         except ValueError:
             pass
-    
+
     def get_version(self, version=None):
         if version in self._versions.keys():
             return self._versions[version]
@@ -301,7 +299,7 @@ class ManifestItemDistribution(object):
             data["latest_tarball_checksum"] = self._latest.tarball_checksum
 
         if len(self._versions) > 0:
-            data["versions"] = { 
+            data["versions"] = {
                 v: self._versions[v].__getstate__() for v in self._versions
             }
 
@@ -391,7 +389,7 @@ class ManifestItem(object):
         self._manifest = kwargs.get('manifest', None)
         self._manifest_checksum = kwargs.get('manifest_checksum', None)
         self._localdir = kwargs.get('localdir', None)
-    
+
     def add_distribution(self, dist=None):
         """
         Adds a distribution for this manifest since the manifest item may have
@@ -405,18 +403,18 @@ class ManifestItem(object):
             for i in dist:
                 self.add_distribution(i)
             return
-        
+
         if not isinstance(dist, ManifestItemDistribution):
             raise TypeError("expected ManifestItemDistribution")
-            
+
         if dist.name not in self.dists.keys():
             self._dists[dist.name] = dist
-        
+
     def get_distribution(self, dist=None):
         if dist in self._dists.keys():
             return self._dists[dist]
         return None
-    
+
     def get_version(self, version=None):
         if version in self._dists.keys():
             return self._dists[version].latest
@@ -438,7 +436,7 @@ class ManifestItem(object):
         if version is not None and version.count('.') == 1:
             version_semver += ".0"
 
-        # Select the distribution's latest if only the distribution is known 
+        # Select the distribution's latest if only the distribution is known
         if version is not None and version in self._dists:
             dist = self._dists[version]
             version = dist.latest
@@ -481,7 +479,7 @@ class ManifestItem(object):
         elif UNIKRAFT_RELEASE_STABLE in self._dists:
             dist = self._dists[UNIKRAFT_RELEASE_STABLE]
             version = dist.latest
-        
+
         # Unknown version
         if dist is None or version is None:
             raise UnknownVersionError(version, self)
@@ -500,7 +498,7 @@ class ManifestItem(object):
 
     def __str__(self):
         return "%s/%s" % (self.type.shortname, self.name)
-    
+
     def __setstate__(self, state):
         if "meta" in state:
             meta = state["meta"]
@@ -511,12 +509,12 @@ class ManifestItem(object):
             if self._last_checked is not None:
                 self._last_checked = dateutil.parser.parse(self._last_checked)
             self._provider = meta.get("provider", None)
-        
+
         if "data" in state:
             data = state["data"]
             self._description = data.get("description", None)
             self._type = data.get("type", None)
-            
+
             dists = data.get("dists", None)
             if dists is not None:
                 self._dists = dict()
@@ -524,9 +522,9 @@ class ManifestItem(object):
                     dist = ManifestItemDistribution()
                     dist.__setstate__(dists[d])
                     self._dists[d] = dist
-    
+
             self._git = data.get("git", None)
-            
+
     def __getstate__(self):
         """
         Return state values to be pickled.
@@ -544,7 +542,7 @@ class ManifestItem(object):
             "data": {
                 "description": self._description,
                 "type": self.type.shortname,
-                "dists": { 
+                "dists": {
                     d: self._dists[d].__getstate__() for d in self._dists
                 },
                 "git": self._git
@@ -569,20 +567,20 @@ class Manifest(object):
         self._manifest_checksum = kwargs.get('manifest_checksum', None)
         self._items = dict()
         self._items_lock = threading.Lock()
-        
+
     def add_item(self, item=None):
         if isinstance(item, list):
             for i in item:
                 self.add_item(i)
             return
-        
+
         if not isinstance(item, ManifestItem):
             raise TypeError("expected ManifestItem")
 
         with self._items_lock:
             # DO override existing item
             self._items[item.name] = item
-    
+
     def get_item(self, item=None):
         if item in self._items.keys():
             return self._items[item]
@@ -590,16 +588,16 @@ class Manifest(object):
 
     def __str__(self):
         return "<Manifest %s>" % (self._manifest)
-    
+
     def __setstate__(self, state):
         if "meta" in state:
             meta = state["meta"]
             self._manifest = meta.get("manifest", None)
             self._manifest_checksum = meta.get("manifest_checksum", None)
-        
+
         self._items = state.get("data", dict())
         self._items_lock = threading.Lock()
-            
+
     def __getstate__(self):
         """
         Return state values to be pickled.
@@ -622,7 +620,7 @@ class ManifestIndex(object):
         if url in self.all.values():
             logger.warn("Manifest already in index")
             return
-        
+
         self._index[checksum] = url
 
 
@@ -659,5 +657,5 @@ def manifest_from_localdir(ctx, localdir=None):
         for _, component in manifest.items():
             if component.localdir == localdir:
                 return component
-    
+
     return None

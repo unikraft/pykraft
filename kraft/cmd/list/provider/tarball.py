@@ -34,60 +34,58 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import time
-import uuid
-import click
-import requests
 import threading
-
+import time
+import urllib.request
+import uuid
 from email.utils import parsedate_tz
 from math import ceil
 from os.path import join
 from time import mktime
 
-import urllib.request
+import click
+import requests
 from atpbar import find_reporter
 
+from .provider import ListProvider
 from kraft.const import UNIKRAFT_CACHEDIR
 from kraft.logger import logger
-
-from .provider import ListProvider
 
 
 class FileDownloader(object):
     CHUNK_SIZE = 1024
- 
+
     def __init__(self, url, dest=None, label=None):
         self._url = url
         self._destination = dest
         self._progressbar = None
         self._request = None
- 
+
         # make connection
         self._request = requests.get(url, stream=True)
         print(self._request.headers)
         if self._request.status_code != 200:
             pass
             # raise FDUnrecognizedStatusCode(self._request.status_code, url)
- 
+
     def set_destination(self, destination):
         self._destination = destination
- 
+
     def get_filepath(self):
         return self._destination
- 
+
     def get_lmtime(self):
         if 'last-modified' in self._request.headers:
             return self._request.headers['last-modified']
- 
+
     def get_size(self):
         return int(self._request.headers['Content-Length'])
- 
+
     def start(self):
         itercontent = self._request.iter_content(chunk_size=self.CHUNK_SIZE)
         f = open(self._destination, "wb")
         chunks = int(ceil(self.get_size() / float(self.CHUNK_SIZE)))
- 
+
         with click.progressbar(
                 length=chunks,
                 label="Downloading",
@@ -97,10 +95,10 @@ class FileDownloader(object):
             time.sleep(0.5)
             for _ in pb:
                 f.write(next(itercontent))
-        
+
         f.close()
         self._request.close()
- 
+
     def __del__(self):
         if self._request:
             self._request.close()
@@ -138,12 +136,6 @@ class TarballListProvider(ListProvider):
     @click.pass_context
     def download(ctx, self, manifest=None, localdir=None, version=None,
             override_existing=False):
-            
-        # logger.info("Pulling %s/%s@%s..." % (
-        #     manifest.type,
-        #     manifest.name,
-        #     version.version
-        # ))
 
         if version.tarball is None:
             logger.warn("Cannot download tarball, not in manifest")
@@ -165,9 +157,9 @@ class TarballListProvider(ListProvider):
         )
 
         logger.debug("Downloading %s..." % remote)
-        
+
         t = TarballProgressBar(label="%s/%s@%s"
-            % (manifest.type, manifest.name, version.version)
+            % (manifest.type.shortname, manifest.name, version.version)
         )
         urllib.request.urlretrieve(
             remote,

@@ -47,14 +47,14 @@ class ErrorPropagatingThread(threading.Thread):
                 )
             else:
                 self.ret = self._target(*self._args, **self._kwargs)
- 
+
         except BaseException as e:
             self.exc = e
 
     def join(self):
         super(ErrorPropagatingThread, self).join()
-        
+
         if self.exc:
             raise self.exc
-        
+
         return self.ret

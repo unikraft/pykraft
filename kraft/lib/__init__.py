@@ -32,8 +32,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .lib import Library
-from .lib import LibraryManager
-
-from .lib import intrusively_determine_lib_origin_url
-from .lib import intrusively_determine_lib_origin_version
+from .lib import intrusively_determine_lib_origin_url  # noqa: F401
+from .lib import intrusively_determine_lib_origin_version  # noqa: F401
+from .lib import Library  # noqa: F401
+from .lib import LibraryManager  # noqa: F401

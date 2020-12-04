@@ -32,9 +32,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .driver import NetworkDriver
-from .driver import BRCTLDriver
-from .driver import NetworkDriverTypes
-
-from .network import Network
-from .network import NetworkManager
+from .driver import BRCTLDriver  # noqa: F401
+from .driver import NetworkDriver  # noqa: F401
+from .driver import NetworkDriverTypes  # noqa: F401
+from .network import Network  # noqa: F401
+from .network import NetworkManager  # noqa: F401

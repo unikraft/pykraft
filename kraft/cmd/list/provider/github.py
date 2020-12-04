@@ -33,27 +33,26 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import re
-import os
-import click
 import fnmatch
+import os
+import re
 import threading
-
 from queue import queue
-from github import Github
-from github.Repository import Repository
 from urllib.parse import urlparse
 
-from kraft.util import ErrorPropagatingThread
-from kraft.types import break_component_naming_format
-from kraft.const import GITHUB_ORIGIN
-from kraft.const import GITHUB_TARBALL
-from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
-from kraft.const import UNIKRAFT_RELEASE_STABLE
-from kraft.logger import logger
+import click
+from github import Github
+from github.Repository import Repository
 
 from .git import GitListProvider
 from .tarball import TarballListProvider
+from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
+from kraft.const import GITHUB_ORIGIN
+from kraft.const import GITHUB_TARBALL
+from kraft.const import UNIKRAFT_RELEASE_STABLE
+from kraft.logger import logger
+from kraft.types import break_component_naming_format
+from kraft.util import ErrorPropagatingThread
 
 
 class GitHubListProvider(GitListProvider):
@@ -61,7 +60,7 @@ class GitHubListProvider(GitListProvider):
     def is_type(cls, origin=None):
         if origin is None:
             return False
-        
+
         uri = urlparse(origin)
         if uri.netloc == GITHUB_ORIGIN:
             github_org = uri.path.split('/')[1]
@@ -71,7 +70,7 @@ class GitHubListProvider(GitListProvider):
                 return False
 
             return True
-        
+
         return False
 
     @click.pass_context
@@ -81,18 +80,18 @@ class GitHubListProvider(GitListProvider):
 
         if self.is_type(origin) is False:
             return []
-            
+
         threads = list()
         if items is None:
             items = Queue()
-        
+
         manifest = ctx.obj.cache.get(origin)
-        
+
         if manifest is None:
             manifest = Manifest(
                 manifest=origin
             )
-        
+
         uri = urlparse(origin)
 
         # Is the origin from GitHub?
@@ -109,7 +108,7 @@ class GitHubListProvider(GitListProvider):
             if "*" in github_repo:
                 logger.info("Populating via wildcard: %s" % origin)
 
-                org = github_api.get_organization(github_org) 
+                org = github_api.get_organization(github_org)
                 repos = org.get_repos()
 
                 for repo in repos:
@@ -154,9 +153,9 @@ class GitHubListProvider(GitListProvider):
                         github_org,
                         github_repo
                     ))
-        
+
         return items, threads
-    
+
     @click.pass_context
     def download(ctx, self, manifest=None, localdir=None, version=None,
             override_existing=False, use_git=False):
@@ -184,11 +183,10 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
     from kraft.manifest import ManifestItemVersion
     from kraft.manifest import ManifestItemDistribution
     from .types import ListProviderType
-    
+
     if isinstance(repo, str):
         if ".git" in repo:
             repo = repo.split(".")[0]
-        
         github_api = Github(ctx.obj.env.get('UK_KRAFT_GITHUB_TOKEN', None))
         repo = github_api.get_repo(
             "%s/%s" % (org, repo)
@@ -216,7 +214,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
     _type, _name, _, _ = break_component_naming_format(repo.name)
 
     item = ManifestItem(
-        provider=ListProviderType.GITHUB, 
+        provider=ListProviderType.GITHUB,
         name=_name,
         description=repo.description,
         type=_type.shortname,
@@ -238,9 +236,9 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                     # Skip draft releases
                     if release.draft:
                         continue
-                        
+
                     _version = release.tag_name
-                    
+
                     # interpret the tag name for symbolic distributions
                     ref = GIT_UNIKRAFT_TAG_PATTERN.match(release.tag_name)
                     if ref is not None:
@@ -304,18 +302,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                     branch.commit.sha
                 ),
             ))
-        
+
         item.add_distribution(dist)
-
-    logger.info(
-        "Found %s/%s via %s..." % (
-            click.style(item.type, fg="blue"),
-            click.style(item.name, fg="blue"),
-            item.manifest
-        )
-    )
-
-    manifest.add_item(item)
-    ctx.obj.cache.save(origin, manifest)
 
     return item

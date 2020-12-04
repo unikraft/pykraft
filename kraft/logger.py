@@ -33,8 +33,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-from logging import DEBUG
-from logging import PercentStyle
 
 import click
 
@@ -50,6 +48,7 @@ LOGGING_COLORS = {
     'CRITICAL': 'red',
     'ERROR':    'red'
 }
+
 
 class KraftFormatter(logging.Formatter):
     _use_color = False
@@ -77,10 +76,10 @@ class KraftFormatter(logging.Formatter):
 
         fmt += MESSAGE_FORMAT
 
-
         self._style._fmt = fmt
 
         return logging.Formatter.format(self, record)
+
 
 class KraftLogger(logging.Logger):
     _use_timestamps = False

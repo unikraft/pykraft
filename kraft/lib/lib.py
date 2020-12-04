@@ -32,50 +32,40 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import os
-import click
-import semver
 import datetime
 import fileinput
-
+import os
 from pathlib import Path
-from git import Repo as GitRepo
 
-from kraft.logger import logger
-
-from kraft.component import Component
-from kraft.component import ComponentManager
-
-from kraft.const import MAKEFILE_UK
-from kraft.const import TEMPLATE_LIB
-from kraft.const import UK_VERSION_VARNAME
-from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
-from kraft.const import UNIKRAFT_LIB_MAKEFILE_VERSION_EXT
-from kraft.const import SEMVER_PATTERN
-from kraft.const import VSEMVER_PATTERN
-
+import click
+import semver
 from cookiecutter.generate import generate_context
 from cookiecutter.generate import generate_files
 from cookiecutter.prompt import prompt_for_config
 from cookiecutter.prompt import read_user_choice
-
-from kraft.template import get_templates_path
-from kraft.template import get_template_config
-from kraft.template import delete_template_resources_of_disabled_features
-
-from kraft.util import make_list_vars
-from kraft.util import recursively_copy
+from git import Repo as GitRepo
 
 from .provider import determine_lib_provider
-
-from kraft.error import CannotReadMakefilefile
-from kraft.error import UnknownLibraryProvider
-from kraft.error import NoRemoteVersionsAvailable
-from kraft.error import CannotDetermineRemoteVersion
-from kraft.error import UnknownLibraryOriginVersion
+from kraft.component import Component
+from kraft.component import ComponentManager
+from kraft.const import MAKEFILE_UK
+from kraft.const import SEMVER_PATTERN
+from kraft.const import TEMPLATE_LIB
+from kraft.const import UK_VERSION_VARNAME
+from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
+from kraft.const import UNIKRAFT_LIB_MAKEFILE_VERSION_EXT
+from kraft.const import VSEMVER_PATTERN
 from kraft.error import BumpLibraryDowngrade
-
-from .provider import determine_lib_provider
+from kraft.error import CannotDetermineRemoteVersion
+from kraft.error import CannotReadMakefilefile
+from kraft.error import NoRemoteVersionsAvailable
+from kraft.error import UnknownLibraryOriginVersion
+from kraft.error import UnknownLibraryProvider
+from kraft.logger import logger
+from kraft.template import delete_template_resources_of_disabled_features
+from kraft.template import get_template_config
+from kraft.template import get_templates_path
+from kraft.util import make_list_vars
 
 
 def intrusively_determine_lib_origin_url(localdir=None):
@@ -136,6 +126,7 @@ def intrusively_determine_lib_origin_version(localdir=None):
 
 class Library(Component):
     _origin_url = None
+
     @property
     def origin_url(self):
         if self._origin_url is None and os.path.exists(self.localdir):
@@ -144,6 +135,7 @@ class Library(Component):
         return self._origin_url
 
     _origin_version = None
+
     @property
     def origin_version(self):
         if self._origin_version is None and os.path.exists(self.localdir):
@@ -152,6 +144,7 @@ class Library(Component):
         return self._origin_version
 
     _origin_provider = None
+
     @property
     def origin_provider(self):
         if self._origin_provider is None and self.origin_url is not None:
@@ -164,10 +157,12 @@ class Library(Component):
         return self._origin_provider
 
     _dependencies = None
+
     @property
     def dependencies(self): return self._dependencies
 
     _template_values = {}
+
     @property
     def template_value(self):
         return self._template_values
@@ -204,13 +199,13 @@ class Library(Component):
         self.set_template_value('lib_name', self.libname)
         self.set_template_value('lib_kname', self.kname)
         self.set_template_value('commit', '')
-    
+
     @classmethod
     @click.pass_context
     def from_workdir(ctx, cls, workdir=None):
         if workdir is None:
             workdir = ctx.obj.workdir
-        
+
         return cls(
             localdir=workdir,
         )
@@ -221,7 +216,7 @@ class Library(Component):
 
     @click.pass_context
     def init(ctx, self, extra_values=dict(), force_create=False,
-            no_input=False):
+             no_input=False):
         """
         """
 
@@ -254,7 +249,7 @@ class Library(Component):
         # include automatically generated content
         context['cookiecutter']['kconfig_dependencies'] = self.determine_kconfig_dependencies()
         context['cookiecutter']['source_files'] = self.determine_source_files()
-        
+
         # include template dir or url in the context dict
         context['cookiecutter']['_template'] = get_templates_path(TEMPLATE_LIB)
 
@@ -263,13 +258,12 @@ class Library(Component):
             if key not in context['cookiecutter']:
                 context['cookiecutter'][key] = self._template_values[key]
 
-        
         output_dir = Path(self.localdir).parent
         # if self.source.startswith("file://"):
         #     output_dir = self.source[len("file://"):]
 
         logger.info("Generating files...")
-        project_dir = generate_files(
+        generate_files(
             repo_dir=get_templates_path(TEMPLATE_LIB),
             context=context,
             overwrite_if_exists=force_create,
@@ -286,8 +280,8 @@ class Library(Component):
         repo.index.commit('Initial commit (blank)')
 
         logger.info("Generated new library: %s" % self.localdir)
-        
-    @click.pass_context
+
+    @click.pass_context  # noqa: C901
     def bump(ctx, self, version=None, fast_forward=False, force_version=False):
         """
         Change the Unikraft library's source origin version.  Usually this
@@ -380,7 +374,7 @@ class Library(Component):
                                 semversions[i],
                                 current_version
                             )
-                        except ValueError:
+                        except ValueError as e:
                             logger.warn(e)
                             continue
 
@@ -398,7 +392,8 @@ class Library(Component):
 
             # Prompt user for a version
             else:
-                version = read_user_choice('version',
+                version = read_user_choice(
+                    'version',
                     sorted(list(versions.keys()), reverse=True)
                 )
 
@@ -473,6 +468,7 @@ class Library(Component):
     # TODO: Intrusively determine source files of the origin for the library
     def determine_source_files(self):
         return []
+
 
 class LibraryManager(ComponentManager):
     pass

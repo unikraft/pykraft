@@ -33,24 +33,21 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import platform
 import sys
 
 import click
 
 from kraft.app import Application
-from kraft.config import config
 from kraft.const import UNIKERNEL_IMAGE_FORMAT
 from kraft.error import KraftError
-from kraft.error import RunnerError
 from kraft.logger import logger
 
 
 @click.pass_context # noqa
 def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
-        background=False, paused=False, gdb=4123, dbg=False, virtio_nic=None,
-        bridge=None, interface=None, dry_run=False, args=None, memory=64,
-        cpu_sockets=1, cpu_cores=1):
+              background=False, paused=False, gdb=4123, dbg=False,
+              virtio_nic=None, bridge=None, interface=None, dry_run=False,
+              args=None, memory=64, cpu_sockets=1, cpu_cores=1):
     """
     Starts the unikraft application once it has been successfully built.
     """
@@ -68,7 +65,7 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 
     if target_architecture is None:
         raise KraftError('Application architecture not configured or set')
-    
+
     target_platform = None
 
     if len(app.platforms.all()) == 1:
@@ -80,7 +77,7 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 
     if target_platform is None:
         raise KraftError('Application platform not configured or set')
-    
+
     unikernel = UNIKERNEL_IMAGE_FORMAT % (
         appdir,
         app.name,
@@ -181,7 +178,7 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 )
 @click.option(
     '--dry-run', '-D', 'dry_run',
-    help='Perform a dry run.', 
+    help='Perform a dry run.',
     is_flag=True
 )
 @click.option(
@@ -207,10 +204,10 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 @click.argument('args', nargs=-1)
 @click.pass_context
 def cmd_run(ctx, plat=None, arch=None, initrd=None, background=False,
-        paused=False, gdb=4123, dbg=False, virtio_nic=None, bridge=None,
-        interface=None, dry_run=False, args=None, memory=64, cpu_sockets=1,
-        cpu_cores=1, workdir=None):
-    
+            paused=False, gdb=4123, dbg=False, virtio_nic=None, bridge=None,
+            interface=None, dry_run=False, args=None, memory=64, cpu_sockets=1,
+            cpu_cores=1, workdir=None):
+
     if workdir is None:
         workdir = os.getcwd()
 

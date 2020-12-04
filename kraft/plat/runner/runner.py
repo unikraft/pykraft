@@ -33,66 +33,103 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import tarfile
+import tempfile
+
 import six
 
-from kraft.config import Config
-
-from kraft.plat.volume import Volume
-from kraft.plat.volume import VolumeManager
-from kraft.plat.network import NetworkDriver
-from kraft.plat.network import NetworkManager
-
-from kraft.logger import logger
-
-from kraft.error import RunnerError
-
 import kraft.util as util
+from kraft.const import UK_DBG_EXT
+from kraft.error import RunnerError
+from kraft.logger import logger
+from kraft.plat.network import NetworkManager
+from kraft.plat.volume import VolumeManager
 
 
 class Runner(object):
     _base_cmd = ''
+
     @property
     def base_cmd(self): return self._base_cmd
 
     _cmd = []
+
     @property
     def cmd(self): return self._cmd
 
     _platform = None
+
     @property
     def platform(self): return self._platform
 
     _volumes = {}
+
     @property
     def volumes(self): return self._volumes
 
     _networks = {}
+
     @property
     def networks(self): return self._networks
 
     _start_paused = False
+
     @property
     def start_paused(self): return self._start_paused
 
     _background = False
+
     @property
     def background(self): return self._background
 
     _unikernel = None
+
     @property
-    def unikernel(self): return self._unikernel
+    def unikernel(self):
+        unikernel = self._unikernel
+        if self._use_debug:
+            unikernel += UK_DBG_EXT
+
+        return unikernel
+
+    @unikernel.setter
+    def unikernel(self, unikernel=None):
+        if not unikernel or not os.path.exists(unikernel):
+            raise RunnerError("Could not find unikernel: %s" % unikernel)
+
+        self._unikernel = unikernel
 
     _architecture = None
+
     @property
     def architecture(self): return self._architecture
 
+    @architecture.setter
+    def architecture(self, arch):
+        if arch:
+            self._architecture = arch
+
     _pre_up = []
+
     @property
-    def pre_up(self): return self._pre_up
+    def pre_up(self):
+        """
+        This is the user-defined script which is called before the unikernel is
+        instantiated and is used to configure the environment for the
+        unikernel where internal support is insufficient.
+        """
+        return self._pre_up
 
     _post_down = []
+
     @property
-    def post_down(self): return self._post_down
+    def post_down(self):
+        """
+        The is the user-defined script which is called after the unikernel is
+        destructed on the exit of a unikernel and is used to clean up the
+        environment.
+        """
+        return self._post_down
 
     _arguments = None
 
@@ -106,8 +143,12 @@ class Runner(object):
             return None
 
     _use_debug = False
+
     @property
     def use_debug(self): return self._use_debug
+
+    @use_debug.setter
+    def use_debug(self, flag=True): self._use_debug = flag
 
     def __init__(self, arguments=[], volumes=None, networks=None):
         self._arguments = arguments
@@ -147,14 +188,6 @@ class Runner(object):
         if port and isinstance(port, int):
             self._cmd.extend(('-g', port))
 
-    @property
-    def use_debug(self):
-        return self._use_debug
-
-    @use_debug.setter
-    def use_debug(self, flag=True):
-        self._use_debug = flag
-
     def set_memory(self, memory=None):
         if memory and isinstance(memory, int):
             self._cmd.extend(('-m', memory))
@@ -166,30 +199,6 @@ class Runner(object):
     def set_cpu_cores(self, cpu_cores=None):
         if cpu_cores and isinstance(cpu_cores, int):
             self._cmd.extend(('-c', cpu_cores))
-
-    @property
-    def unikernel(self):
-        unikernel = self._unikernel
-        if self._use_debug:
-            unikernel += UK_DBG_EXT
-
-        return unikernel
-
-    @unikernel.setter
-    def unikernel(self, unikernel=None):
-        if not unikernel or not os.path.exists(unikernel):
-            raise RunnerError("Could not find unikernel: %s" % unikernel)
-
-        self._unikernel = unikernel
-
-    @property
-    def architecture(self):
-        return self._architecture
-
-    @architecture.setter
-    def architecture(self, arch):
-        if arch:
-            self._architecture = arch
 
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
         raise RunnerError('Using undefined runner driver')
@@ -246,26 +255,12 @@ class Runner(object):
             for cmd in net.pre_up:
                 util.execute(cmd, env, dry_run)
 
-    @property
-    def pre_up(self):
-        """This is the user-defined script which is called before the unikernel
-        is instantiated and is used to configure the environment for the
-        unikernel where internal support is insufficient."""
-        return self._pre_up
-
     def append_pre_up(self, cmds=[]):
         if isinstance(cmds, six.string_types):
             self._pre_up.append(cmds)
 
         elif isinstance(cmds, list):
             self._pre_up.extend(cmds)
-
-    @property
-    def post_down(self):
-        """The is the user-defined script which is called after the unikernel
-        is destructed on the exit of a unikernel and is used to clean up the
-        environment."""
-        return self._post_down
 
     def append_post_down(self, cmds=[]):
         if isinstance(cmds, six.string_types):
