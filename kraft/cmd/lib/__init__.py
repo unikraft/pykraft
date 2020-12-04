@@ -34,13 +34,12 @@ from __future__ import unicode_literals
 
 import click
 
+from .add import cmd_lib_add
 from .bump import cmd_lib_bump
 from .init import cmd_lib_init
-from .add import cmd_lib_add
 
 
-@click.group(name='lib',
-  short_help='Unikraft library commands.')
+@click.group(name='lib', short_help='Unikraft library commands.')
 @click.pass_context
 def grp_lib(ctx):
     """
@@ -48,6 +47,7 @@ def grp_lib(ctx):
     directly with Unikraft libraries.
     """
     pass
+
 
 grp_lib.add_command(cmd_lib_bump)
 grp_lib.add_command(cmd_lib_init)

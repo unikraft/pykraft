@@ -33,30 +33,28 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import sys
+
 import click
-
-from kraft.error import DisabledComponentError
-
-from kraft.const import KCONFIG
-from kraft.const import CONFIG_UK
-from kraft.const import KCONFIG_Y
-from kraft.const import KCONFIG_EQ
-from kraft.const import CONFIG_UK_ARCH
-from kraft.const import UK_CORE_ARCH_DIR
-
-from kraft.logger import logger
 
 from kraft.component import Component
 from kraft.component import ComponentManager
+from kraft.const import CONFIG_UK
+from kraft.const import CONFIG_UK_ARCH
+from kraft.const import KCONFIG
+from kraft.const import KCONFIG_EQ
+from kraft.const import KCONFIG_Y
+from kraft.const import UK_CORE_ARCH_DIR
+from kraft.error import DisabledComponentError
+from kraft.logger import logger
 
 
 class Architecture(Component):
-  pass
+    pass
 
 
 class InternalArchitecture(Architecture):
     _core = None
+
     @property
     def core(self): return self._core
 
@@ -66,6 +64,7 @@ class InternalArchitecture(Architecture):
         return False
 
     _localdir = None
+
     @property
     @click.pass_context
     def localdir(ctx, self):
@@ -87,9 +86,9 @@ class InternalArchitecture(Architecture):
                             path = path[1:]
                         self._localdir = os.path.join(self._core.localdir, path)
                         break
-    
+
         return self._localdir
-    
+
     @property
     def kconfig_enabled_flag(self):
         if self._kconfig_enabled_flag is None and self._core is not None:
@@ -108,7 +107,7 @@ class InternalArchitecture(Architecture):
                             match[0], KCONFIG_Y
                         )
                         break
-        
+
         return self._kconfig_enabled_flag
 
     @click.pass_context
@@ -123,9 +122,8 @@ class InternalArchitecture(Architecture):
             raise DisabledComponentError(self._name)
 
         if isinstance(config, dict):
-            version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
 
 
 class ArchitectureManager(ComponentManager):
-  pass
+    pass

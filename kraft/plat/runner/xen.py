@@ -34,13 +34,10 @@ from __future__ import unicode_literals
 
 import subprocess
 
-from kraft.logger import logger
-
-from kraft.const import XEN_GUEST
-
 import kraft.util as util
-
 from .runner import Runner
+from kraft.const import XEN_GUEST
+from kraft.logger import logger
 
 
 class XenRunner(Runner):

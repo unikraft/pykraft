@@ -34,33 +34,26 @@ from __future__ import unicode_literals
 
 import os
 import sys
-import click
-
-from pathlib import Path
-from git import GitConfigParser
 from configparser import NoOptionError
 from configparser import NoSectionError
 
+import click
+from git import GitConfigParser
+
 import kraft.util as util
-
-from kraft.lib import Library
-from kraft.error import KraftError
-from kraft.error import CannotConnectURLError
-from kraft.error import UnknownLibraryProvider
-from kraft.logger import logger
-
-from kraft.manifest import Manifest
-
 from kraft.const import GITCONFIG_GLOBAL
 from kraft.const import GITCONFIG_LOCAL
 from kraft.const import URL_VERSION
+from kraft.lib import Library
+from kraft.logger import logger
+from kraft.manifest import Manifest
 
 
 @click.pass_context
 def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
-        author_email=None, origin_url=None, origin_version=None,
-        provide_main=False, dependencies=list(), force_create=False,
-        no_input=False, soft_pack=False):
+                   author_email=None, origin_url=None, origin_version=None,
+                   provide_main=False, dependencies=list(), force_create=False,
+                   no_input=False, soft_pack=False):
     """
     """
 
@@ -68,7 +61,6 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
         raise ValueError("Cannot initialize library at unset directory")
     if origin_url is None:
         raise ValueError("expected origin url")
-
 
     lib = Library(
         name=name,
@@ -91,13 +83,13 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
 
     if soft_pack:
         manifest = Manifest(
-            origin = "file://%s" % lib.localdir
+            origin="file://%s" % lib.localdir
         )
 
         print(lib.description)
 
         # item = ManifestItem(
-        #     provider=ListProviderType.GITHUB, 
+        #     provider=ListProviderType.GITHUB,
         #     name=name,
         #     description=lib.description,
         #     type=,
@@ -139,7 +131,8 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
 # )
 @click.option(
     '--workdir', '-w', 'workdir',
-    help='Specify an alternative directory for the library (default is cwd).',metavar="PATH"
+    help='Specify an alternative directory for the library (default is cwd).',
+    metavar="PATH"
 )
 @click.option(
     '--force', '-F', 'force_create',
@@ -159,18 +152,19 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
 @click.argument('name', required=False)
 @click.pass_context
 def cmd_lib_init(ctx, name=None, author_name=None, author_email=None,
-        origin_version=None, origin_url=None, provide_main=False,
-        workdir=None, force_create=False, no_input=False,
-        soft_pack=False):
+                 origin_version=None, origin_url=None, provide_main=False,
+                 workdir=None, force_create=False, no_input=False,
+                 soft_pack=False):
     """
     Initialize a new Unikraft library.
     """
-    dependencies=list() # TODO
-    
+    # TODO: Implement adding dependencies at CLI
+    dependencies = list()
+
     if workdir is None and name is None:
         libdir = os.getcwd()
         name = os.path.basename(libdir)
-        
+
     elif workdir is None:
         libdir = os.path.join(os.getcwd(), name)
 
@@ -209,10 +203,10 @@ def cmd_lib_init(ctx, name=None, author_name=None, author_email=None,
 
         if author_email is None:
             author_email = gitconfig.get("user", "email")
-            
+
     except (NoSectionError, NoOptionError):
         pass
-    
+
     if no_input is False:
         if origin_url is None:
             origin_url = click.prompt("source (Use %s for automatic versioning)" % URL_VERSION)

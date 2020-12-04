@@ -36,29 +36,28 @@ from __future__ import unicode_literals
 import os
 import sys
 import uuid
-import click
-
 from datetime import datetime
 from queue import Queue
-from git.cmd import Git
-from git import RemoteProgress
-from git import Repo as GitRepo
-from git import InvalidGitRepositoryError
-from git import GitCommandError
-from git import NoSuchPathError
-from atpbar import find_reporter
 from urllib.parse import urlparse
 
-from kraft.types import break_component_naming_format
-from kraft.util import ErrorPropagatingThread
-from kraft.logger import logger
+import click
+from atpbar import find_reporter
+from git import GitCommandError
+from git import InvalidGitRepositoryError
+from git import NoSuchPathError
+from git import RemoteProgress
+from git import Repo as GitRepo
+from git.cmd import Git
+
+from .provider import ListProvider
+from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
 from kraft.const import GIT_UNIKRAFT_TAG_RELEASE
 from kraft.const import UNIKRAFT_RELEASE_STABLE
 from kraft.const import UNIKRAFT_RELEASE_STABLE_VARIATIONS
 from kraft.const import UNIKRAFT_RELEASE_STAGING
-from kraft.const import GIT_UNIKRAFT_TAG_PATTERN
-
-from .provider import ListProvider
+from kraft.logger import logger
+from kraft.types import break_component_naming_format
+from kraft.util import ErrorPropagatingThread
 
 
 class GitProgressBar(RemoteProgress):
@@ -92,7 +91,7 @@ class GitListProvider(ListProvider):
             g.ls_remote(origin)
         except GitCommandError:
             return False
-        
+
         return True
 
     @click.pass_context
@@ -102,13 +101,13 @@ class GitListProvider(ListProvider):
 
         if self.is_type(origin) is False:
             return []
-            
+
         threads = list()
         if items is None:
             items = Queue()
-        
+
         manifest = ctx.obj.cache.get(origin)
-        
+
         if manifest is None:
             manifest = Manifest(
                 manifest=origin
@@ -126,19 +125,19 @@ class GitListProvider(ListProvider):
             thread.start()
         else:
             items.put(get_component_from_git_repo(ctx, origin))
-        
+
         return items, threads
 
     @classmethod
     def download(cls, manifest=None, localdir=None, version=None,
             override_existing=False, **kwargs):
-        
+
         try:
             repo = GitRepo(localdir)
 
         except (InvalidGitRepositoryError, NoSuchPathError):
             repo = GitRepo.init(localdir)
-        
+
         if manifest.git is not None:
             try:
                 repo.create_remote('origin', manifest.git)
@@ -177,7 +176,7 @@ def get_component_from_git_repo(ctx, origin=None):
     from kraft.manifest import ManifestItemVersion
     from kraft.manifest import ManifestItemDistribution
     from .types import ListProviderType
-    
+
     # This is a best-effort guess at the type and name of the git repository
     # using the path to determine if it's namespaced.
     uri = urlparse(origin)
@@ -189,7 +188,7 @@ def get_component_from_git_repo(ctx, origin=None):
         _type, _name, _, _ = break_component_naming_format(uri.path)
 
     if _type is None:
-        raise ValueError("".join([    
+        raise ValueError("".join([
             "Cannot determine the type of the repository: %s\n\n",
             "Please ensure it is of the naming convention <type>-<name> or ",
             "that it is namespaced in a directory <type>/<name>."
@@ -202,7 +201,7 @@ def get_component_from_git_repo(ctx, origin=None):
 
     repo = GitRepo(origin)
     item = ManifestItem(
-        provider=ListProviderType.GIT, 
+        provider=ListProviderType.GIT,
         name=_name,
         type=_type.shortname,
         dist=UNIKRAFT_RELEASE_STABLE,
@@ -221,7 +220,7 @@ def get_component_from_git_repo(ctx, origin=None):
 
     for version in repo.tags:
         commit = repo.commit(version)
-        
+
         # interpret the tag name for symbolic distributions
         ref = GIT_UNIKRAFT_TAG_PATTERN.match(str(version))
         if ref is not None:

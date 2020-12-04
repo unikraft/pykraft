@@ -35,6 +35,6 @@ from __future__ import unicode_literals
 
 from enum import Enum
 
-from .provider import ListProvider
 from .git import GitListProvider
 from .github import GitHubListProvider
+from .provider import ListProvider

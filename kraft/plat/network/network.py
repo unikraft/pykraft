@@ -32,20 +32,10 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import subprocess
-from enum import Enum
-from shutil import which
-
 import six
 
-import kraft.util as utils
-from kraft.error import InvalidBridgeName
-from kraft.error import KraftError
-from kraft.error import NetworkBridgeUnsupported
-from kraft.error import NetworkDriverError
-from kraft.logger import logger
-
 from .driver import NetworkDriverTypes
+from kraft.logger import logger
 
 
 # DNSMASQ = "dnsmasq"
@@ -303,4 +293,3 @@ class NetworkManager(object):
             config[network.name] = network.repr()
 
         return config
-

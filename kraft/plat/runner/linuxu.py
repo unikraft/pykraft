@@ -34,10 +34,8 @@ from __future__ import unicode_literals
 
 import subprocess
 
-from .runner import Runner
-
 import kraft.util as util
-
+from .runner import Runner
 from kraft.logger import logger
 
 
@@ -79,8 +77,8 @@ class LinuxuRunner(Runner):
     def set_cpu_cores(self, cpu_cores=None):
         pass
 
-    def execute(self, extra_args=None, background=False, paused=False, 
-            ry_run=False):
+    def execute(self, extra_args=None, background=False, paused=False,
+                dry_run=False):
         logger.debug("Executing on Linux...")
 
         cmd = [

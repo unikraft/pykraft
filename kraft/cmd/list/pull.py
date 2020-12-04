@@ -34,36 +34,25 @@ from __future__ import unicode_literals
 
 import os
 import sys
-import json
-import time
-import click
-import semver
-import threading
-
 from pathlib import Path
+
+import click
 from atpbar import flush
 
-from kraft.app import Application
-from kraft.util import pretty_columns
-from kraft.util import prettydate
-from kraft.util import ErrorPropagatingThread
-from kraft.logger import logger
-from kraft.error import UnknownVersionError
-from kraft.error import KraftError
-from kraft.const import UNIKRAFT_RELEASE_STABLE
-from kraft.manifest import ManifestItem
-from kraft.types import break_component_naming_format
-from kraft.types import str_to_component_type
-from kraft.types import ComponentType
-from kraft.manifest import ManifestVersionEquality
-
 from .list import kraft_list_preflight
+from kraft.app import Application
+from kraft.logger import logger
+from kraft.manifest import ManifestItem
+from kraft.manifest import ManifestVersionEquality
+from kraft.types import break_component_naming_format
+from kraft.types import ComponentType
+from kraft.util import ErrorPropagatingThread
 
 
-@click.pass_context
+@click.pass_context  # noqa: C901
 def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
-        pull_dependencies=False, skip_verify=False, appdir=None,
-        skip_app=False):
+                    pull_dependencies=False, skip_verify=False, appdir=None,
+                    skip_app=False):
     """
     Pull a particular component from a known manifest.  This will retrieve
     the contents to either the automatically determined directory or to an
@@ -87,16 +76,16 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
         names = list(name)
     elif name is not None:
         names.append(name)
-    
+
     not_found = list()
     if isinstance(name, tuple):
         not_found = list(name)
     elif name is not None:
         not_found.append(name)
-    
+
     # Pull the dependencies for the application at workdir or cwd
-    if pull_dependencies and (len(names) == 0 or \
-        appdir is not None and len(names) == 1):
+    if (pull_dependencies and
+            (len(names) == 0 or appdir is not None and len(names) == 1)):
         app = Application.from_workdir(
             appdir if appdir is not None
             else workdir if workdir is not None
@@ -109,7 +98,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
                     ManifestVersionEquality.EQ,
                     component.version.version
                 ))
-        
+
     # Pull the provided named components
     else:
         for manifest_origin in ctx.obj.cache.all():
@@ -118,14 +107,14 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
             for _, manifest in manifest.items():
                 if len(names) == 0:
                     manifests.append((manifest, 0, None))
-            
+
                 else:
                     for fullname in names:
                         type, name, eq, version = \
                             break_component_naming_format(fullname)
 
-                        if (type is None or \
-                                (type is not None \
+                        if (type is None or
+                                (type is not None
                                     and type == manifest.type)) \
                                 and manifest.name == name:
                             manifests.append((manifest, eq, version))
@@ -140,7 +129,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
     if len(manifests) == 0:
         logger.error("No manifests to download")
         sys.exit(1)
-    
+
     for manifest in manifests:
         if skip_app and manifest[0].type == ComponentType.APP:
             continue
@@ -153,7 +142,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
             use_git=use_git,
             skip_verify=skip_verify
         )
-    
+
     if pull_dependencies and len(names) > 0:
         for manifest in manifests:
             if manifest[0].type == ComponentType.APP:
@@ -165,21 +154,30 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
                     skip_verify=skip_verify
                 )
 
+
 @click.pass_context
-def kraft_download_via_manifest(ctx, workdir=None, manifest=None, 
-        equality=None, version=None, use_git=False, skip_verify=False):
+def kraft_download_via_manifest(ctx, workdir=None, manifest=None,
+                                equality=None, version=None, use_git=False,
+                                skip_verify=False):
     """
     """
     threads = list()
 
     def kraft_download_component_thread(localdir=None, manifest=None,
-        equality=ManifestVersionEquality.EQ, version=None, use_git=False,
-        skip_verify=False, override_existing=False):
+                                        equality=ManifestVersionEquality.EQ,
+                                        version=None, use_git=False,
+                                        skip_verify=False,
+                                        override_existing=False):
         with ctx:
-            kraft_download_component(localdir=localdir, manifest=manifest,
-                equality=equality, version=version, use_git=use_git,
-                skip_verify=skip_verify, 
-                override_existing=override_existing)
+            kraft_download_component(
+                localdir=localdir,
+                manifest=manifest,
+                equality=equality,
+                version=version,
+                use_git=use_git,
+                skip_verify=skip_verify,
+                override_existing=override_existing
+            )
 
     if workdir is None:
         localdir = manifest.localdir
@@ -211,15 +209,16 @@ def kraft_download_via_manifest(ctx, workdir=None, manifest=None,
             if ctx.obj.verbose:
                 import traceback
                 logger.error(traceback.format_exc())
-    
+
     if sys.stdout.isatty():
         flush()
 
 
 @click.pass_context
 def kraft_download_component(ctx, localdir=None, manifest=None,
-        equality=ManifestVersionEquality.EQ, version=None, use_git=False,
-        skip_verify=False, override_existing=False):
+                             equality=ManifestVersionEquality.EQ, version=None,
+                             use_git=False, skip_verify=False,
+                             override_existing=False):
     """
     """
     if manifest is None or not isinstance(manifest, ManifestItem):
@@ -263,11 +262,11 @@ def kraft_download_component(ctx, localdir=None, manifest=None,
 @click.argument('name', required=False, nargs=-1)
 @click.pass_context
 def cmd_list_pull(ctx, name=None, workdir=None, use_git=False,
-        no_dependencies=False, skip_verify=False):
+                  no_dependencies=False, skip_verify=False):
     """
     Download a remote component to your working directory.
 
-    You can additional syntax to specify the type of component and/or the 
+    You can additional syntax to specify the type of component and/or the
     version you wish to download.  The name of a component is specified by
     either its unique name or by its type and name (e.g. [type]/[name] or
     [type]-[name]).  The version can be specified using an equality operator:
@@ -281,13 +280,13 @@ def cmd_list_pull(ctx, name=None, workdir=None, use_git=False,
         $ kraft list pull app-python3
 
         $ kraft list pull app/python3
-    
+
     To simply pull a library:
 
         $ kraft list pull lib-python3
 
         $ kraft list pull lib/python3
-    
+
     To pull a component at a specific version:
 
         $ kraft list pull lib/python3==stable
@@ -300,13 +299,13 @@ def cmd_list_pull(ctx, name=None, workdir=None, use_git=False,
 
     try:
         kraft_list_pull(
-            name=name, 
-            workdir=workdir, 
-            use_git=use_git, 
+            name=name,
+            workdir=workdir,
+            use_git=use_git,
             pull_dependencies=not no_dependencies,
             skip_verify=skip_verify
         )
-    
+
     except Exception as e:
         logger.critical(str(e))
 

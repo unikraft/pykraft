@@ -36,10 +36,9 @@ import yaml
 
 from kraft.config import Config
 from kraft.config.types import ArchitectureConfig
-from kraft.config.types import PlatformConfig
 from kraft.config.types import LibraryConfig
+from kraft.config.types import PlatformConfig
 from kraft.config.types import RunnerConfig
-
 from kraft.config.version import SpecificationVersion
 
 
@@ -63,7 +62,7 @@ def serialize_string(dumper, data):
         # Empirically only y/n appears to be an issue, but this might change
         # depending on which PyYaml version is being used. Err on safe side.
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='"')
-    return representer(data) 
+    return representer(data)
 
 
 def serialize_string_escape_dollar(dumper, data):

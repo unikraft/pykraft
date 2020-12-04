@@ -33,27 +33,22 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import six
+
 import click
 import kconfiglib
+import six
 
-from collections import namedtuple
-from collections import defaultdict
-
-from kraft.const import MAKEFILE_UK
-from kraft.const import KCONFIG_EQ
 from kraft.const import CONFIG_UK
-from kraft.const import KCONFIG_Y
 from kraft.const import KCONFIG
+from kraft.const import KCONFIG_EQ
+from kraft.const import KCONFIG_Y
+from kraft.const import MAKEFILE_UK
 from kraft.const import UNIKRAFT_RELEASE_STABLE
 from kraft.const import UNIKRAFT_RELEASE_STAGING
-
+from kraft.error import DisabledComponentError
 from kraft.error import MissingManifest
 from kraft.error import UnknownVersionError
-from kraft.error import DisabledComponentError
-
 from kraft.logger import logger
-from kraft.manifest import ManifestItem
 from kraft.manifest import ManifestVersionEquality
 
 
@@ -70,10 +65,12 @@ class Component(object):
     component, including its whereabouts on disk, what version it is at, etc.
     """
     _name = None
+
     @property
     def name(self): return self._name
 
     _version = None
+
     @property
     def version(self):
         if self.is_downloaded:
@@ -82,22 +79,27 @@ class Component(object):
         return self._version
 
     _origin = None
+
     @property
     def origin(self): return self._origin
 
     _manifest = None
+
     @property
     def manifest(self): return self._manifest
 
     _description = None
+
     @property
     def description(self): return self._description
 
     _workdir = None
+
     @property
     def workdir(self): return self._workdir
 
     _localdir = None
+
     @property
     @click.pass_context
     def localdir(ctx, self):
@@ -107,6 +109,7 @@ class Component(object):
         return self._localdir
 
     _kconfig_enabled_flag = None
+
     @property
     def kconfig_enabled_flag(self):
         if self._kconfig_enabled_flag is None:
@@ -134,7 +137,7 @@ class Component(object):
     @property
     def kconfig(self): return self._kconfig
 
-    @click.pass_context
+    @click.pass_context  # noqa: C901
     def __init__(ctx, self, *args, **kwargs):
         self._name = kwargs.get("name", None)
         self._type = kwargs.get("type", None)
@@ -152,7 +155,7 @@ class Component(object):
         elif isinstance(config, dict):
             version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
-        
+
         elif isinstance(config, bool) and config is False:
             raise DisabledComponentError(self._name)
 
@@ -161,7 +164,6 @@ class Component(object):
             self._manifest = manifest_from_localdir(self._localdir)
 
         if self._manifest is not None:
-
             if self._name is None:
                 self._name = self._manifest.name
 
@@ -169,7 +171,7 @@ class Component(object):
             if version is None:
                 if UNIKRAFT_RELEASE_STABLE in self._manifest.dists.keys():
                     self._version = self._manifest.get_distribution(UNIKRAFT_RELEASE_STABLE).latest
-                
+
                 if self._version is None and UNIKRAFT_RELEASE_STAGING in self._manifest.dists.keys():
                     self._version = self._manifest.get_distribution(UNIKRAFT_RELEASE_STAGING).latest
 
@@ -177,7 +179,7 @@ class Component(object):
             elif version in self._manifest.dists.keys():
                 self._version = \
                     self._manifest.get_distribution(self._version).latest
-            
+
             # Maybe the version is from a distribution
             else:
                 for dist in self._manifest.dists.keys():
@@ -194,10 +196,10 @@ class Component(object):
             and os.path.exists(os.path.join(self._localdir, MAKEFILE_UK))
 
     def download(self, localdir=None, equality=ManifestVersionEquality.EQ,
-            use_git=False, override_existing=False):
+                 use_git=False, override_existing=False):
         if self._manifest is None:
             raise MissingManifest(self._name)
-        
+
         self._manifest.download(
             localdir=localdir,
             equality=equality,
@@ -220,7 +222,7 @@ class Component(object):
 
         if self._kconfig is not None and len(self._kconfig) > 0:
             config['kconfig'] = self._kconfig
-        
+
         if self.version is not None:
             config['version'] = self.version.version
 
@@ -238,6 +240,7 @@ class Component(object):
             config['source'] = self.origin
 
         return True if not config else config
+
 
 class ComponentManager(object):
     _components = []
@@ -257,12 +260,12 @@ class ComponentManager(object):
     def add(self, component=None):
         if component is None:
             raise ValueError("expected component")
-        
+
         if not isinstance(component, Component):
             raise TypeError("expected Component")
-        
+
         self._components.append(component)
-    
+
     def get(self, name=None):
         for component in self._components:
             if component.name == name:

@@ -32,4 +32,4 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .types import determine_lib_provider
+from .types import determine_lib_provider  # noqa: F401

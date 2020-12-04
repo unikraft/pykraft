@@ -34,28 +34,28 @@ from __future__ import unicode_literals
 
 import os
 import re
-import six
-import click
-
 from enum import Enum
 
-from .lib import Library
-from .lib import LibraryManager
-from .plat import Platform
-from .plat import PlatformManager
+import click
+import six
+
 from .app import Application
 from .arch import Architecture
 from .arch import ArchitectureManager
-from .unikraft import Unikraft
-from .error import UnknownVersionFormatError
-from .manifest import ManifestVersionEquality
-from .const import UK_GITHUB_NAMING_FORMAT
 from .const import UK_GITHUB_CORE_FORMAT
-from kraft.const import UNIKRAFT_COREDIR
-from kraft.const import UNIKRAFT_ARCHSDIR
-from kraft.const import UNIKRAFT_PLATSDIR
-from kraft.const import UNIKRAFT_LIBSDIR
+from .const import UK_GITHUB_NAMING_FORMAT
+from .error import UnknownVersionFormatError
+from .lib import Library
+from .lib import LibraryManager
+from .manifest import ManifestVersionEquality
+from .plat import Platform
+from .plat import PlatformManager
+from .unikraft import Unikraft
 from kraft.const import UNIKRAFT_APPSDIR
+from kraft.const import UNIKRAFT_ARCHSDIR
+from kraft.const import UNIKRAFT_COREDIR
+from kraft.const import UNIKRAFT_LIBSDIR
+from kraft.const import UNIKRAFT_PLATSDIR
 from kraft.const import UNIKRAFT_WORKDIR
 
 
@@ -75,7 +75,7 @@ class ComponentType(Enum):
 
     @property
     def shortname(self): return self.value[0]
- 
+
     @property
     def name(self): return self.value[1]
 
@@ -92,7 +92,7 @@ class ComponentType(Enum):
 
     @property
     def env(self): return self.value[3]
-    
+
     @click.pass_context
     def localdir(ctx, self, name=None):
         # First check if there is a ./.unikraft directory present
@@ -123,6 +123,7 @@ class ComponentType(Enum):
     @property
     def workdir(self): return self.value[6]
 
+
 def str_to_component_type(name=None):
     for t in ComponentType.__members__.values():
         if name == t.shortname or (name == t.shortname + "s"):
@@ -134,7 +135,7 @@ def str_to_component_type(name=None):
 def break_component_naming_format(name=None):
     if name is None or not isinstance(name, six.string_types):
         raise TypeError("name is not string")
-    
+
     _type = None
     _name = None
     _eq = None

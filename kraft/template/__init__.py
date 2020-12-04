@@ -33,12 +33,12 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import yaml
 
-from kraft.util import delete_resource
+import yaml
 
 from kraft.const import TEMPLATE_CONFIG
 from kraft.const import TEMPLATE_MANIFEST
+from kraft.util import delete_resource
 
 
 def get_templates_path(templatedir=None):
@@ -49,6 +49,7 @@ def get_templates_path(templatedir=None):
       templatedir
     )
 
+
 def get_template_config(templatedir=None):
     if templatedir is None:
         raise ValueError("expected templatedir")
@@ -57,6 +58,7 @@ def get_template_config(templatedir=None):
         get_templates_path(templatedir),
         TEMPLATE_CONFIG
     )
+
 
 def delete_template_resources_of_disabled_features(templatedir=None):
     if templatedir is None:

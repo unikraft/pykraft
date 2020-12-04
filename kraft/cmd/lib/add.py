@@ -34,26 +34,25 @@ from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
 
 from kraft.app import Application
-from kraft.error import KraftError
+from kraft.cmd.list import kraft_list_pull
+from kraft.const import UNIKRAFT_WORKDIR
 from kraft.logger import logger
 
-from kraft.const import UNIKRAFT_WORKDIR
-
-from kraft.cmd.list import kraft_list_pull
 
 @click.pass_context
 def kraft_lib_add(ctx, workdir=None, lib=None):
     if workdir is None or os.path.exists(workdir) is False:
         raise ValueError("working directory is empty: %s" % workdir)
-    
+
     if isinstance(lib, tuple):
         lib = list(lib)
 
     if isinstance(lib, list):
-        for l in lib:
+        for l in lib:  # noqa: E741
             if not kraft_lib_add(workdir, l):
                 return False
         return True

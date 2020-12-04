@@ -34,24 +34,19 @@ from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
 
-from pathlib import Path
-
 import kraft.util as util
-
-from kraft.logger import logger
-
-from kraft.const import UNIKRAFT_RELEASE_STABLE
-from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
-from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
-
+from kraft.cmd.build import kraft_build
+from kraft.cmd.configure import kraft_configure
+from kraft.cmd.init import kraft_app_init
 from kraft.cmd.list import kraft_list_preflight
 from kraft.cmd.list.pull import kraft_list_pull
-from kraft.cmd.init import kraft_app_init
-from kraft.cmd.configure import kraft_configure
-from kraft.cmd.build import kraft_build
 from kraft.cmd.run import kraft_run
+from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
+from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
+from kraft.logger import logger
 
 
 @click.command('up', short_help='Configure, build and run an application.')
@@ -73,76 +68,76 @@ from kraft.cmd.run import kraft_run
     metavar="VERSION"
 )
 @click.option(
-    '--plat','-p', 'plat', 
+    '--plat', '-p', 'plat',
     help='Target platform.',
 )
 @click.option(
-    '--arch','-m', 'arch', 
+    '--arch', '-m', 'arch',
     help='Target architecture.',
 )
 @click.option(
-    '--initrd','-i', 'initrd',      
+    '--initrd', '-i', 'initrd',
     help='Provide an init ramdisk.'
 )
 @click.option(
-    '--background','-B', 'background',  
+    '--background', '-B', 'background',
     help='Run in background.',
     is_flag=True
 )
 @click.option(
-    '--paused','-P', 'paused',      
+    '--paused', '-P', 'paused',
     help='Run the application in paused state.',
     is_flag=True
 )
 @click.option(
-    '--gdb','-g', 'gdb',         
+    '--gdb', '-g', 'gdb',
     help='Run a GDB server for the guest on specified port.',
     type=int
 )
 @click.option(
-    '--dbg','-d', 'dbg',         
+    '--dbg', '-d', 'dbg',
     help='Use unstriped unikernel',
     is_flag=True
 )
 @click.option(
-    '--virtio-nic','-n', 'virtio_nic',  
+    '--virtio-nic', '-n', 'virtio_nic',
     help='Attach a NAT-ed virtio-NIC to the guest.'
 )
 @click.option(
-    '--bridge','-b', 'bridge',      
+    '--bridge', '-b', 'bridge',
     help='Attach a NAT-ed virtio-NIC an existing bridge.'
 )
 @click.option(
-    '--interface','-V', 'interface',   
+    '--interface', '-V', 'interface',
     help='Assign host device interface directly as virtio-NIC to the guest.'
 )
 @click.option(
-    '--dry-run','-D', 'dry_run',     
+    '--dry-run', '-D', 'dry_run',
     help='Perform a dry run.',
     is_flag=True
 )
 @click.option(
-    '--memory','-M', 'memory',      
+    '--memory', '-M', 'memory',
     help="Assign MB memory to the guest.",
     type=int
 )
 @click.option(
-    '--cpu-sockets', '-s', 'cpu_sockets', 
+    '--cpu-sockets', '-s', 'cpu_sockets',
     help="Number of guest CPU sockets.",
     type=int
 )
 @click.option(
-    '--cpu-cores','-c', 'cpu_cores',   
+    '--cpu-cores', '-c', 'cpu_cores',
     help="Number of guest cores per socket.",
     type=int
 )
 @click.option(
-    '--force','-F', 'force',       
+    '--force', '-F', 'force',
     help='Overwrite any existing files in current working directory.',
     is_flag=True
 )
 @click.option(
-    '--fast','-j', 'fast',        
+    '--fast', '-j', 'fast',
     help='Use all CPU cores to build the application.',
     is_flag=True
 )
@@ -153,10 +148,10 @@ from kraft.cmd.run import kraft_run
 )
 @click.pass_context
 def cmd_up(ctx, workdir=None, name=None, plat=None, arch=None, initrd=None,
-        background=False, paused=False, gdb=4123, dbg=False, virtio_nic=None,
-        bridge=None, interface=None, dry_run=False, memory=64, cpu_sockets=1,
-        cpu_cores=1, force=False, fast=False, create_makefile=False,
-        template_app=None, template_app_version=None):
+           background=False, paused=False, gdb=4123, dbg=False, virtio_nic=None,
+           bridge=None, interface=None, dry_run=False, memory=64, cpu_sockets=1,
+           cpu_cores=1, force=False, fast=False, create_makefile=False,
+           template_app=None, template_app_version=None):
     """
     Configures, builds and runs an application for a selected architecture and
     platform.
@@ -176,7 +171,7 @@ def cmd_up(ctx, workdir=None, name=None, plat=None, arch=None, initrd=None,
     if workdir is None and name is None:
         appdir = os.getcwd()
         name = os.path.basename(appdir)
-        
+
     elif workdir is None:
         appdir = os.path.join(os.getcwd(), name)
 

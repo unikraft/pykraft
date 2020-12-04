@@ -34,36 +34,30 @@ from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
 
-from pathlib import Path
-
 import kraft.util as util
-from kraft.util import ClickOptionMutex
-
 from kraft.app import Application
-from kraft.logger import logger
-
-from kraft.types import ComponentType
-
-from kraft.error import KraftError
-from kraft.error import UnknownVersionError
-from kraft.error import UnknownApplicationTemplateName
-
+from kraft.cmd.list import kraft_download_component
 from kraft.cmd.list import kraft_list_preflight
 from kraft.cmd.list import kraft_list_pull
-from kraft.cmd.list import kraft_download_component
-
-from kraft.const import UNIKRAFT_WORKDIR
-from kraft.const import UNIKRAFT_RELEASE_STABLE
-from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
 from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
+from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
+from kraft.const import UNIKRAFT_RELEASE_STABLE
+from kraft.const import UNIKRAFT_WORKDIR
+from kraft.error import UnknownApplicationTemplateName
+from kraft.error import UnknownVersionError
+from kraft.logger import logger
+from kraft.types import ComponentType
+from kraft.util import ClickOptionMutex
 
 
 @click.pass_context
 def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
-        template_app=None, template_app_version=None, force_init=False,
-        pull_dependencies=False, dumps_local=False, create_makefile=False):
+                   template_app=None, template_app_version=None,
+                   force_init=False, pull_dependencies=False,
+                   dumps_local=False, create_makefile=False):
     """
 
     """
@@ -82,7 +76,7 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
             for _, item in manifest.items():
                 if item.name == template_app and item.type == ComponentType.APP:
                     app_manifest = item
-                    
+
         if app_manifest is None:
             raise UnknownApplicationTemplateName(template_app)
 
@@ -188,15 +182,15 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
     not_required_if=['no_dependencies'],
 )
 @click.option(
-    '--force','-F', 'force_init',
+    '--force', '-F', 'force_init',
     help='Overwrite any existing files.',
     is_flag=True
 )
 @click.argument('name', required=False)
 @click.pass_context
 def cmd_init(ctx, name=None, plat=None, arch=None, template_app=None,
-        template_app_version=None, workdir=None, create_makefile=False,
-        no_dependencies=False, dumps_local=False, force_init=False):
+             template_app_version=None, workdir=None, create_makefile=False,
+             no_dependencies=False, dumps_local=False, force_init=False):
     """
     Initializes a new unikraft application.
 
@@ -209,13 +203,13 @@ def cmd_init(ctx, name=None, plat=None, arch=None, template_app=None,
     #
     # $ kraft                 init           => $(pwd)
     # $ kraft                 init my_app    => $(pwd)/my_app
-    # $ kraft -w /path/to/app init           => /path/to/app 
+    # $ kraft -w /path/to/app init           => /path/to/app
     # $ kraft -w /path/to/app init my_app    => /path/to/app/my_app
 
     if workdir is None and name is None:
         appdir = os.getcwd()
         name = os.path.basename(appdir)
-        
+
     elif workdir is None:
         appdir = os.path.join(os.getcwd(), name)
 

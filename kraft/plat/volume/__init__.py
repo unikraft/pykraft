@@ -32,7 +32,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .volume import Volume
-from .volume import VolumeManager
-
-from .types import VolumeTypes
+from .types import VolumeTypes  # noqa: F401
+from .volume import Volume  # noqa: F401
+from .volume import VolumeManager  # noqa: F401

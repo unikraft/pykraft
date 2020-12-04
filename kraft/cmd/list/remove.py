@@ -32,14 +32,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import os
 import sys
-import click
-
 from urllib.parse import urlparse
 
-from kraft.const import KRAFTRC_LIST_ORIGINS
+import click
 
+from kraft.const import KRAFTRC_LIST_ORIGINS
 from kraft.logger import logger
 
 
@@ -60,7 +58,7 @@ def kraft_list_remove(ctx, origin=None):
             logger.info("Removed: %s" % origin)
             del existing_origins[i]
             break
-    
+
     ctx.obj.settings.set(KRAFTRC_LIST_ORIGINS, existing_origins)
 
 

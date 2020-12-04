@@ -32,7 +32,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .plat import Platform
-from .plat import InternalPlatform
-from .plat import PlatformManager
-from .runner import Runner
+from .plat import InternalPlatform  # noqa: F401
+from .plat import Platform  # noqa: F401
+from .plat import PlatformManager  # noqa: F401
+from .runner import Runner  # noqa: F401

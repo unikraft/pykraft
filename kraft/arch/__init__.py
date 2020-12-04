@@ -32,6 +32,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .arch import Architecture
-from .arch import InternalArchitecture
-from .arch import ArchitectureManager
+from .arch import Architecture  # noqa: F401
+from .arch import ArchitectureManager  # noqa: F401
+from .arch import InternalArchitecture  # noqa: F401

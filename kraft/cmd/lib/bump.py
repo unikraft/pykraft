@@ -37,20 +37,16 @@ import sys
 
 import click
 
-from kraft.cmd.list import update
-from kraft.error import KraftError
-from kraft.lib import Library
-from kraft.logger import logger
-from kraft.types import ComponentType
-from kraft.util import ClickOptionMutex
-from kraft.manifest import maniest_from_name
-
 from kraft.cmd.list import kraft_list_preflight
 from kraft.cmd.list.pull import kraft_download_via_manifest
+from kraft.lib import Library
+from kraft.logger import logger
+from kraft.manifest import maniest_from_name
+from kraft.types import ComponentType
+from kraft.util import ClickOptionMutex
+
 
 @click.pass_context
-
-
 def kraft_lib_bump(ctx, workdir=None, version=None, bump_all=False,
                    force_version=False, fast_forward=False, build=False):
     """
@@ -129,7 +125,7 @@ def cmd_lib_bump(ctx, lib=None, version=None, bump_all=False,
                     if not (ctx.obj.assume_yes or click.confirm(
                             "Bump %s?" % item.name)):
                         continue
-                        
+
                     kraft_download_via_manifest(
                         manifest=item,
                         use_git=True
@@ -180,7 +176,6 @@ def cmd_lib_bump(ctx, lib=None, version=None, bump_all=False,
                 fast_forward=fast_forward,
                 build=build
             )
-
 
     except Exception as e:
         logger.error(e)

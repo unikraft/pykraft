@@ -32,26 +32,16 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import os
 import sys
-import click
-import threading
-
 from queue import Queue
-from urllib.parse import urlparse
 
-from kraft.manifest import Manifest
-from kraft.manifest import ManifestItem
-from kraft.manifest import ManifestItemVersion
-from kraft.manifest import ManifestItemDistribution
-
+import click
 from github.GithubException import RateLimitExceededException
 
-from kraft.const import KRAFTRC_LIST_ORIGINS
-from kraft.const import GITHUB_ORIGIN
-from kraft.logger import logger
-
 from .provider.types import ListProviderType
+from kraft.const import KRAFTRC_LIST_ORIGINS
+from kraft.logger import logger
+from kraft.manifest import Manifest
 
 
 @click.command('update', short_help='Update the list of remote components.')
@@ -67,14 +57,14 @@ def cmd_list_update(ctx):
 @click.pass_context
 def kraft_update(ctx):
     origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
-    if origins == None or len(origins) == 0:
+    if origins is None or len(origins) == 0:
         logger.error("No source origins available.  Please see: kraft list add --help")
         sys.exit(1)
 
     try:
         for origin in origins:
             manifest = ctx.obj.cache.get(origin)
-            
+
             if manifest is None:
                 manifest = Manifest(
                     manifest=origin
@@ -99,7 +89,7 @@ def kraft_update(ctx):
                     )
                     ctx.obj.cache.save(origin, manifest)
 
-    except RateLimitExceededException as e:
+    except RateLimitExceededException:
         logger.error("".join([
             "GitHub rate limit exceeded.  You can tell kraft to use a ",
             "personal access token by setting the UK_KRAFT_GITHUB_TOKEN ",
@@ -107,11 +97,11 @@ def kraft_update(ctx):
 
     except Exception as e:
         logger.critical(str(e))
-        
+
         if ctx.obj.verbose:
             import traceback
             logger.critical(traceback.format_exc())
-        
+
         sys.exit(1)
 
 
@@ -119,7 +109,7 @@ def kraft_update(ctx):
 def kraft_update_from_source_threads(ctx, origin=None):
     threads = list()
     items = Queue()
-   
+
     for _, provider in ListProviderType.__members__.items():
         if provider.is_type(origin):
             provider = provider.cls()
@@ -133,14 +123,14 @@ def kraft_update_from_source_threads(ctx, origin=None):
                 threads.extend(extra_threads)
 
             break
-    
+
     return threads, items
 
 
 @click.pass_context
 def kraft_update_from_source(ctx, origin=None):
     manifest = None
-   
+
     for _, provider in ListProviderType.__members__.items():
         if provider.is_type(origin):
             provider = provider.cls()

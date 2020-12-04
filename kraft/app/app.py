@@ -1,4 +1,3 @@
-
 # SPDX-License-Identifier: BSD-3-Clause
 #
 # Authors: Alexander Jung <alexander.jung@neclab.eu>
@@ -34,82 +33,72 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import six
-import click
-import tempfile
 import subprocess
+import tempfile
 from pathlib import Path
 
+import click
 import dpath.util as dpath_util
+import six
 
 import kraft.util as util
-from kraft.unikraft import Unikraft
 from kraft.arch import Architecture
 from kraft.arch import InternalArchitecture
-from kraft.arch import ArchitectureManager
-from kraft.plat import Platform
-from kraft.plat import InternalPlatform
-from kraft.plat import PlatformManager
-from kraft.plat import Runner
-from kraft.lib import Library
-from kraft.lib import LibraryManager
-
-from kraft.manifest import ManifestItem
-
-from kraft.const import DOT_CONFIG
-from kraft.const import MAKEFILE_UK
-from kraft.const import UK_CORE_ARCHS
-from kraft.const import UK_CORE_PLATS
-from kraft.const import KRAFT_SPEC_LATEST
-from kraft.const import SUPPORTED_FILENAMES
-
-from kraft.error import MissingComponent
-from kraft.error import KraftFileNotFound
-from kraft.error import MismatchTargetArchitecture
-from kraft.error import CannotConfigureApplication
-
-from kraft.config import SpecificationVersion
-from kraft.config.config import get_default_config_files
-from kraft.config.serialize import serialize_config
-
-from kraft.logger import logger
-
+from kraft.component import Component
 from kraft.config import Config
 from kraft.config import find_config
 from kraft.config import load_config
+from kraft.config import SpecificationVersion
+from kraft.config.config import get_default_config_files
+from kraft.config.serialize import serialize_config
+from kraft.const import DOT_CONFIG
+from kraft.const import KRAFT_SPEC_LATEST
+from kraft.const import MAKEFILE_UK
+from kraft.const import SUPPORTED_FILENAMES
+from kraft.const import UK_CORE_ARCHS
+from kraft.const import UK_CORE_PLATS
+from kraft.error import KraftFileNotFound
+from kraft.error import MismatchTargetArchitecture
+from kraft.error import MismatchTargetPlatform
+from kraft.error import MissingComponent
+from kraft.logger import logger
+from kraft.manifest import ManifestItem
+from kraft.plat import InternalPlatform
+from kraft.plat import Platform
+from kraft.plat import Runner
+from kraft.unikraft import Unikraft
 
-from kraft.component import Component
 
 class Application(Component):
     _config = None
     @property
     def config(self): return self._config
-    
+
     _core = None
     @property
     def core(self): return self._core
-    
+
     _architectures = None
     @property
     def architectures(self): return self._architectures
-    
+
     _platforms = None
     @property
     def platforms(self): return self._platforms
-    
+
     _libraries = None
     @property
     def libraries(self): return self._libraries
-    
+
     _runner = None
     @property
     def runner(self): return self._runner
 
-    @click.pass_context
+    @click.pass_context  # noqa: C901
     def __init__(ctx, self, **kwargs):
         from kraft.types import ComponentType
         from kraft.cmd.list.update import kraft_update_from_source
-        
+
         self._localdir = kwargs.get('localdir', None)
         self._name = kwargs.get('name', None)
         if self._name is None and self._localdir is not None:
@@ -122,7 +111,7 @@ class Application(Component):
 
         if self._config is None:
             unikraft_config = kwargs.get("unikraft", dict())
-        
+
         elif isinstance(self._config, Config):
             unikraft_config = getattr(self._config, "unikraft")
             self._runner = Runner.from_config(self._config.runner)
@@ -143,25 +132,25 @@ class Application(Component):
                 manifest=unikraft_manifest,
                 workdir=self.localdir
             )
-        
+
         # Deal with other component types: {arch, plat, lib}
         for _, type in ComponentType.__members__.items():
             # Skip application-types or components with no manager
-            if type.cls == self.__class__ or type.manager_cls == None:
+            if type.cls == self.__class__ or type.manager_cls is None:
                 continue
-            
+
             config = dict()
             components = None
 
             if self._config is None:
                 config = kwargs.get(type.plural, dict())
-            
+
             elif isinstance(self._config, Config):
                 config = getattr(self._config, type.plural)
 
             if isinstance(config, type.manager_cls):
                 components = config
-            
+
             if isinstance(config, str):
                 config = {config: True}
 
@@ -187,7 +176,7 @@ class Application(Component):
                             config=config[component],
                             workdir=self.localdir
                         ))
-                    
+
                     elif manifest is None and type == ComponentType.PLAT and \
                             component in UK_CORE_PLATS and \
                             config[component] is not False:
@@ -202,18 +191,18 @@ class Application(Component):
                         source = None
                         if isinstance(config[component], dict):
                             source = config[component].get("source", None)
-                        
+
                         if source is None:
                             logger.warn("Unknown component: %s" % component)
                             continue
-                        
+
                         # Synchronously attempt to find the component
                         manifest = kraft_update_from_source(source)
                         if manifest is None:
                             logger.warn(
                                 "Could not locate component %s from source: %s"
                                 % (component, source))
-                        
+
                         elif len(manifest.items()) == 0 or \
                                 manifest.get_item(component) is None:
                             logger.warn(
@@ -231,10 +220,10 @@ class Application(Component):
                             manifest=manifest,
                             workdir=self.localdir
                         ))
-                
+
             if components is not None:
                 setattr(self, "_%s" % type.plural, components)
-        
+
         # Check the integrity of the application
         if self._core is None:
             raise MissingComponent("unikraft")
@@ -263,7 +252,7 @@ class Application(Component):
 
         for _, type in ComponentType.__members__.items():
             # Skip application-types or components with no manager
-            if type.cls == self.__class__ or type.manager_cls == None:
+            if type.cls == self.__class__ or type.manager_cls is None:
                 continue
 
             manager = getattr(self, "_%s" % type.plural)
@@ -320,7 +309,7 @@ class Application(Component):
         for plat in self._platforms.all():
             if not isinstance(plat, InternalPlatform):
                 plat_paths.append(plat.localdir)
-                
+
         cmd.append('P=%s' % ":".join(plat_paths))
 
         lib_paths = []
@@ -348,7 +337,7 @@ class Application(Component):
         )
         util.execute(cmd)
 
-    @click.pass_context
+    @click.pass_context  # noqa: C901
     def configure(ctx, self, arch=None, plat=None, force_configure=False):
         """
         Configure a Unikraft application.
@@ -405,17 +394,17 @@ class Application(Component):
         for plat in plats:
             if not plat.is_downloaded():
                 raise MissingComponent(plat.name)
-                
+
             dotconfig.extend(plat.kconfig)
             dotconfig.append(plat.kconfig_enabled_flag)
-        
+
         for lib in self.libraries.all():
             if not lib.is_downloaded():
                 raise MissingComponent(lib.name)
 
             dotconfig.extend(lib.kconfig)
             dotconfig.append(lib.kconfig_enabled_flag)
-  
+
         # Create a temporary file with the kconfig written to it
         fd, path = tempfile.mkstemp()
 
@@ -457,7 +446,7 @@ class Application(Component):
         if component is None or str(component) == "":
             logger.warn("No component to add")
             return False
-        
+
         elif isinstance(component, six.string_types):
             from kraft.types import break_component_naming_format
             _, name, _, version = break_component_naming_format(component)
@@ -465,7 +454,7 @@ class Application(Component):
             if len(manifests) == 0:
                 logger.warn("Unknown component: %s" % component)
                 return False
-            
+
             for manifest in manifests:
                 components.append(type.cls(
                     name=name,
@@ -475,7 +464,7 @@ class Application(Component):
 
         elif isinstance(component, (dict, list)):
             return self.add_component(type, list(component))
-        
+
         elif isinstance(component, Component):
             components.append(component)
 
@@ -489,7 +478,6 @@ class Application(Component):
 
     @click.pass_context
     def build(ctx, self, fetch=True, prepare=True, target=None, n_proc=0):
-
         extra = []
         if n_proc is not None and n_proc > 0:
             extra.append('-j%s' % str(n_proc))
@@ -576,10 +564,10 @@ class Application(Component):
                 'libraries/%s' % lib.name,
                 lib.repr()
             )
-        
+
         if "libraries" not in config:
             config["libraries"] = {}
-        
+
         if self.runner is not None:
             config['runner'] = self.runner.repr()
         else:

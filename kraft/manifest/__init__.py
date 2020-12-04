@@ -32,12 +32,11 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .manifest import Manifest
-from .manifest import ManifestIndex
-from .manifest import ManifestItem
-from .manifest import ManifestItemVersion
-from .manifest import ManifestItemDistribution
-from .manifest import ManifestVersionEquality
-
-from .manifest import maniest_from_name
-from .manifest import manifest_from_localdir
+from .manifest import maniest_from_name  # noqa: F401
+from .manifest import Manifest  # noqa: F401
+from .manifest import manifest_from_localdir  # noqa: F401
+from .manifest import ManifestIndex  # noqa: F401
+from .manifest import ManifestItem  # noqa: F401
+from .manifest import ManifestItemDistribution  # noqa: F401
+from .manifest import ManifestItemVersion  # noqa: F401
+from .manifest import ManifestVersionEquality  # noqa: F401

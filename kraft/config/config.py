@@ -36,9 +36,7 @@ import io
 import os
 import re
 import sys
-import six
 from collections import namedtuple
-from collections import OrderedDict
 
 import yaml
 from cached_property import cached_property
@@ -58,8 +56,6 @@ from kraft.error import CannotReadKraftfile
 from kraft.error import KraftError
 from kraft.error import KraftFileNotFound
 from kraft.logger import logger
-# from .interpolation import interpolate_source_version
-# from kraft.types import ComponentType
 
 
 class Config(namedtuple(
@@ -92,6 +88,7 @@ class Config(namedtuple(
         return dict(
             [(k, v) for k, v in zip(self._fields, self) if v is not None]
         )
+
 
 class ConfigDetails(namedtuple(
         '_ConfigDetails', [

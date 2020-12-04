@@ -33,23 +33,20 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .list import kraft_list_preflight
-
-from .list import cmd_list
 from .add import cmd_list_add
-from .remove import cmd_list_remove
+from .list import cmd_list
+from .list import kraft_list_preflight
 from .pull import cmd_list_pull
-from .update import cmd_list_update
-from .show import cmd_list_show
-
 from .pull import kraft_download_component
 from .pull import kraft_list_pull
-
-from kraft.manifest import ManifestIndex
+from .remove import cmd_list_remove
+from .show import cmd_list_show
+from .update import cmd_list_update
 from kraft.manifest import Manifest
+from kraft.manifest import ManifestIndex
 from kraft.manifest import ManifestItem
-from kraft.manifest import ManifestItemVersion
 from kraft.manifest import ManifestItemDistribution
+from kraft.manifest import ManifestItemVersion
 
 
 cmd_list.add_command(cmd_list_add)

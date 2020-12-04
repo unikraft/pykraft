@@ -35,8 +35,8 @@ from __future__ import unicode_literals
 from enum import Enum
 
 from .kvm import KVMRunner
-from .xen import XenRunner
 from .linuxu import LinuxuRunner
+from .xen import XenRunner
 
 
 class RunnerTypes(Enum):

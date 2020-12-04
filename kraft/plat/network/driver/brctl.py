@@ -33,17 +33,13 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import subprocess
-
 from shutil import which
 
+import kraft.util as util
 from .driver import NetworkDriver
-
 from kraft.error import InvalidBridgeName
 from kraft.error import NetworkBridgeUnsupported
-
 from kraft.logger import logger
-
-import kraft.util as util
 
 BRCTL = "brctl"
 

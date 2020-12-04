@@ -34,19 +34,14 @@ from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
 
-from kraft.config import config
-from kraft.logger import logger
 from kraft.app import Application
-
-from kraft.error import KraftError
-from kraft.error import MismatchTargetPlatform
-from kraft.error import CannotConfigureApplication
-
-from kraft.const import UK_CORE_ARCHS
-
 from kraft.cmd.list import kraft_list_preflight
+from kraft.error import CannotConfigureApplication
+from kraft.error import KraftError
+from kraft.logger import logger
 
 
 @click.command('configure', short_help='Configure the application.')
@@ -77,7 +72,7 @@ from kraft.cmd.list import kraft_list_preflight
 )
 @click.pass_context
 def cmd_configure(ctx, plat=None, arch=None,
-        force_configure=False, show_menuconfig=False, workdir=None):
+                  force_configure=False, show_menuconfig=False, workdir=None):
     """
     Configure the unikernel using the KConfig options set in the kraft.yaml
     file.  Alternatively, you can use the -k|--menuconfig flag to open the TUI
@@ -114,7 +109,7 @@ def cmd_configure(ctx, plat=None, arch=None,
 
 @click.pass_context
 def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
-        force_configure=False, show_menuconfig=False):
+                    force_configure=False, show_menuconfig=False):
     """
     Populates the local .config with the default values for the target
     application.
@@ -132,7 +127,7 @@ def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
             return
         else:
             raise KraftError("Cannot open menuconfig in non-TTY environment")
-    
+
     if app.is_configured() and force_configure is False:
         if click.confirm("%s is already configured, would you like to overwrite configuration?" % workdir): # noqa
             force_configure = True

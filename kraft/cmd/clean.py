@@ -34,13 +34,11 @@ from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
 
-from kraft.config import config
-from kraft.logger import logger
 from kraft.app import Application
-
-from kraft.error import KraftError
+from kraft.logger import logger
 
 
 @click.command('clean', short_help='Clean the application.')
@@ -49,7 +47,6 @@ from kraft.error import KraftError
     help='Specify an alternative working directory for the application',
     metavar="PATH"
 )
-
 @click.option(
     '--proper', '-p', 'proper',
     help='Delete the build directory.',

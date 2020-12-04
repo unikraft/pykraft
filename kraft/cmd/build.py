@@ -38,15 +38,13 @@ import sys
 import click
 
 from kraft.app import Application
-from kraft.config import config
-from kraft.error import KraftError
+from kraft.cmd.list import kraft_list_preflight
 from kraft.logger import logger
 
-from kraft.cmd.list import kraft_list_preflight
 
 @click.pass_context
 def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
-        fast=False):
+                fast=False):
     """
     """
     if workdir is None or os.path.exists(workdir) is False:
@@ -59,7 +57,7 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
     if not app.is_configured():
         if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
             app.configure()
-    
+
     n_proc = None
     if fast:
         # This simply set the `-j` flag which signals to make to use all cores.
@@ -73,20 +71,19 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
     )
 
 
-
 @click.command('build', short_help='Build the application.')
 @click.option(
-    '--fetch/--no-fetch','fetch',
+    '--fetch/--no-fetch', 'fetch',
     help='Run fetch step before build.',
     default=True
 )
 @click.option(
-    '--prepare/--no-prepare','prepare',
+    '--prepare/--no-prepare', 'prepare',
     help='Run prepare step before build.',
     default=True
 )
 @click.option(
-    '--fast','-j', 'fast',
+    '--fast', '-j', 'fast',
     help='Use all CPU cores to build the application.',
     is_flag=True
 )

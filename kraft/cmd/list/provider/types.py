@@ -60,8 +60,7 @@ class ListProviderType(Enum):
 def provider_name_to_enum(name=None):
     if name is None:
         return None
-    
+
     for _, p in ListProviderType.__members__.items():
         if p.name == name:
             return p
-        
