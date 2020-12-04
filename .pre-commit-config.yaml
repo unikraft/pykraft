@@ -6,7 +6,7 @@ repos:
       - id: check-docstring-first
       - id: check-merge-conflict
       - id: check-yaml
-        exclude: 'kraft/templates/'
+        exclude: 'kraft/template/'
       - id: check-json
       - id: debug-statements
       - id: end-of-file-fixer
