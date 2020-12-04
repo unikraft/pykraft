@@ -30,7 +30,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 ARG UK_ARCH=x86_64
-ARG GCC_PREFIX=x86_64-linux-gnu
 ARG GCC_VERSION=9.2.0
 
 FROM unikraft/gcc:${GCC_VERSION}-x86_64 AS gcc-x86_64
@@ -40,6 +39,8 @@ FROM unikraft/gcc:${GCC_VERSION}-arm64  AS gcc-arm64
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
 FROM python:3.6-slim AS kraft
+
+ARG GCC_PREFIX=x86_64-linux-gnu
 
 COPY --from=gcc-x86_64 /bin/ /bin
 COPY --from=gcc-x86_64 /lib/gcc/ /lib/gcc
