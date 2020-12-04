@@ -37,7 +37,7 @@ import fnmatch
 import os
 import re
 import threading
-from queue import queue
+from queue import Queue
 from urllib.parse import urlparse
 
 import click
