@@ -149,6 +149,8 @@ WORKDIR /usr/src/kraft
 
 RUN set -xe; \
 		pip install -r ./requirements-dev.txt; \
+    apt-get install -y --no-install-recommends \
+      jq; \
     wget -O /usr/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v${YTT_VERSION}/ytt-linux-amd64; \
     wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
 
