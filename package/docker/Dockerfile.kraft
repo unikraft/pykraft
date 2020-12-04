@@ -82,17 +82,17 @@ RUN set -xe; \
 
 WORKDIR /usr/src/kraft
 
-COPY doc /usr/src/kraft/doc
-COPY kraft /usr/src/kraft/kraft
-COPY scripts /usr/src/kraft/scripts
+COPY doc              /usr/src/kraft/doc
+COPY kraft            /usr/src/kraft/kraft
+COPY scripts          /usr/src/kraft/scripts
 COPY requirements.txt /usr/src/kraft/requirements.txt
-COPY setup.py /usr/src/kraft/setup.py
-COPY README.md /usr/src/kraft/README.md
-COPY COPYING.md /usr/src/kraft/COPYING.md
-COPY CONTRIBUTING.md /usr/src/kraft/CONTRIBUTING.md
-COPY MAINTAINERS.md /usr/src/kraft/MAINTAINERS.md
-COPY MANIFEST.in /usr/src/kraft/MANIFEST.in
-COPY .kraftrc /root/.kraftrc
+COPY setup.py         /usr/src/kraft/setup.py
+COPY README.md        /usr/src/kraft/README.md
+COPY COPYING.md       /usr/src/kraft/COPYING.md
+COPY CONTRIBUTING.md  /usr/src/kraft/CONTRIBUTING.md
+COPY MAINTAINERS.md   /usr/src/kraft/MAINTAINERS.md
+COPY MANIFEST.in      /usr/src/kraft/MANIFEST.in
+COPY .kraftrc         /root/.kraftrc
 
 WORKDIR /usr/src/unikraft/apps/app
 ENV UK_WORKDIR /usr/src/unikraft
