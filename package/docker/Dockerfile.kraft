@@ -30,18 +30,55 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 ARG UK_ARCH=x86_64
+ARG GCC_PREFIX=x86_64-linux-gnu
 ARG GCC_VERSION=9.2.0
 
-FROM unikraft/gcc:${GCC_VERSION}-${UK_ARCH} AS gcc
+FROM unikraft/gcc:${GCC_VERSION}-x86_64 AS gcc-x86_64
+FROM unikraft/gcc:${GCC_VERSION}-arm    AS gcc-arm
+FROM unikraft/gcc:${GCC_VERSION}-arm64  AS gcc-arm64
 
 LABEL MAINTAINER="Alexander Jung <alexander.jung@neclab.eu>"
 
 FROM python:3.6-slim AS kraft
 
-COPY --from=gcc /bin/ /bin
-COPY --from=gcc /lib/ /lib
-COPY --from=gcc /include/ /include
-COPY --from=gcc /libexec/ /libexec
+COPY --from=gcc-x86_64 /bin/ /bin
+COPY --from=gcc-x86_64 /lib/gcc/ /lib/gcc
+COPY --from=gcc-x86_64 /include/ /include
+COPY --from=gcc-x86_64 /libexec/gcc/ /libexec/gcc
+
+COPY --from=gcc-arm /bin/ /bin
+COPY --from=gcc-arm /lib/gcc/ /lib/gcc
+COPY --from=gcc-arm /libexec/gcc/ /libexec/gcc
+
+COPY --from=gcc-arm64 /bin/ /bin
+COPY --from=gcc-arm64 /lib/gcc/ /lib/gcc
+COPY --from=gcc-arm64 /libexec/gcc/ /libexec/gcc
+
+RUN set -xe; \
+    ln -s /bin/${GCC_PREFIX}-as         /bin/as; \
+    ln -s /bin/${GCC_PREFIX}-ar         /bin/ar; \
+    ln -s /bin/${GCC_PREFIX}-c++        /bin/c++; \
+    ln -s /bin/${GCC_PREFIX}-c++filt    /bin/c++filt; \
+    ln -s /bin/${GCC_PREFIX}-elfedit    /bin/elfedit; \
+    ln -s /bin/${GCC_PREFIX}-gcc        /bin/cc; \
+    ln -s /bin/${GCC_PREFIX}-gcc        /bin/gcc; \
+    ln -s /bin/${GCC_PREFIX}-gcc-ar     /bin/gcc-ar; \
+    ln -s /bin/${GCC_PREFIX}-gcc-nm     /bin/gcc-nm; \
+    ln -s /bin/${GCC_PREFIX}-gcc-ranlib /bin/gcc-ranlib; \
+    ln -s /bin/${GCC_PREFIX}-gccgo      /bin/gccgo; \
+    ln -s /bin/${GCC_PREFIX}-gcov       /bin/gcov; \
+    ln -s /bin/${GCC_PREFIX}-gcov-dump  /bin/gcov-dump; \
+    ln -s /bin/${GCC_PREFIX}-gcov-tool  /bin/gcov-tool; \
+    ln -s /bin/${GCC_PREFIX}-gprof      /bin/gprof; \
+    ln -s /bin/${GCC_PREFIX}-ld         /bin/ld; \
+    ln -s /bin/${GCC_PREFIX}-nm         /bin/nm; \
+    ln -s /bin/${GCC_PREFIX}-objcopy    /bin/objcopy; \
+    ln -s /bin/${GCC_PREFIX}-objdump    /bin/objdump; \
+    ln -s /bin/${GCC_PREFIX}-ranlib     /bin/ranlib; \
+    ln -s /bin/${GCC_PREFIX}-readelf    /bin/readelf; \
+    ln -s /bin/${GCC_PREFIX}-size       /bin/size; \
+    ln -s /bin/${GCC_PREFIX}-strings    /bin/strings; \
+    ln -s /bin/${GCC_PREFIX}-strip      /bin/strip;
 
 WORKDIR /usr/src/kraft
 

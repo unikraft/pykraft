@@ -135,31 +135,7 @@ RUN set -ex; \
     make all-gcc; \
     make install-gcc; \
     make all-target-libgcc; \
-    make install-target-libgcc; \
-    ln -s /bin/${GCC_PREFIX}-as         /out/bin/as; \
-    ln -s /bin/${GCC_PREFIX}-ar         /out/bin/ar; \
-    ln -s /bin/${GCC_PREFIX}-c++        /out/bin/c++; \
-    ln -s /bin/${GCC_PREFIX}-c++filt    /out/bin/c++filt; \
-    ln -s /bin/${GCC_PREFIX}-elfedit    /out/bin/elfedit; \
-    ln -s /bin/${GCC_PREFIX}-gcc        /out/bin/cc; \
-    ln -s /bin/${GCC_PREFIX}-gcc        /out/bin/gcc; \
-    ln -s /bin/${GCC_PREFIX}-gcc-ar     /out/bin/gcc-ar; \
-    ln -s /bin/${GCC_PREFIX}-gcc-nm     /out/bin/gcc-nm; \
-    ln -s /bin/${GCC_PREFIX}-gcc-ranlib /out/bin/gcc-ranlib; \
-    ln -s /bin/${GCC_PREFIX}-gccgo      /out/bin/gccgo; \
-    ln -s /bin/${GCC_PREFIX}-gcov       /out/bin/gcov; \
-    ln -s /bin/${GCC_PREFIX}-gcov-dump  /out/bin/gcov-dump; \
-    ln -s /bin/${GCC_PREFIX}-gcov-tool  /out/bin/gcov-tool; \
-    ln -s /bin/${GCC_PREFIX}-gprof      /out/bin/gprof; \
-    ln -s /bin/${GCC_PREFIX}-ld         /out/bin/ld; \
-    ln -s /bin/${GCC_PREFIX}-nm         /out/bin/nm; \
-    ln -s /bin/${GCC_PREFIX}-objcopy    /out/bin/objcopy; \
-    ln -s /bin/${GCC_PREFIX}-objdump    /out/bin/objdump; \
-    ln -s /bin/${GCC_PREFIX}-ranlib     /out/bin/ranlib; \
-    ln -s /bin/${GCC_PREFIX}-readelf    /out/bin/readelf; \
-    ln -s /bin/${GCC_PREFIX}-size       /out/bin/size; \
-    ln -s /bin/${GCC_PREFIX}-strings    /out/bin/strings; \
-    ln -s /bin/${GCC_PREFIX}-strip      /out/bin/strip;
+    make install-target-libgcc;
 
 FROM scratch AS gcc
 
