@@ -136,6 +136,8 @@ ENTRYPOINT [ "kraft" ]
 
 FROM kraft AS kraft-dev
 
+ARG YTT_VERSION=0.30.0
+
 COPY tests /usr/src/kraft/tests
 COPY tox.ini /usr/src/kraft/tox.ini
 COPY Makefile /usr/src/kraft/Makefile
@@ -145,6 +147,7 @@ COPY requirements-pkg-deb.txt /usr/src/kraft/requirements-pkg-deb.txt
 WORKDIR /usr/src/kraft
 
 RUN set -xe; \
-		pip install -r ./requirements-dev.txt
+		pip install -r ./requirements-dev.txt; \
+    wget -O /usr/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/download/v${YTT_VERSION}/ytt-linux-amd64
 
 ENTRYPOINT [ "" ]
