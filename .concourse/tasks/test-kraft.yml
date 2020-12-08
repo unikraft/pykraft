@@ -1,0 +1,22 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: unikraft/kraft
+    tag: latest-dev
+
+inputs:
+  - name: kraft
+    path: .
+
+params:
+  HTTP_PROXY: ((http_proxy))
+  HTTPS_PROXY: ((https_proxy))
+
+run:
+  path: bash
+  args:
+    - -cex
+    - ((target_cmd))
