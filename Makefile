@@ -334,7 +334,7 @@ ifneq (,$(findstring help,$(MAKECMDGOALS)))
 test-lint: no-help
 else
 $(.PROXY)test-lint: TOX ?= tox
-$(.PROXY)test-lint: TOX_EXTRA ?= 
+$(.PROXY)test-lint: TOX_EXTRA ?=
 $(.PROXY)test-lint:
 	$(Q)$(TOX) -e pre-commit $(TOX_EXTRA)
 endif
