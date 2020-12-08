@@ -41,7 +41,6 @@ import click
 from git import GitConfigParser
 
 import kraft.util as util
-from kraft.cmd.list.provider import ListProviderType
 from kraft.const import GITCONFIG_GLOBAL
 from kraft.const import GITCONFIG_LOCAL
 from kraft.const import UNIKRAFT_RELEASE_STAGING
@@ -86,6 +85,7 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
     )
 
     if soft_pack:
+        from kraft.cmd.list.provider import ListProviderType
         manifest = Manifest(
             origin="file://%s" % lib.localdir
         )
