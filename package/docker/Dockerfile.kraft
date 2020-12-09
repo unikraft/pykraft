@@ -83,7 +83,6 @@ RUN set -xe; \
 
 WORKDIR /usr/src/kraft
 
-COPY doc              /usr/src/kraft/doc
 COPY kraft            /usr/src/kraft/kraft
 COPY scripts          /usr/src/kraft/scripts
 COPY requirements.txt /usr/src/kraft/requirements.txt
