@@ -97,7 +97,11 @@ def cmd_list_show(ctx, return_json=False, name=None):
             table.append(['name', component.name])
             table.append(['type', component.type.shortname])
 
-            desc = textwrap.wrap(component.description, LIST_DESC_WIDTH)
+            description = ""
+            if component.description is not None:
+                description = component.description
+
+            desc = textwrap.wrap(description, LIST_DESC_WIDTH)
             for i, line in enumerate(desc):
                 table.append([
                     'description' if i == 0 else '',
