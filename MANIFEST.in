@@ -17,6 +17,7 @@ exclude requirements-dev.*
 include *.py
 
 include kraft/config/*.json
+include kraft/.kraftrc
 
 prune .git
 prune venv

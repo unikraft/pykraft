@@ -34,6 +34,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import pkgutil
 from pathlib import Path
 
 from kraft.cache import Cache
@@ -116,8 +117,14 @@ class KraftContext:
         if 'KRAFTRC' not in os.environ:
             os.environ['KRAFTRC'] = os.path.join(os.environ['HOME'], KRAFTRC)
         if os.path.exists(os.environ['KRAFTRC']) is False:
-            # TODO: Copy default .kraftrc
-            Path(os.environ['KRAFTRC']).touch()
+            default_kraftrc = pkgutil.get_data(__name__, KRAFTRC)
+            logger.debug("Creating %s..." % os.environ['KRAFTRC'])
+            if not default_kraftrc:
+                Path(os.environ['KRAFTRC']).touch()
+            else:
+                kraftrc = open(os.environ['KRAFTRC'], "wb")
+                kraftrc.write(default_kraftrc)
+                kraftrc.close()
 
         self._env = Environment.from_env_file(self._workdir, None)
         self._cache = Cache(self.env)
