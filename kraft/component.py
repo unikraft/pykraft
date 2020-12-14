@@ -178,7 +178,7 @@ class Component(object):
             # Is the version actually a distribution name?
             elif version in self._manifest.dists.keys():
                 self._version = \
-                    self._manifest.get_distribution(self._version).latest
+                    self._manifest.get_distribution(version).latest
 
             # Maybe the version is from a distribution
             else:
