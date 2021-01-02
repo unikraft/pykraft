@@ -92,7 +92,7 @@ COPY COPYING.md       /usr/src/kraft/COPYING.md
 COPY CONTRIBUTING.md  /usr/src/kraft/CONTRIBUTING.md
 COPY MAINTAINERS.md   /usr/src/kraft/MAINTAINERS.md
 COPY MANIFEST.in      /usr/src/kraft/MANIFEST.in
-COPY .kraftrc         /root/.kraftrc
+COPY kraft/.kraftrc   /root/.kraftrc
 
 WORKDIR /usr/src/unikraft/apps/app
 ENV UK_WORKDIR /usr/src/unikraft
