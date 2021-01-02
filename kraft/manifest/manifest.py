@@ -480,6 +480,12 @@ class ManifestItem(object):
             dist = self._dists[UNIKRAFT_RELEASE_STABLE]
             version = dist.latest
 
+        # If there is only one distribution, pick it
+        elif len(self._dists) == 1:
+            dist_name = next(iter(self._dists))
+            dist = self._dists[dist_name]
+            version = dist.latest
+
         # Unknown version
         if dist is None or version is None:
             raise UnknownVersionError(version, self)
