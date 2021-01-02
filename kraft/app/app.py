@@ -237,8 +237,14 @@ class Application(Component):
         if workdir is None:
             workdir = ctx.obj.workdir
 
+        config = None
+        try:
+            config = load_config(find_config(workdir, None, ctx.obj.env))
+        except KraftFileNotFound:
+            pass
+
         return cls(
-            config=load_config(find_config(workdir, None, ctx.obj.env)),
+            config=config,
             localdir=workdir,
         )
 
