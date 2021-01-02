@@ -61,6 +61,7 @@ class InternalArchitecture(Architecture):
     def is_downloaded(self):
         if self._core is not None:
             return self._core.is_downloaded()
+        logger.warn("Core has not been downloaded: Use: kraft list pull unikraft")
         return False
 
     _localdir = None
