@@ -85,7 +85,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
 
     # Pull the dependencies for the application at workdir or cwd
     if (pull_dependencies and
-            (len(names) == 0 or appdir is not None and len(names) == 1)):
+            (len(names) == 0 or (appdir is not None and len(names) == 1))):
         app = Application.from_workdir(
             appdir if appdir is not None
             else workdir if workdir is not None
@@ -147,7 +147,7 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
         for manifest in manifests:
             if manifest[0].type == ComponentType.APP:
                 kraft_list_pull(
-                    appdir=appdir,
+                    appdir=manifest[0].localdir,
                     workdir=workdir,
                     use_git=use_git,
                     pull_dependencies=True,
