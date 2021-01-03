@@ -44,18 +44,18 @@ FROM python:3.6-slim AS kraft
 
 ARG GCC_PREFIX=x86_64-linux-gnu
 
-COPY --from=gcc-x86_64 /bin/ /bin
-COPY --from=gcc-x86_64 /lib/gcc/ /lib/gcc
-COPY --from=gcc-x86_64 /include/ /include
-COPY --from=gcc-x86_64 /libexec/gcc/ /libexec/gcc
+COPY --from=gcc-x86_64 /bin/            /bin
+COPY --from=gcc-x86_64 /lib/gcc/        /lib/gcc
+COPY --from=gcc-x86_64 /include/        /include
+COPY --from=gcc-x86_64 /libexec/gcc/    /libexec/gcc
 
-COPY --from=gcc-arm /bin/ /bin
-COPY --from=gcc-arm /lib/gcc/ /lib/gcc
-COPY --from=gcc-arm /libexec/gcc/ /libexec/gcc
+COPY --from=gcc-arm /bin/               /bin
+COPY --from=gcc-arm /lib/gcc/           /lib/gcc
+COPY --from=gcc-arm /libexec/gcc/       /libexec/gcc
 
-COPY --from=gcc-arm64 /bin/ /bin
-COPY --from=gcc-arm64 /lib/gcc/ /lib/gcc
-COPY --from=gcc-arm64 /libexec/gcc/ /libexec/gcc
+COPY --from=gcc-arm64 /bin/             /bin
+COPY --from=gcc-arm64 /lib/gcc/         /lib/gcc
+COPY --from=gcc-arm64 /libexec/gcc/     /libexec/gcc
 
 RUN set -xe; \
     ln -s /bin/${GCC_PREFIX}-as         /bin/as; \
@@ -88,16 +88,16 @@ COPY --from=qemu /share/qemu/           /share/qemu
 
 WORKDIR /usr/src/kraft
 
-COPY kraft            /usr/src/kraft/kraft
-COPY scripts          /usr/src/kraft/scripts
-COPY requirements.txt /usr/src/kraft/requirements.txt
-COPY setup.py         /usr/src/kraft/setup.py
-COPY README.md        /usr/src/kraft/README.md
-COPY COPYING.md       /usr/src/kraft/COPYING.md
-COPY CONTRIBUTING.md  /usr/src/kraft/CONTRIBUTING.md
-COPY MAINTAINERS.md   /usr/src/kraft/MAINTAINERS.md
-COPY MANIFEST.in      /usr/src/kraft/MANIFEST.in
-COPY kraft/.kraftrc   /root/.kraftrc
+COPY kraft                              /usr/src/kraft/kraft
+COPY scripts                            /usr/src/kraft/scripts
+COPY requirements.txt                   /usr/src/kraft/requirements.txt
+COPY setup.py                           /usr/src/kraft/setup.py
+COPY README.md                          /usr/src/kraft/README.md
+COPY COPYING.md                         /usr/src/kraft/COPYING.md
+COPY CONTRIBUTING.md                    /usr/src/kraft/CONTRIBUTING.md
+COPY MAINTAINERS.md                     /usr/src/kraft/MAINTAINERS.md
+COPY MANIFEST.in                        /usr/src/kraft/MANIFEST.in
+COPY kraft/.kraftrc                     /root/.kraftrc
 
 WORKDIR /usr/src/unikraft/apps/app
 ENV UK_WORKDIR /usr/src/unikraft
