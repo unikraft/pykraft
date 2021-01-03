@@ -228,6 +228,8 @@ ifneq (,$(findstring help,$(MAKECMDGOALS)))
 	@echo "                 (Default: $(UK_ARCH)).                                       "
 	@echo "  GCC_VERSION  Set the version of GCC to bundle with kraft                    "
 	@echo "                 (Default: $(GCC_VERSION)).                                   "
+	@echo "  QEMU_VERSION Set the version of QEMU to bundle with kraft                   "
+	@echo "                 (Default: $(QEMU_VERSION)).                                  "
 	@echo "  IMAGE_NAME   Set an alternative Docker image name                           "
 	@echo "                 (Default: $(IMAGE_NAME)).                                    "
 	@echo "  KRAFT_TARGET Set the build target within the Dockerfile {kraft, kraft-dev}  "
@@ -238,6 +240,7 @@ else
 		--tag $(IMAGE_NAME) \
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
+		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
 		--cache-from $(ORG)/$(APP_NAME):latest \
 		--cache-from $(IMAGE_NAME) \
 		--file $(DOCKERDIR)/Dockerfile.kraft \
