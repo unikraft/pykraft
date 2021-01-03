@@ -39,12 +39,16 @@ import click
 
 from kraft.app import Application
 from kraft.cmd.list import kraft_list_preflight
+from kraft.const import KCONFIG
+from kraft.const import KCONFIG_EQ
+from kraft.const import KCONFIG_N
+from kraft.const import KCONFIG_Y
 from kraft.error import CannotConfigureApplication
 from kraft.error import KraftError
 from kraft.logger import logger
 
 
-@click.command('configure', short_help='Configure the application.')
+@click.command('configure', short_help='Configure the application.')  # noqa: C901
 @click.option(
     '--plat', '-p', 'plat',
     help='Target platform.',
@@ -70,9 +74,24 @@ from kraft.logger import logger
     help='Specify an alternative directory for the application [default is cwd].',
     metavar="PATH"
 )
+@click.option(
+    '--yes', '-y', 'yes',
+    multiple=True,
+    help='Specify an option to enable.'
+)
+@click.option(
+    '--no', '-n', 'no',
+    multiple=True,
+    help='Specify an option to disable.'
+)
+@click.option(
+    '--set', '-s', 'opts',
+    multiple=True,
+    help='Set an option\'s value.'
+)
 @click.pass_context
-def cmd_configure(ctx, plat=None, arch=None,
-                  force_configure=False, show_menuconfig=False, workdir=None):
+def cmd_configure(ctx, plat=None, arch=None, force_configure=False,
+                  show_menuconfig=False, workdir=None, yes=[], no=[], opts=[]):
     """
     Configure the unikernel using the KConfig options set in the kraft.yaml
     file.  Alternatively, you can use the -k|--menuconfig flag to open the TUI
@@ -87,6 +106,26 @@ def cmd_configure(ctx, plat=None, arch=None,
     if workdir is None:
         workdir = os.getcwd()
 
+    options = list()
+    for y in yes:
+        if not y.startswith(KCONFIG):
+            y = KCONFIG % y
+        options.append(KCONFIG_EQ % (y, KCONFIG_Y))
+    for n in no:
+        if not n.startswith(KCONFIG):
+            n = KCONFIG % n
+        if n in options:
+            logger.critical('Cannot specify same option with multiple values: %s' % n)
+            sys.exit(1)
+        options.append(KCONFIG_EQ % (n, KCONFIG_N))
+    for o in opts:
+        if not o.startswith(KCONFIG):
+            o = KCONFIG % o
+        if '=' not in o:
+            logger.critical('Missing value for --set option: %s' % o)
+            sys.exit(1)
+        options.append(o)
+
     try:
         kraft_configure(
             env=ctx.obj.env,
@@ -94,7 +133,8 @@ def cmd_configure(ctx, plat=None, arch=None,
             plat=plat,
             arch=arch,
             force_configure=force_configure,
-            show_menuconfig=show_menuconfig
+            show_menuconfig=show_menuconfig,
+            options=options,
         )
 
     except Exception as e:
@@ -109,7 +149,7 @@ def cmd_configure(ctx, plat=None, arch=None,
 
 @click.pass_context
 def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
-                    force_configure=False, show_menuconfig=False):
+                    force_configure=False, show_menuconfig=False, options=[]):
     """
     Populates the local .config with the default values for the target
     application.
@@ -136,5 +176,6 @@ def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
 
     app.configure(
         arch=arch,
-        plat=plat
+        plat=plat,
+        options=options,
     )

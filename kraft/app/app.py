@@ -344,7 +344,8 @@ class Application(Component):
         util.execute(cmd)
 
     @click.pass_context  # noqa: C901
-    def configure(ctx, self, arch=None, plat=None, force_configure=False):
+    def configure(ctx, self, arch=None, plat=None, options=[],
+                  force_configure=False):
         """
         Configure a Unikraft application.
         """
@@ -410,6 +411,18 @@ class Application(Component):
 
             dotconfig.extend(lib.kconfig)
             dotconfig.append(lib.kconfig_enabled_flag)
+
+        # Add any additional confguration options, and overriding existing
+        # configuraton options.
+        for new_opt in options:
+            o = new_opt.split('=')
+            for exist_opt in dotconfig:
+                e = exist_opt.split('=')
+                print(o[0], e[0])
+                if o[0] == e[0]:
+                    dotconfig.remove(exist_opt)
+                    break
+            dotconfig.append(new_opt)
 
         # Create a temporary file with the kconfig written to it
         fd, path = tempfile.mkstemp()
