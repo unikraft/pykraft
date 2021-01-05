@@ -418,7 +418,6 @@ class Application(Component):
             o = new_opt.split('=')
             for exist_opt in dotconfig:
                 e = exist_opt.split('=')
-                print(o[0], e[0])
                 if o[0] == e[0]:
                     dotconfig.remove(exist_opt)
                     break
