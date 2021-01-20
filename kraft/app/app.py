@@ -605,4 +605,5 @@ class Application(Component):
 
         logger.debug("Saving: %s" % file)
         with open(file, 'w+') as f:
-            f.write(self.to_yaml())
+            yaml = self.to_yaml()
+            f.write(yaml)
