@@ -146,7 +146,7 @@ class Component(object):
         self._workdir = kwargs.get("workdir", None)
         self._kconfig = list()
 
-        version = None
+        version = kwargs.get("version", None)
         config = kwargs.get("config", None)
 
         if isinstance(config, (six.string_types, int, float)):
