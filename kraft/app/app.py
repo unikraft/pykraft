@@ -287,9 +287,6 @@ class Application(Component):
         if os.path.exists(os.path.join(self._localdir, DOT_CONFIG)) is False:
             return False
 
-        if os.path.exists(os.path.join(self._localdir, MAKEFILE_UK)) is False:
-            return False
-
         return True
 
     def open_menuconfig(self):
