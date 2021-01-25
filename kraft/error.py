@@ -281,12 +281,21 @@ class UnknownVersionError(KraftError):
                         )
                     )
             else:
-                super(UnknownVersionError, self).__init__(
-                    "No version specified for %s.  Choice of: {\n\t%s\n}" % (
-                        manifest.name,
-                        ",\n\t".join(known_versions)
+                if desired_version is None:
+                    super(UnknownVersionError, self).__init__(
+                        "No version specified for %s.  Choice of: {\n\t%s\n}" % (
+                            manifest.name,
+                            ",\n\t".join(known_versions)
+                        )
                     )
-                )
+                else:
+                    super(UnknownVersionError, self).__init__(
+                        "Provided version '%s' for %s.  Choice of: {\n\t%s\n}" % (
+                            desired_version,
+                            manifest.name,
+                            ",\n\t".join(known_versions)
+                        )
+                    )
 
 
 class UnknownLibraryOriginVersion(KraftError):

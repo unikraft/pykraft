@@ -105,6 +105,8 @@ class Application(Component):
             self._name = os.path.basename(self._localdir)
         self._config = kwargs.get('config', None)
 
+        ignore_version = kwargs.get("ignore_version", False)
+
         # Deal with Unikraft component
         unikraft_config = dict()
         unikraft_manifest = None
@@ -130,7 +132,8 @@ class Application(Component):
                 name="unikraft",
                 config=unikraft_config,
                 manifest=unikraft_manifest,
-                workdir=self.localdir
+                workdir=self.localdir,
+                ignore_version=ignore_version
             )
 
         # Deal with other component types: {arch, plat, lib}
@@ -233,7 +236,7 @@ class Application(Component):
 
     @classmethod
     @click.pass_context
-    def from_workdir(ctx, cls, workdir=None):
+    def from_workdir(ctx, cls, workdir=None, force_init=False):
         if workdir is None:
             workdir = ctx.obj.workdir
 
@@ -246,6 +249,7 @@ class Application(Component):
         return cls(
             config=config,
             localdir=workdir,
+            ignore_version=force_init,
         )
 
     @property

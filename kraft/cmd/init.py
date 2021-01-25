@@ -105,7 +105,8 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
                 appdir=appdir,
                 workdir=workdir,
                 pull_dependencies=True,
-                skip_app=True
+                skip_app=True,
+                force_pull=force_init,
             )
 
         logger.info('Initialized new unikraft application: %s' % appdir)
@@ -124,7 +125,8 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
             unikraft=unikraft,
             architectures=[arch],
             platforms=[plat],
-            localdir=appdir
+            localdir=appdir,
+            ignore_version=force_init
         )
 
         app.init(

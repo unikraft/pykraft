@@ -52,7 +52,7 @@ from kraft.util import ErrorPropagatingThread
 @click.pass_context  # noqa: C901
 def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
                     pull_dependencies=False, skip_verify=False, appdir=None,
-                    skip_app=False):
+                    skip_app=False, force_pull=False):
     """
     Pull a particular component from a known manifest.  This will retrieve
     the contents to either the automatically determined directory or to an
@@ -89,7 +89,8 @@ def kraft_list_pull(ctx, name=None, workdir=None, use_git=False,
         app = Application.from_workdir(
             appdir if appdir is not None
             else workdir if workdir is not None
-            else os.getcwd()
+            else os.getcwd(),
+            force_pull
         )
         for component in app.components:
             if component.manifest is not None:

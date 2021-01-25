@@ -144,6 +144,7 @@ class Component(object):
         self._manifest = kwargs.get("manifest", None)
         self._localdir = kwargs.get("localdir", None)
         self._workdir = kwargs.get("workdir", None)
+        ignore_version = kwargs.get("ignore_version", False)
         self._kconfig = list()
 
         version = kwargs.get("version", None)
@@ -187,8 +188,18 @@ class Component(object):
                     if version in dist.versions.keys():
                         self._version = dist.get_version(version)
 
+            if self._version is None and ignore_version:
+                known_versions = list()
+                for dist in self._manifest.dists:
+                    for ver in self._manifest.dists[dist].versions:
+                        known_versions.append(self._manifest.dists[dist].versions[ver])
+
+                # Select the only version available
+                if len(known_versions) == 1:
+                    self._version = known_versions[0]
+
             if self._version is None:
-                raise UnknownVersionError(None, self._manifest)
+                raise UnknownVersionError(version, self._manifest)
 
     def is_downloaded(self):
         return self.localdir is not None \
