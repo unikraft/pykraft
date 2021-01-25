@@ -160,7 +160,7 @@ def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
 
     logger.debug("Configuring %s..." % workdir)
 
-    app = Application.from_workdir(workdir)
+    app = Application.from_workdir(workdir, force_configure)
     if show_menuconfig:
         if sys.stdout.isatty():
             app.open_menuconfig()
@@ -178,4 +178,5 @@ def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
         arch=arch,
         plat=plat,
         options=options,
+        force_configure=force_configure,
     )
