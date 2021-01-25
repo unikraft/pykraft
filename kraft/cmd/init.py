@@ -49,14 +49,14 @@ from kraft.const import UNIKRAFT_WORKDIR
 from kraft.error import UnknownApplicationTemplateName
 from kraft.error import UnknownVersionError
 from kraft.logger import logger
+from kraft.types import break_component_naming_format
 from kraft.types import ComponentType
 from kraft.util import ClickOptionMutex
 
 
 @click.pass_context
 def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
-                   template_app=None, template_app_version=None,
-                   force_init=False, pull_dependencies=False,
+                   template_app=None, force_init=False, pull_dependencies=False,
                    dumps_local=False, create_makefile=False):
     """
 
@@ -70,21 +70,22 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
     if template_app is not None:
         app_manifest = None
 
+        _, template_name, _, version = break_component_naming_format(template_app)
+
         for manifest_origin in ctx.obj.cache.all():
             manifest = ctx.obj.cache.get(manifest_origin)
 
             for _, item in manifest.items():
-                if item.name == template_app and item.type == ComponentType.APP:
+                if item.name == template_name and item.type == ComponentType.APP:
                     app_manifest = item
 
         if app_manifest is None:
             raise UnknownApplicationTemplateName(template_app)
 
-        version = None
-        if template_app_version is not None:
-            version = app_manifest.get_version(template_app_version)
+        if version is not None:
+            version = app_manifest.get_version(version)
             if version is None:
-                raise UnknownVersionError(template_app_version, app_manifest)
+                raise UnknownVersionError(version, app_manifest)
         else:
             version = app_manifest.get_version(UNIKRAFT_RELEASE_STABLE)
 
@@ -139,11 +140,6 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
     metavar="NAME"
 )
 @click.option(
-    '--version', '-v', 'template_app_version',
-    help='The version to use from the template application.',
-    metavar="VERSION"
-)
-@click.option(
     '--plat', '-p', 'plat',
     help='Target platform.',
     cls=ClickOptionMutex,
@@ -189,8 +185,8 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
 @click.argument('name', required=False)
 @click.pass_context
 def cmd_init(ctx, name=None, plat=None, arch=None, template_app=None,
-             template_app_version=None, workdir=None, create_makefile=False,
-             no_dependencies=False, dumps_local=False, force_init=False):
+             workdir=None, create_makefile=False, no_dependencies=False,
+             dumps_local=False, force_init=False):
     """
     Initializes a new unikraft application.
 
@@ -238,7 +234,6 @@ def cmd_init(ctx, name=None, plat=None, arch=None, template_app=None,
             plat=plat,
             arch=arch,
             template_app=template_app,
-            template_app_version=template_app_version,
             create_makefile=create_makefile,
             force_init=force_init,
             pull_dependencies=not no_dependencies,
