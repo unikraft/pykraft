@@ -44,7 +44,7 @@ from kraft.logger import logger
 
 @click.pass_context
 def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
-                fast=False):
+                fast=False, force_build=False):
     """
     """
     if workdir is None or os.path.exists(workdir) is False:
@@ -52,7 +52,7 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
 
     logger.debug("Building %s..." % workdir)
 
-    app = Application.from_workdir(workdir)
+    app = Application.from_workdir(workdir, force_build)
 
     if not app.is_configured():
         if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
@@ -87,9 +87,15 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
     help='Use all CPU cores to build the application.',
     is_flag=True
 )
+@click.option(
+    '--force', '-F', 'force_build',
+    help='Force the build of the unikernel.',
+    is_flag=True
+)
 @click.argument('target', required=False)
 @click.pass_context
-def cmd_build(ctx, fetch=True, prepare=True, target=None, fast=False):
+def cmd_build(ctx, fetch=True, prepare=True, target=None, fast=False,
+              force_build=False):
     """
     Builds the Unikraft application for the target architecture and platform.
     """
@@ -102,7 +108,8 @@ def cmd_build(ctx, fetch=True, prepare=True, target=None, fast=False):
             fetch=fetch,
             prepare=prepare,
             target=target,
-            fast=fast
+            fast=fast,
+            force_build=force_build
         )
 
     except Exception as e:
