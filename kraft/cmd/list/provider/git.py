@@ -236,7 +236,7 @@ def get_component_from_git_repo(ctx, origin=None):
     if len(stable.versions) > 0:
         item.add_distribution(stable)
 
-    for ref in repo.git.branch('-r').split('\n'):
+    for ref in repo.git.branch('-a').split('\n'):
         # skip fast forwards
         if "->" in ref or "detached" in ref:
             continue
