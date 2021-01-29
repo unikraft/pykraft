@@ -258,6 +258,9 @@ def get_component_from_git_repo(ctx, origin=None):
                 name=branch,
             )
 
+        if branch in item.dists.keys():
+            dist = item.dists[branch]
+
         # Add the latest commit to that branch as the only version
         commit = repo.commit(branch)
         dist.add_version(ManifestItemVersion(
