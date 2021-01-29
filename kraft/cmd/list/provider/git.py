@@ -232,14 +232,18 @@ def get_component_from_git_repo(ctx, origin=None):
             timestamp=datetime.fromtimestamp(int(commit.committed_date))
         ))
 
-    item.add_distribution(stable)
+    # Only create the stable distribution if versions exist within
+    if len(stable.versions) > 0:
+        item.add_distribution(stable)
 
     for ref in repo.git.branch('-r').split('\n'):
         # skip fast forwards
-        if "->" in ref:
+        if "->" in ref or "detached" in ref:
             continue
 
-        branch = ref.strip().replace("origin/", "")
+        branch = ref.strip().replace("*", "")
+        branch = branch.strip().replace("remotes/", "")
+        branch = branch.strip().replace("origin/", "")
         if branch in UNIKRAFT_RELEASE_STABLE_VARIATIONS:
             continue # we've done this one seperately
 
@@ -255,7 +259,7 @@ def get_component_from_git_repo(ctx, origin=None):
             )
 
         # Add the latest commit to that branch as the only version
-        commit = repo.commit(ref.strip())
+        commit = repo.commit(branch)
         dist.add_version(ManifestItemVersion(
             git_sha=str(commit),
             version=str(commit)[:7],
