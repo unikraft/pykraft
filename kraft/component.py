@@ -261,12 +261,48 @@ class ComponentManager(object):
     def components(self): return self._components
     def all(self): return self._components
 
-    def __init__(self, components=None):
+    _cls = None
+    @property
+    def cls(self): return self._cls
+
+    def __init__(self, components=[], cls=None, **extra):  # noqa:C901
+        if cls is not None:
+            self._cls = cls
+
+        if self._cls is None:
+            logger.critical("Cannot instantiate manager, missing cls: %s", self)
+            return
+
         if components is None:
             self._components = list()
+
         elif isinstance(components, list):
-            self._components = components
-        elif isinstance(components, Component):
+            for component in components:
+                if isinstance(component, self.cls):
+                    self._components.append(component)
+                else:
+                    self._components.append(self.cls(
+                        **component, **extra
+                    ))
+
+        elif isinstance(components, dict):
+            self._components = list()
+
+            for component, config in components.items():
+                if isinstance(config, six.string_types):
+                    inst = self.cls(
+                        name=component,
+                        version=config,
+                    )
+                elif isinstance(config, dict):
+                    inst = self.cls(
+                        name=component,
+                        **config,
+                        **extra
+                    )
+                self._components.append(inst)
+
+        elif isinstance(components, object):
             self._components = list()
             self._components.append(components)
 
