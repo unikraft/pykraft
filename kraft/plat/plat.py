@@ -88,7 +88,7 @@ class InternalPlatform(Platform):
         if isinstance(config, bool) and config is False:
             raise DisabledComponentError(self._name)
 
-        if isinstance(config, dict):
+        elif isinstance(config, dict):
             self._version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
 
