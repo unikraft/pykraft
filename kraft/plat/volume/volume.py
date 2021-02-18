@@ -113,6 +113,8 @@ class Volume(object):
 
 class VolumeManager(object):
     _volumes = []
+    @property
+    def volumes(self): return self._volumes
 
     def __init__(self, volume_base=[]):
         self._volumes = volume_base or []
