@@ -56,7 +56,9 @@ RUN set -xe; \
           ;; \
       sid|focal) \
         apt-get install -y \
-          python3-all; \
+          python3-all \
+          python3-pip; \
+          update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1; \
           ;; \
       *) \
         apt-get install -y \
