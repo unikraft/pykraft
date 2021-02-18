@@ -126,9 +126,9 @@ class Application(Component):
         if self._config is None:
             self._config = dict()
 
-    @classmethod
+    @classmethod  # noqa: C901
     @click.pass_context
-    def from_workdir(ctx, cls, workdir=None, force_init=False):
+    def from_workdir(ctx, cls, workdir=None, force_init=False, use_versions=[]):
         if workdir is None:
             workdir = ctx.obj.workdir
 
@@ -137,6 +137,37 @@ class Application(Component):
             config = load_config(find_config(workdir, None, ctx.obj.env))
         except KraftFileNotFound:
             pass
+
+        # Dynamically update the configuration specification based on version
+        # overrides provided by use_versions
+        for use in use_versions:
+            _type, name, _, version = break_component_naming_format(use)
+
+            if _type is ComponentType.CORE:
+                config.unikraft.version = version
+
+            for k, target in enumerate(config.targets.all()):
+                if _type is ComponentType.ARCH or _type is None:
+                    if target.architecture.name == name:
+                        _type = ComponentType.ARCH
+                        target.architecture.version = version
+                        config.targets.set(k, target)
+                        break
+
+                if _type is ComponentType.PLAT or _type is None:
+                    if target.platform.name == name:
+                        _type = ComponentType.PLAT
+                        target.platform.version = version
+                        config.targets.set(k, target)
+                        break
+
+            if _type is ComponentType.LIB or _type is None:
+                for k, lib in enumerate(config.libraries.all()):
+                    if lib.name == name:
+                        _type = ComponentType.LIB
+                        lib.version = version
+                        config.libraries.set(k, lib)
+                        break
 
         return cls(
             config=config,
