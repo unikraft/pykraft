@@ -95,7 +95,6 @@ def validate_unikraft_section(config_file, config):
 
 
 def validate_libraries_section(config_file, config):
-    # if not isinstance(value, (dict, six.string_types, type(None))):
     if not isinstance(config, (six.string_types, dict)):
         raise KraftError(
             "Top level object in '{}' needs to be an object not '{}'.".format(
