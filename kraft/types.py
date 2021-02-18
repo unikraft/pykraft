@@ -39,18 +39,10 @@ from enum import Enum
 import click
 import six
 
-from .app import Application
-from .arch import Architecture
-from .arch import ArchitectureManager
 from .const import UK_GITHUB_CORE_FORMAT
 from .const import UK_GITHUB_NAMING_FORMAT
 from .error import UnknownVersionFormatError
-from .lib import Library
-from .lib import LibraryManager
 from .manifest import ManifestVersionEquality
-from .plat import Platform
-from .plat import PlatformManager
-from .unikraft import Unikraft
 from kraft.const import UNIKRAFT_APPSDIR
 from kraft.const import UNIKRAFT_ARCHSDIR
 from kraft.const import UNIKRAFT_COREDIR
@@ -60,11 +52,11 @@ from kraft.const import UNIKRAFT_WORKDIR
 
 
 class ComponentType(Enum):
-    CORE = ( "core" , "unikraft"     , "unikraft"      , "UK_WORKDIR", Unikraft     , None                , UNIKRAFT_COREDIR  )  # noqa
-    ARCH = ( "arch" , "architecture" , "architectures" , "UK_ARCHS",   Architecture , ArchitectureManager , UNIKRAFT_ARCHSDIR )  # noqa
-    PLAT = ( "plat" , "platform"     , "platforms"     , "UK_PLATS",   Platform     , PlatformManager     , UNIKRAFT_PLATSDIR )  # noqa
-    LIB  = ( "lib"  , "library"      , "libraries"     , "UK_LIBS",    Library      , LibraryManager      , UNIKRAFT_LIBSDIR  )  # noqa
-    APP  = ( "app"  , "application"  , "applications"  , "UK_APPS",    Application  , None                , UNIKRAFT_APPSDIR  )  # noqa
+    CORE = ( "core" , "unikraft"     , "unikraft"      , "UK_WORKDIR", UNIKRAFT_COREDIR  )  # noqa
+    ARCH = ( "arch" , "architecture" , "architectures" , "UK_ARCHS",   UNIKRAFT_ARCHSDIR )  # noqa
+    PLAT = ( "plat" , "platform"     , "platforms"     , "UK_PLATS",   UNIKRAFT_PLATSDIR )  # noqa
+    LIB  = ( "lib"  , "library"      , "libraries"     , "UK_LIBS",    UNIKRAFT_LIBSDIR  )  # noqa
+    APP  = ( "app"  , "application"  , "applications"  , "UK_APPS",    UNIKRAFT_APPSDIR  )  # noqa
 
     @property
     def format(self):
@@ -115,13 +107,7 @@ class ComponentType(Enum):
             return os.path.join(ctx.obj.env.get(self.env), name)
 
     @property
-    def cls(self): return self.value[4]
-
-    @property
-    def manager_cls(self): return self.value[5]
-
-    @property
-    def workdir(self): return self.value[6]
+    def workdir(self): return self.value[4]
 
 
 def str_to_component_type(name=None):
