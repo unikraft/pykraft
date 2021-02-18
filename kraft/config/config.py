@@ -33,61 +33,222 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import io
+import json
 import os
 import re
 import sys
 from collections import namedtuple
 
+import six
 import yaml
 from cached_property import cached_property
 
 from .environment import Environment
 from .interpolation import interpolate_environment_variables
 from .validation import validate_against_config_schema
-from .validation import validate_component_section
-from .validation import validate_run_section
-from .validation import validate_top_level_string
-from .validation import validate_top_level_string_or_list
-from .validation import validate_unikraft_section
 from .version import SpecificationVersion
 from kraft.const import KRAFT_SPEC_LATEST
+from kraft.const import KRAFT_SPEC_V04
 from kraft.const import SUPPORTED_FILENAMES
 from kraft.error import CannotReadKraftfile
 from kraft.error import KraftError
 from kraft.error import KraftFileNotFound
+from kraft.lib import LibraryManager
 from kraft.logger import logger
+from kraft.plat.network import NetworkManager
+from kraft.plat.volume import VolumeManager
+from kraft.target import TargetManager
+from kraft.unikraft import Unikraft
 
 
-class Config(namedtuple(
-        '_Config', [
-            'specification',
-            'name',
-            'unikraft',
-            'architectures',
-            'platforms',
-            'libraries',
-            'runner'
-        ])):
+class Config(object):
     """
     :param specification: configuration version
     :type  specification: int
+    """
+    _specification = None
+    @property
+    def specification(self): return self._specification
+
+    @specification.setter
+    def specification(self, specification=None): self._specification = specification
+
+    """
     :param name: name of the project
     :type  name: string
+    """
+    _name = None
+    @property
+    def name(self): return self._name
+
+    @name.setter
+    def name(self, name=None): self._name = name
+
+    """
+    :param arguments: arguments of the component
+    :type  arguments: string number
+    """
+    _arguments = None
+    @property
+    def arguments(self): return self._arguments
+    @arguments.setter
+    def arguments(self, arguments): self._arguments = arguments
+
+    """
+    :param before: before location for the component
+    :type  before: string
+    """
+    _before = None
+    @property
+    def before(self): return self._before
+    @before.setter
+    def before(self, before): self._before = before
+
+    """
+    :param after: after location for the component
+    :type  after: string
+    """
+    _after = None
+    @property
+    def after(self): return self._after
+    @after.setter
+    def after(self, after): self._after = after
+
+    """
     :param unikraft: Unikraft's core configuration
     :type  unikraft: :class:`dict`
-    :param architectures: Dictionary mapping architecture names to description dictionaries
-    :type  architectures: :class:`dict`
-    :param platforms: Dictionary mapping platform names to description dictionaries
-    :type  platforms: :class:`dict`
+    """
+    _unikraft = None
+    @property
+    def unikraft(self): return self._unikraft
+
+    @unikraft.setter
+    def unikraft(self, unikraft=None):
+        if unikraft is None:
+            return
+
+        if isinstance(unikraft, dict):
+            unikraft = Unikraft(**unikraft)
+
+        elif not isinstance(unikraft, Unikraft):
+            logger.warn("Cannot apply Unikraft to configuration")
+            return
+
+        self._unikraft = unikraft
+
+    """
+    :param targets: Dictionary mapping architecture and platform targets
+    :type  targets: :class:`dict`
+    """
+    _targets = None
+    @property
+    def targets(self): return self._targets
+
+    @targets.setter
+    def targets(self, targets=None):
+        if targets is None:
+            return
+
+        if isinstance(targets, dict):
+            targets = TargetManager(**targets)
+
+        elif not isinstance(targets, TargetManager):
+            logger.warn("Cannot apply targets to configuration")
+            return
+
+        self._targets = targets
+
+    """
     :param libraries: Dictionary mapping library names to description dictionaries
     :type  libraries: :class:`dict`
-    :param runner: Dictionary mapping of execution description dictionaries
-    :type  runner: :class:`dict`
     """
+    _libraries = None
+    @property
+    def libraries(self): return self._libraries
+
+    @libraries.setter
+    def libraries(self, libraries=None):
+        if libraries is None:
+            return
+
+        if isinstance(libraries, dict):
+            libraries = LibraryManager(**libraries)
+
+        elif not isinstance(libraries, LibraryManager):
+            logger.warn("Cannot apply Libraries to configuration")
+            return
+
+        self._libraries = libraries
+
+    """
+    :param volumes: Dictionary mapping of execution description dictionaries
+    :type  volumes: :class:`dict`
+    """
+    _volumes = None
+    @property
+    def volumes(self): return self._volumes
+
+    @volumes.setter
+    def volumes(self, volumes=None):
+        if volumes is None:
+            return
+
+        if isinstance(volumes, dict):
+            volumes = VolumeManager(**volumes)
+
+        elif not isinstance(volumes, VolumeManager):
+            logger.warn("Cannot apply volumess to configuration")
+            return
+
+        self._volumes = volumes
+
+    """
+    :param networks: Dictionary mapping of execution description dictionaries
+    :type  networks: :class:`dict`
+    """
+    _networks = None
+    @property
+    def networks(self): return self._networks
+
+    @networks.setter
+    def networks(self, networks=None):
+        if networks is None:
+            return
+
+        if isinstance(networks, dict):
+            networks = NetworkManager(**networks)
+
+        elif not isinstance(networks, NetworkManager):
+            logger.warn("Cannot apply networkss to configuration")
+            return
+
+        self._networks = networks
+
+    def __init__(self, *args, **kwargs):
+        self.specification = kwargs.get('specification', None)
+        self.name = kwargs.get('name', None)
+        self.arguments = kwargs.get('arguments', [])
+        self.before = kwargs.get('before', None)
+        self.after = kwargs.get('after', None)
+        self.unikraft = kwargs.get('unikraft', None)
+        self.targets = kwargs.get('targets', TargetManager([]))
+        self.libraries = kwargs.get('libraries', LibraryManager({}))
+        self.volumes = kwargs.get('volumes', VolumeManager({}))
+        self.networks = kwargs.get('networks', NetworkManager({}))
+
     def repr(self):
-        return dict(
-            [(k, v) for k, v in zip(self._fields, self) if v is not None]
-        )
+        ret = {}
+        for k in self.__dict__.keys():
+            v = getattr(self, k[1:])
+            if isinstance(v, (six.string_types, dict, list)):
+                ret[k[1:]] = v
+            elif v is not None and hasattr(v, 'repr'):
+                ret[k[1:]] = v.repr()
+
+        return ret
+
+    def __repr__(self):
+        return json.dumps(self.repr())
 
 
 class ConfigDetails(namedtuple(
@@ -147,38 +308,26 @@ class KraftFile(namedtuple(
     def get_unikraft(self):
         return self.config.get('unikraft', {})
 
-    def get_architecture(self, name):
-        return self.get_architectures()[name]
+    def get_arguments(self):
+        return self.config.get('arguments', None)
 
-    def get_architectures(self):
-        return self.config.get('architectures', {})
-
-    def get_platform(self, name):
-        return self.get_platforms()[name]
-
-    def get_platforms(self):
-        return self.config.get('platforms', {})
-
-    def get_library(self, name):
-        return self.get_libraries()[name]
+    def get_targets(self):
+        return self.config.get('targets', [])
 
     def get_libraries(self):
         return self.config.get('libraries', {})
 
-    # def get_volume(self, name):
-    #     return self.get_volumes()[name]
+    def get_before(self):
+        return self.config.get('before', None)
 
-    # def get_volumes(self):
-    #     return self.config.get('volumes', {})
+    def get_after(self):
+        return self.config.get('after', None)
 
-    # def get_network(self, name):
-    #     return self.get_networks()[name]
+    def get_volumes(self):
+        return self.config.get('volumes', {})
 
-    # def get_networks(self):
-    #     return self.config.get('networks', {})
-
-    def get_run(self):
-        return self.config.get('run', {})
+    def get_networks(self):
+        return self.config.get('networks', {})
 
 
 def get_project_name(workdir, project_name=None, environment=None):
@@ -201,121 +350,98 @@ def get_project_name(workdir, project_name=None, environment=None):
     return 'default'
 
 
-def process_top_level_string(config_file, config, environment, section, interpolate):
-    config = validate_top_level_string(config_file, config, section)
-    if interpolate and isinstance(config, dict):
-        return interpolate_environment_variables(
-            config_file.version,
-            config,
-            section,
-            environment
-            )
-    else:
-        return config
+def process_kraftfile(kraftfile, environment, service_name=None, interpolate=True):
+    if kraftfile.config is None:
+        return kraftfile
 
+    validate_against_config_schema(kraftfile)
 
-def process_top_level_string_or_list(config_file, config, environment, section, interpolate):
-    config = validate_top_level_string_or_list(config_file, config, section)
-    if interpolate and isinstance(config, dict):
-        return interpolate_environment_variables(
-            config_file.version,
-            config,
-            section,
-            environment
-        )
-    else:
-        return config
+    processed_config = dict()
+    processed_config['unikraft'] = interpolate_environment_variables(
+        kraftfile.version,
+        kraftfile.get_unikraft(),
+        "unikraft",
+        environment
+    )
 
+    processed_config['name'] = kraftfile.get_name()
 
-def process_unikraft(config_file, environment, interpolate):
-    config = validate_unikraft_section(config_file, config_file.get_unikraft())
-    if interpolate and isinstance(config, dict):
-        return interpolate_environment_variables(
-            config_file.version,
-            config,
-            "unikraft",
+    if kraftfile.version == KRAFT_SPEC_V04:
+        processed_config['arguments'] = None
+
+        architectures = interpolate_environment_variables(
+            kraftfile.version,
+            kraftfile.config.get('architectures', {}),
+            "architectures",
             environment
         )
-    else:
-        return config
 
-
-def process_component_section(config_file, config, section, environment, interpolate):
-    config = validate_component_section(config_file.filename, config, section)
-    if interpolate:
-        return interpolate_environment_variables(
-            config_file.version,
-            config,
-            section,
+        platforms = interpolate_environment_variables(
+            kraftfile.version,
+            kraftfile.config.get('platforms', {}),
+            "platforms",
             environment
         )
-    else:
-        return config
 
+        targets = list()
 
-def process_run_section(config_file, section, environment, interpolate):
-    config = validate_run_section(config_file, config_file.get_run())
-    if interpolate and isinstance(config, dict):
-        return interpolate_environment_variables(
-            config_file.version,
-            config,
+        # Naively (and this is why there is an update from v0.4 to v0.5) create
+        # a list of targets based on iterating over architectures and platforms
+        for arch in architectures:
+            for plat in platforms:
+                targets.append({
+                    'architecture': arch,
+                    'platform': plat
+                })
+
+        processed_config['targets'] = targets
+
+        # Bring the network and volume directives from the run directive into
+        # their own
+        run = interpolate_environment_variables(
+            kraftfile.version,
+            kraftfile.config.get('run', {}),
             "run",
             environment
         )
-    else:
-        return config
 
+        if 'networks' in run:
+            processed_config['networks'] = run['networks']
+        if 'volumes' in run:
+            processed_config['volumes'] = run['volumes']
 
-def process_config_file(config_file, environment, service_name=None, interpolate=True):
+    elif kraftfile.version > KRAFT_SPEC_V04:
+        processed_config['arguments'] = kraftfile.get_arguments()
+        processed_config['before'] = kraftfile.get_before()
+        processed_config['after'] = kraftfile.get_after()
+        processed_config['targets'] = interpolate_environment_variables(
+            kraftfile.version,
+            kraftfile.get_targets(),
+            "targets",
+            environment
+        )
+        processed_config['networks'] = interpolate_environment_variables(
+            kraftfile.version,
+            kraftfile.get_networks(),
+            "networks",
+            environment
+        )
+        processed_config['volumes'] = interpolate_environment_variables(
+            kraftfile.version,
+            kraftfile.get_volumes(),
+            "volumes",
+            environment
+        )
 
-    if config_file.config is None:
-        return config_file
+    processed_config['libraries'] = interpolate_environment_variables(
+        kraftfile.version,
+        kraftfile.get_libraries(),
+        "libraries",
+        environment
+    )
 
-    processed_config = dict(config_file.config)
-
-    processed_config['unikraft'] = process_unikraft(
-        config_file,
-        environment,
-        interpolate,
-    )
-    processed_config['name'] = process_top_level_string(
-        config_file,
-        config_file.get_name(),
-        'name',
-        environment,
-        interpolate,
-    )
-    processed_config['architectures'] = process_component_section(
-        config_file,
-        config_file.get_architectures(),
-        'architectures',
-        environment,
-        interpolate,
-    )
-    processed_config['platforms'] = process_component_section(
-        config_file,
-        config_file.get_platforms(),
-        'platforms',
-        environment,
-        interpolate,
-    )
-    processed_config['libraries'] = process_component_section(
-        config_file,
-        config_file.get_libraries(),
-        'libraries',
-        environment,
-        interpolate,
-    )
-    processed_config['run'] = process_run_section(
-        config_file,
-        'run',
-        environment,
-        interpolate,
-    )
-    config_file = config_file._replace(config=processed_config)
-    validate_against_config_schema(config_file)
-
-    return config_file
+    kraftfile = kraftfile._replace(config=processed_config)
+    return kraftfile
 
 
 def find_candidates_in_parent_dirs(filenames, path):
@@ -374,12 +500,19 @@ def find_config(base_dir, filenames, environment, override_dir=None):
 
 
 def load_mapping(config_files, get_func, entity_type, working_dir=None):
-    mapping = {}
+    mapping = None
 
     for config_file in config_files:
         if config_file.config is not None:
             attr = getattr(config_file, get_func)()
             if isinstance(attr, list):
+                if mapping is None:
+                    mapping = []
+                for config in attr:
+                    mapping.append(config)
+            elif isinstance(attr, dict):
+                if mapping is None:
+                    mapping = {}
                 for name, config in getattr(config_file, get_func)().items():
                     mapping[name] = config or {}
                     if not config:
@@ -398,7 +531,7 @@ def load_config(config_details):
     """
 
     processed_files = [
-        process_config_file(config_file, config_details.environment)
+        process_kraftfile(config_file, config_details.environment)
         for config_file in config_details.config_files
     ]
     config_details = config_details._replace(config_files=processed_files)
@@ -419,40 +552,33 @@ def load_config(config_details):
         name = get_project_name(config_details.working_dir,  None, config_details.environment)
 
     unikraft = load_mapping(
-        config_details.config_files, 'get_unikraft', 'unikraft', config_details.working_dir
-    )
-
-    # # Account for syntax variation
-    # thought_source, thought_version = None, None
-
-    # if isinstance(unikraft, six.string_types):
-    #     thought_source = unikraft
-    #     unikraft = {}
-    # else:
-    #     if 'source' in unikraft:
-    #         thought_source = unikraft['source']
-    #     if 'version' in unikraft:
-    #         thought_version = unikraft['version']
-
-    # definite_source, definite_version = interpolate_source_version(
-    #     'unikraft',
-    #     thought_source,
-    #     thought_version,
-    #     ComponentType.CORE
-    # )
-    # unikraft['source'] = definite_source
-    # unikraft['version'] = definite_version
-
-    architectures = load_mapping(
         config_details.config_files,
-        'get_architectures',
-        'architectures',
+        'get_unikraft',
+        'unikraft',
         config_details.working_dir
     )
-    platforms = load_mapping(
+    arguments = load_mapping(
         config_details.config_files,
-        'get_platforms',
-        'platforms',
+        'get_arguments',
+        'arguments',
+        config_details.working_dir
+    )
+    before = load_mapping(
+        config_details.config_files,
+        'get_before',
+        'before',
+        config_details.working_dir
+    )
+    after = load_mapping(
+        config_details.config_files,
+        'get_after',
+        'after',
+        config_details.working_dir
+    )
+    targets = load_mapping(
+        config_details.config_files,
+        'get_targets',
+        'targets',
         config_details.working_dir
     )
     libraries = load_mapping(
@@ -461,50 +587,33 @@ def load_config(config_details):
         'libraries',
         config_details.working_dir
     )
-
-    # # Account for syntax variation
-    # for library in libraries:
-    #     thought_source, thought_version = None, None
-
-    #     if isinstance(libraries[library], str):
-    #         thought_source = libraries[library]
-    #         libraries[library] = {}
-    #     else:
-    #         if 'source' in libraries[library]:
-    #             thought_source = libraries[library]['source']
-    #         if 'version' in libraries[library]:
-    #             thought_version = libraries[library]['version']
-
-    #     definite_source, definite_version = interpolate_source_version(
-    #         library,
-    #         thought_source,
-    #         thought_version,
-    #         RepositoryType.LIB
-    #     )
-    #     libraries[library]['source'] = definite_source
-    #     libraries[library]['version'] = definite_version
-
-    # volumes = load_mapping(
-    #     config_details.config_files,
-    #     'get_volumes',
-    #     'volumes',
-    #     config_details.working_dir
-    # )
-    # networks = load_mapping(
-    #     config_details.config_files,
-    #     'get_networks',
-    #     'networks',
-    #     config_details.working_dir
-    # )
-
-    runner = load_mapping(
+    volumes = load_mapping(
         config_details.config_files,
-        'get_run',
-        'run',
+        'get_volumes',
+        'volumes',
+        config_details.working_dir
+    )
+    networks = load_mapping(
+        config_details.config_files,
+        'get_networks',
+        'networks',
         config_details.working_dir
     )
 
-    return Config(main_file.version, name, unikraft, architectures, platforms, libraries, runner)
+    core = Unikraft(**unikraft)
+
+    return Config(
+        specification=main_file.version,
+        name=name,
+        arguments=arguments,
+        before=before,
+        after=after,
+        unikraft=core,
+        targets=TargetManager(targets, core),
+        libraries=LibraryManager(libraries),
+        volumes=VolumeManager(volumes),
+        networks=NetworkManager(networks),
+    )
 
 
 def load_yaml(filename, encoding=None, binary=True):
