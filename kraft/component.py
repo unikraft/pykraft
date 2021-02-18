@@ -228,11 +228,13 @@ class Component(object):
     def repr(self):
         config = {}
 
-        if self._kconfig is not None and len(self._kconfig) > 0:
-            config['kconfig'] = self._kconfig
-
-        if self.version is not None:
+        if self.version is not None and \
+                isinstance(self.version, ManifestItemVersion):
             config['version'] = self.version.version
+
+        elif self.version is not None and \
+                isinstance(self.version, six.string_types):
+            config['version'] = self.version
 
         elif self.version is None and self.manifest is not None:
             if UNIKRAFT_RELEASE_STABLE in self._manifest.dists.keys():
@@ -246,6 +248,9 @@ class Component(object):
 
         if self.origin is not None:
             config['source'] = self.origin
+
+        if self._kconfig is not None and len(self._kconfig) > 0:
+            config['kconfig'] = self._kconfig
 
         return True if not config else config
 
