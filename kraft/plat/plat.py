@@ -92,6 +92,13 @@ class InternalPlatform(Platform):
             self._version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
 
+    def repr(self):
+        config = {}
+
+        if self._kconfig is not None and len(self._kconfig) > 0:
+            config['kconfig'] = self._kconfig
+
+        return self.name if not config else config
 
 
 class PlatformManager(ComponentManager):
