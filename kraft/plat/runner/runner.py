@@ -273,18 +273,18 @@ class Runner(object):
     @classmethod
     def from_config(cls, config=None, runner_base=None):
         arguments = None
-        if config and 'arguments' in config:
-            arguments = config['arguments']
+        if config and config.arguments is not None:
+            arguments = config.arguments
         elif runner_base is not None:
             arguments = runner_base.arguments
 
-        if config and 'volumes' in config:
-            volumes = VolumeManager.from_config(config['volumes'])
+        if config and config.volumes is not None:
+            volumes = VolumeManager.from_config(config.volumes)
         else:
             volumes = VolumeManager([])
 
-        if config and 'networks' in config:
-            networks = NetworkManager.from_config(config['networks'])
+        if config and config.networks:
+            networks = NetworkManager.from_config(config.networks)
         else:
             networks = NetworkManager([])
 
@@ -301,11 +301,11 @@ class Runner(object):
             volumes=volumes
         )
 
-        if config and 'pre_up' in config:
-            runner.append_pre_up(config['pre_up'])
+        if config and config.pre_up is not None:
+            runner.append_pre_up(config.pre_up)
 
-        if config and 'post_down' in config:
-            runner.append_post_down(config['post_down'])
+        if config and config.post_down is not None:
+            runner.append_post_down(config.post_down)
 
         return runner
 
