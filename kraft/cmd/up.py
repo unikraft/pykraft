@@ -150,15 +150,6 @@ def cmd_up(ctx, workdir=None, name=None, plat=None, arch=None, initrd=None,
     """
     Configures, builds and runs an application for a selected architecture and
     platform.
-
-    This is a quick-start way of running the following:
-
-        $ kraft list update
-        $ kraft list pull TEMPLATE
-        $ kraft init -t TEMPLATE
-        $ kraft configure
-        $ kraft build
-        $ kraft run
     """
 
     kraft_list_preflight()
