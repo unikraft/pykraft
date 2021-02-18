@@ -34,6 +34,8 @@ from __future__ import unicode_literals
 
 from enum import Enum
 
+from kraft.logger import logger
+
 
 class VolumeDriver(Enum):
     VOL_INITRD = ("initrd", [""])
@@ -133,9 +135,10 @@ class VolumeManager(object):
     def add(self, volume):
         if isinstance(volume, Volume):
             # Remove existing volume with the same name so as to override
-            for net in self._volumes:
-                if net.name == volume.name:
-                    self._volumes.remove(net)
+            for vol in self._volumes:
+                if vol.name == volume.name:
+                    logger.warning('Overriding existing volume %s' % vol.name)
+                    self._volumes.remove(vol)
                     break
 
             self._volumes.append(volume)
