@@ -263,7 +263,7 @@ class Application(Component):
         util.execute(cmd)
 
     @click.pass_context  # noqa: C901
-    def configure(ctx, self, arch=None, plat=None, options=[],
+    def configure(ctx, self, target=None, arch=None, plat=None, options=[],
                   force_configure=False):
         """
         Configure a Unikraft application.
@@ -274,6 +274,10 @@ class Application(Component):
 
         archs = list()
         plats = list()
+        
+        if target is not None:
+            archs.append(target.architecture)
+            plats.append(target.platform)
 
         for target in self.config.targets.all():
             if isinstance(arch, str):
