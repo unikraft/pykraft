@@ -140,6 +140,9 @@ class ManifestItemVersion(object):
             self._tarball_size = data.get("tarball_size", None)
             self._tarball_checksum = data.get("tarball_checksum", None)
 
+    def repr(self):
+        return self._version
+
     def __getstate__(self):
         """
         Return state values to be pickled.
