@@ -86,11 +86,11 @@ class Volume(object):
     @property
     def workdir(self): return self._workdir
 
-    def __init__(self, name=None, driver=None, source=None, workdir=None):
-        self._name = name
-        self._driver = driver
-        self._source = source
-        self._workdir = workdir
+    def __init__(self, *args, **kwargs):
+        self._name = kwargs.get("name", None)
+        self._driver = kwargs.get("driver", None)
+        self._source = kwargs.get("source", None)
+        self._workdir = kwargs.get("workdir", None)
 
     @classmethod
     def from_config(cls, name=None, config={}):
