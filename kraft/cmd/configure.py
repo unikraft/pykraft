@@ -97,9 +97,16 @@ from kraft.logger import logger
     help='Set an option\'s value.',
     metavar='KOPTION'
 )
+@click.option(
+    '--use-version', '-u', 'use_versions',
+    multiple=True,
+    help='Use the specified version for the component, e.g.    -u unikraft@staging (will override kraft.yaml).',  # noqa: E501
+    metavar='COMP'
+)
 @click.pass_context
 def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
-                  show_menuconfig=False, workdir=None, yes=[], no=[], opts=[]):
+                  show_menuconfig=False, workdir=None, yes=[], no=[], opts=[],
+                  use_versions=[]):
     """
     Configure the unikernel using the KConfig options set in the kraft.yaml
     file.  Alternatively, you can use the -k|--menuconfig flag to open the TUI
@@ -144,6 +151,7 @@ def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
             force_configure=force_configure,
             show_menuconfig=show_menuconfig,
             options=options,
+            use_versions=use_versions,
         )
 
     except Exception as e:
@@ -159,7 +167,7 @@ def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
 @click.pass_context
 def kraft_configure(ctx, env=None, workdir=None, target=None, plat=None,
                     arch=None, force_configure=False, show_menuconfig=False,
-                    options=[]):
+                    options=[], use_versions=[]):
     """
     Populates the local .config with the default values for the target
     application.
@@ -170,7 +178,11 @@ def kraft_configure(ctx, env=None, workdir=None, target=None, plat=None,
 
     logger.debug("Configuring %s..." % workdir)
 
-    app = Application.from_workdir(workdir, force_configure)
+    app = Application.from_workdir(
+        workdir=workdir,
+        force_init=force_configure,
+        use_versions=use_versions,
+    )
     if show_menuconfig:
         if sys.stdout.isatty():
             app.open_menuconfig()
