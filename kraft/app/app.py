@@ -177,21 +177,16 @@ class Application(Component):
 
     @property
     def components(self):
-        from kraft.types import ComponentType
-
         components = list()
 
-        components.append(self._core)
+        components.append(self.config.unikraft)
 
-        for _, type in ComponentType.__members__.items():
-            # Skip application-types or components with no manager
-            if type.cls == self.__class__ or type.manager_cls is None:
-                continue
+        for target in self.config.targets.all():
+            components.append(target.architecture)
+            components.append(target.platform)
 
-            manager = getattr(self, "_%s" % type.plural)
-
-            for component in manager.components:
-                components.append(component)
+        for library in self.config.libraries.all():
+            components.append(library)
 
         return components
 
@@ -228,7 +223,7 @@ class Application(Component):
 
         cmd = [
             'make',
-            '-C', self._core.localdir,
+            '-C', self.config.unikraft.localdir,
             ('A=%s' % self._localdir)
         ]
 
@@ -236,14 +231,14 @@ class Application(Component):
             cmd.append('V=1')
 
         plat_paths = []
-        for plat in self._platforms.all():
-            if not isinstance(plat, InternalPlatform):
-                plat_paths.append(plat.localdir)
+        for target in self.config.targets.all():
+            if not isinstance(target.platform, InternalPlatform):
+                plat_paths.append(target.platform.localdir)
 
         cmd.append('P=%s' % ":".join(plat_paths))
 
         lib_paths = []
-        for lib in self._libraries.all():
+        for lib in self.config.libraries.all():
             lib_paths.append(lib.localdir)
 
         cmd.append('L=%s' % ":".join(lib_paths))
@@ -278,42 +273,25 @@ class Application(Component):
             self.init()
 
         archs = list()
-        if isinstance(arch, str):
-            _arch = self.architectures.get(arch)
-            if _arch is None:
-                raise MismatchTargetArchitecture(arch, [
-                    a.name for a in self.architectures.all()
-                ])
-            archs.append(_arch)
-
-        elif isinstance(arch, Architecture):
-            archs.append(arch)
-
-        elif isinstance(arch, list):
-            archs = arch
-        else:
-            archs = self.architectures.all()
-
         plats = list()
-        if isinstance(plat, str):
-            _plat = self.platforms.get(plat)
-            if _plat is None:
-                raise MismatchTargetPlatform(plat, [
-                    a.name for a in self.platforms.all()
-                ])
-            plats.append(_plat)
 
-        elif isinstance(plat, Platform):
-            plats.append(plat)
+        for target in self.config.targets.all():
+            if isinstance(arch, str):
+                if arch == target.architecture.name:
+                    archs.append(target.architecture)
+            elif isinstance(arch, Architecture):
+                archs.append(arch)
 
-        elif isinstance(plat, list):
-            plats = plat
-        else:
-            plats = self.platforms.all()
+            if isinstance(plat, str):
+                if plat == target.platform.name:
+                    plats.append(target.platform)
+            elif isinstance(plat, Platform):
+                plats.append(plat)
 
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.
-        dotconfig = self._core.kconfig
+        dotconfig = list()
+        dotconfig.extend(self.config.unikraft.kconfig or [])
 
         for arch in archs:
             if not arch.is_downloaded():
@@ -329,7 +307,7 @@ class Application(Component):
             dotconfig.extend(plat.kconfig)
             dotconfig.append(plat.kconfig_enabled_flag)
 
-        for lib in self.libraries.all():
+        for lib in self.config.libraries.all():
             if not lib.is_downloaded():
                 raise MissingComponent(lib.name)
 
@@ -398,7 +376,7 @@ class Application(Component):
                 return False
 
             for manifest in manifests:
-                components.append(type.cls(
+                self.config.libraries.add(Library(
                     name=name,
                     version=version,
                     manifest=manifest,
