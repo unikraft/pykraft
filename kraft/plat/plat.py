@@ -97,4 +97,5 @@ class InternalPlatform(Platform):
 
 
 class PlatformManager(ComponentManager):
-    pass
+    def __init__(self, components=[], t=None):
+        super(PlatformManager, self).__init__(components, Platform)

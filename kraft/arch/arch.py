@@ -128,4 +128,5 @@ class InternalArchitecture(Architecture):
 
 
 class ArchitectureManager(ComponentManager):
-    pass
+    def __init__(self, components=[], t=None):
+        super(ArchitectureManager, self).__init__(components, Architecture)

@@ -473,4 +473,5 @@ class Library(Component):
 
 
 class LibraryManager(ComponentManager):
-    pass
+    def __init__(self, components=[], cls=None):
+        super(LibraryManager, self).__init__(components, Library)
