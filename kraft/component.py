@@ -49,7 +49,9 @@ from kraft.error import DisabledComponentError
 from kraft.error import MissingManifest
 from kraft.error import UnknownVersionError
 from kraft.logger import logger
+from kraft.manifest import ManifestItemVersion
 from kraft.manifest import ManifestVersionEquality
+from kraft.types import ComponentType
 
 
 class Component(object):
@@ -135,14 +137,17 @@ class Component(object):
     @property
     def kconfig(self): return self._kconfig
 
+    _type = None
+    @property
+    def type(self): return self._type
+
     @click.pass_context  # noqa: C901
     def __init__(ctx, self, *args, **kwargs):
         self._name = kwargs.get("name", None)
-        self._type = kwargs.get("type", None)
+        self._type = kwargs.get("type", self._type)
         self._manifest = kwargs.get("manifest", None)
         self._localdir = kwargs.get("localdir", None)
         ignore_version = kwargs.get("ignore_version", False)
-        self._kconfig = list()
 
         version = kwargs.get("version", None)
         config = kwargs.get("config", None)
@@ -152,10 +157,24 @@ class Component(object):
 
         elif isinstance(config, dict):
             version = config.get("version", None)
-            self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
+            self._kconfig = config.get("kconfig", list())
 
         elif isinstance(config, bool) and config is False:
             raise DisabledComponentError(self._name)
+
+        else:
+            self._source = kwargs.get("source", None)
+            self._kconfig = kwargs.get("kconfig", list())
+
+        if self._manifest is None and self._type is not None:
+            name = self._name
+            if self._type is ComponentType.CORE:
+                name = "unikraft"
+
+            self._manifest = ctx.obj.cache.find_item_by_name(
+                type=self._type.shortname,
+                name=name
+            )
 
         if self._manifest is None and self.localdir is not None:
             from kraft.manifest import manifest_from_localdir
@@ -195,7 +214,8 @@ class Component(object):
                 if len(known_versions) == 1:
                     self._version = known_versions[0]
 
-            if self._version is None:
+            if self._version is None and not ignore_version:
+                # TODO indicate component type in error message
                 raise UnknownVersionError(version, self._manifest)
 
     def is_downloaded(self):
