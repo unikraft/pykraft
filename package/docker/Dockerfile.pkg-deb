@@ -93,9 +93,6 @@ RUN set -xe; \
       gawk \
       bison \
       uuid-runtime; \
-    cd /tmp; \
-    curl -OL https://bootstrap.pypa.io/get-pip.py; \
-    python get-pip.py; \
     pip install --upgrade --force-reinstall pip==9.0.3; \
     pip install -r /tmp/requirements-dev.txt; \
     pip install -r /tmp/requirements-pkg-deb.txt; \
