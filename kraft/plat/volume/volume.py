@@ -117,7 +117,18 @@ class VolumeManager(object):
     def volumes(self): return self._volumes
 
     def __init__(self, volume_base=[]):
-        self._volumes = volume_base or []
+        self._volumes = []
+
+        if isinstance(volume_base, dict):
+            for volume in volume_base.keys():
+                self.add(Volume(
+                    name=volume,
+                    **volume_base[volume]
+                ))
+
+        elif isinstance(volume_base, list):
+            for volume in volume_base:
+                self.add(volume)
 
     def add(self, volume):
         if isinstance(volume, Volume):
