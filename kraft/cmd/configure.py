@@ -82,17 +82,20 @@ from kraft.logger import logger
 @click.option(
     '--yes', '-y', 'yes',
     multiple=True,
-    help='Specify an option to enable.'
+    help='Specify an option to enable.',
+    metavar='KOPTION'
 )
 @click.option(
     '--no', '-n', 'no',
     multiple=True,
-    help='Specify an option to disable.'
+    help='Specify an option to disable.',
+    metavar='KOPTION'
 )
 @click.option(
     '--set', '-s', 'opts',
     multiple=True,
-    help='Set an option\'s value.'
+    help='Set an option\'s value.',
+    metavar='KOPTION'
 )
 @click.pass_context
 def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
