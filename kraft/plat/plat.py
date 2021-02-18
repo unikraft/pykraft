@@ -92,8 +92,6 @@ class InternalPlatform(Platform):
             self._version = config.get("version", None)
             self._kconfig = config.get("kconfig", kwargs.get("kconfig", list()))
 
-            if "run" in config:
-                self._runner = Runner.from_config(config["run"])
 
 
 class PlatformManager(ComponentManager):
