@@ -143,6 +143,9 @@ class VolumeManager(object):
 
             self._volumes.append(volume)
 
+        elif isinstance(volume, dict):
+            self._volumes.add(Volume(**volume))
+
         elif isinstance(volume, VolumeManager):
             for vol in volume.all():
                 self.add(vol)
