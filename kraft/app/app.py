@@ -43,29 +43,28 @@ import six
 
 import kraft.util as util
 from kraft.arch import Architecture
-from kraft.arch import InternalArchitecture
 from kraft.component import Component
 from kraft.config import Config
 from kraft.config import find_config
 from kraft.config import load_config
-from kraft.config import SpecificationVersion
 from kraft.config.config import get_default_config_files
 from kraft.config.serialize import serialize_config
 from kraft.const import DOT_CONFIG
-from kraft.const import KRAFT_SPEC_LATEST
 from kraft.const import MAKEFILE_UK
 from kraft.const import SUPPORTED_FILENAMES
-from kraft.const import UK_CORE_ARCHS
-from kraft.const import UK_CORE_PLATS
 from kraft.error import KraftFileNotFound
-from kraft.error import MismatchTargetArchitecture
-from kraft.error import MismatchTargetPlatform
 from kraft.error import MissingComponent
+from kraft.lib import Library
+from kraft.lib import LibraryManager
 from kraft.logger import logger
 from kraft.manifest import ManifestItem
 from kraft.plat import InternalPlatform
 from kraft.plat import Platform
-from kraft.plat import Runner
+from kraft.plat.network import NetworkManager
+from kraft.plat.volume import VolumeManager
+from kraft.target import TargetManager
+from kraft.types import break_component_naming_format
+from kraft.types import ComponentType
 from kraft.unikraft import Unikraft
 
 
@@ -76,161 +75,52 @@ class Application(Component):
     @property
     def config(self): return self._config
 
-    _core = None
-    @property
-    def core(self): return self._core
-
-    _architectures = None
-    @property
-    def architectures(self): return self._architectures
-
-    _platforms = None
-    @property
-    def platforms(self): return self._platforms
-
-    _libraries = None
-    @property
-    def libraries(self): return self._libraries
-
-    _runner = None
-    @property
-    def runner(self): return self._runner
-
     @click.pass_context  # noqa: C901
-    def __init__(ctx, self, **kwargs):
-        from kraft.types import ComponentType
-        from kraft.cmd.list.update import kraft_update_from_source
+    def __init__(ctx, self, *args, **kwargs):
+        super(Application, self).__init__(*args, **kwargs)
 
-        self._localdir = kwargs.get('localdir', None)
-        self._name = kwargs.get('name', None)
+        # Determine name from localdir
         if self._name is None and self._localdir is not None:
             self._name = os.path.basename(self._localdir)
+
         self._config = kwargs.get('config', None)
 
-        ignore_version = kwargs.get("ignore_version", False)
-
-        # Deal with Unikraft component
-        unikraft_config = dict()
-        unikraft_manifest = None
-
+        # Determine how configuration is passed to this class
         if self._config is None:
-            unikraft_config = kwargs.get("unikraft", dict())
+            unikraft = kwargs.get("unikraft", dict())
+            if not isinstance(unikraft, Unikraft):
+                unikraft = Unikraft(unikraft)
 
-        elif isinstance(self._config, Config):
-            unikraft_config = getattr(self._config, "unikraft")
-            self._runner = Runner.from_config(self._config.runner)
+            targets = kwargs.get("targets", dict())
+            if not isinstance(targets, TargetManager):
+                targets = TargetManager(targets)
 
-        if isinstance(unikraft_config, ManifestItem):
-            unikraft_manifest = unikraft_config
-            unikraft_config = dict()
+            libraries = kwargs.get("libraries", dict())
+            if not isinstance(unikraft, LibraryManager):
+                libraries = LibraryManager(libraries)
 
-        else:
-            unikraft_manifest = ctx.obj.cache.find_item_by_name(
-                type="core", name="unikraft"
+            networks = kwargs.get("networks", dict())
+            if not isinstance(networks, NetworkManager):
+                networks = NetworkManager(networks)
+
+            volumes = kwargs.get("volumes", dict())
+            if not isinstance(volumes, VolumeManager):
+                volumes = VolumeManager(volumes)
+
+            self._config = Config(
+                name=kwargs.get('name', None),
+                arguments=kwargs.get("arguments", None),
+                before=kwargs.get("before", None),
+                after=kwargs.get("after", None),
+                unikraft=unikraft,
+                targets=targets,
+                libraries=libraries,
+                volumes=volumes,
+                networks=networks,
             )
-
-        if unikraft_manifest is not None:
-            self._core = Unikraft(
-                name="unikraft",
-                config=unikraft_config,
-                manifest=unikraft_manifest,
-                workdir=self.localdir,
-                ignore_version=ignore_version
-            )
-
-        # Deal with other component types: {arch, plat, lib}
-        for _, type in ComponentType.__members__.items():
-            # Skip application-types or components with no manager
-            if type.cls == self.__class__ or type.manager_cls is None:
-                continue
-
-            config = dict()
-            components = None
-
-            if self._config is None:
-                config = kwargs.get(type.plural, dict())
-
-            elif isinstance(self._config, Config):
-                config = getattr(self._config, type.plural)
-
-            if isinstance(config, type.manager_cls):
-                components = config
-
-            if isinstance(config, str):
-                config = {config: True}
-
-            elif isinstance(config, list):
-                _config = dict()
-                for c in config:
-                    _config[c] = True
-                config = _config
-
-            if isinstance(config, dict):
-                components = type.manager_cls([])
-                for component in config.keys():
-                    manifest = ctx.obj.cache.find_item_by_name(
-                        type=type.shortname, name=component
-                    )
-
-                    if manifest is None and type == ComponentType.ARCH and \
-                            component in UK_CORE_ARCHS and \
-                            config[component] is not False:
-                        components.add(InternalArchitecture(
-                            core=self._core,
-                            name=component,
-                            config=config[component],
-                            workdir=self.localdir
-                        ))
-
-                    elif manifest is None and type == ComponentType.PLAT and \
-                            component in UK_CORE_PLATS and \
-                            config[component] is not False:
-                        components.add(InternalPlatform(
-                            core=self._core,
-                            name=component,
-                            config=config[component],
-                            workdir=self.localdir
-                        ))
-
-                    elif manifest is None:
-                        source = None
-                        if isinstance(config[component], dict):
-                            source = config[component].get("source", None)
-
-                        if source is None:
-                            logger.warn("Unknown component: %s" % component)
-                            continue
-
-                        # Synchronously attempt to find the component
-                        manifest = kraft_update_from_source(source)
-                        if manifest is None:
-                            logger.warn(
-                                "Could not locate component %s from source: %s"
-                                % (component, source))
-
-                        elif len(manifest.items()) == 0 or \
-                                manifest.get_item(component) is None:
-                            logger.warn(
-                                "Could not identify component %s at source: %s"
-                                % (component, source))
-
-                        else:
-                            manifest = manifest.get_item(component)
-
-                    if manifest is not None:
-                        logger.debug("Adding component to app: %s" % manifest)
-                        components.add(type.cls(
-                            name=component,
-                            config=config[component],
-                            manifest=manifest,
-                            workdir=self.localdir
-                        ))
-
-            if components is not None:
-                setattr(self, "_%s" % type.plural, components)
 
         # Check the integrity of the application
-        if self._core is None:
+        if self.config.unikraft is None:
             raise MissingComponent("unikraft")
 
         if self._config is None:
