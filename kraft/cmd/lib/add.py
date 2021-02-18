@@ -93,10 +93,10 @@ def cmd_lib_add(ctx, workdir=None, lib=None, dumps_local=False):
             sys.exit(1)
 
     except Exception as e:
-        logger.critical(str(e))
-
         if ctx.obj.verbose:
             import traceback
             logger.critical(traceback.format_exc())
+        else:
+            logger.critical(str(e))
 
         sys.exit(1)
