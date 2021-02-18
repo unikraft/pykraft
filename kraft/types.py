@@ -145,10 +145,6 @@ def break_component_naming_format(name=None):
         else:
             _name = "-".join(name_parts[1:])
 
-    if name == "unikraft":
-        _type = ComponentType.CORE
-        _name = "unikraft"
-
     if _name is None:
         _name = name
 
@@ -156,5 +152,8 @@ def break_component_naming_format(name=None):
         _name, _eq, _version = ManifestVersionEquality.split(_name)
     except UnknownVersionFormatError:
         pass
+
+    if _name == "unikraft":
+        _type = ComponentType.CORE
 
     return (_type, _name, _eq, _version)
