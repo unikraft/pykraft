@@ -175,6 +175,12 @@ def interpolate_environment_variables(version, config, section, environment):
 
     if isinstance(config, dict):
         return config
+
+    elif isinstance(config, list):
+        return list(
+            process_item(None, item) for item in config
+        )
+
     else:
         return dict(
             (name, process_item(name, config_dict or {}))

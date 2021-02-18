@@ -75,7 +75,7 @@ def validate_top_level_string(config_file, config, section):
 
 
 def validate_top_level_string_or_list(config_file, config, section):
-    if not isinstance(config, (six.string_types, list)):
+    if not isinstance(config, (six.string_types, list)) or config is None:
         raise KraftError(
             "Top level object in '{}' needs to be a string or array  not '{}'.".format(
                 config_file.filename,
@@ -86,6 +86,16 @@ def validate_top_level_string_or_list(config_file, config, section):
 
 def validate_unikraft_section(config_file, config):
     if not isinstance(config, (six.string_types, dict, int, float)):
+        raise KraftError(
+            "Top level object in '{}' needs to be an object not '{}'.".format(
+                config_file.filename,
+                type(config)))
+
+    return config
+
+
+def validate_targets_section(config_file, config):
+    if not isinstance(config, list):
         raise KraftError(
             "Top level object in '{}' needs to be an object not '{}'.".format(
                 config_file.filename,
@@ -131,7 +141,7 @@ def validate_component_section(filename, config, section):
             config[key] = True
 
         if not isinstance(value, (
-                    six.string_types, dict, bool, int, float
+                    six.string_types, dict, bool, int, float, list
                 )):
             raise KraftError(
                 "In file '{filename}', {section} '{name}' must be a mapping not "
@@ -277,7 +287,7 @@ def handle_generic_error(error, path):
 
     elif error.validator == 'required':
         error_msg = ", ".join(error.validator_value)
-        msg_format = "{path} is invalid, {msg} is required."
+        msg_format = "{path} is invalid: {msg} is required."
 
     elif error.validator == 'dependencies':
         config_key = list(error.validator_value.keys())[0]
