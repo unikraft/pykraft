@@ -34,7 +34,6 @@ from __future__ import unicode_literals
 
 import click
 
-from .runner import Runner
 from kraft.component import Component
 from kraft.component import ComponentManager
 from kraft.const import UK_CORE_PLAT_DIR
