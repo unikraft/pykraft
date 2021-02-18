@@ -44,15 +44,6 @@ DEFAULT_NETWORK_BRIDGE_DRIVER = "brctl"
 
 class Network(object):
     _name = None
-    _ip = None
-    _mac = None
-    _gateway = None
-    _driver = None
-    # _type = None
-    _driver = None
-    _bridge_name = None
-    _pre_up = []
-    _post_down = []
 
     @property
     def name(self):
@@ -63,12 +54,16 @@ class Network(object):
         """
         return self._name
 
+    _ip = None
+
     @property
     def ip(self):
         """
         The desired IP address for the unikraft application on this network.
         """
         return self._ip
+
+    _mac = None
 
     @property
     def mac(self):
@@ -77,11 +72,15 @@ class Network(object):
         """
         return self._mac
 
+    _gateway = None
+
     @property
     def gateway(self):
         """The gateway IP address for this network.
         """
         return self._gateway
+
+    _driver = None
 
     @property
     def driver(self):
@@ -94,75 +93,69 @@ class Network(object):
         """
         return self._driver
 
-    # @property
-    # def type(self):
-    #     """The network type represents the internal unikraft supported network
-    #     stack.
-    #     """
-    #     return self._type
+    _bridge = None
 
     @property
-    def bridge_name(self):
+    def bridge(self):
         """
         The desired name of the bridge for this network.
         """
-        return self._bridge_name
+        return self._bridge
+
+    _before = []
 
     @property
-    def pre_up(self):
+    def before(self):
         """
         This is the user-defined script which is called before the networking
         stack is instantiated and is used to configure the network on behalf of
         the unikernel where internal support is insufficient.
         """
-        return self._pre_up
+        return self._before
 
-    def append_pre_up(self, cmds=None):
+    def append_before(self, cmds=None):
         if isinstance(cmds, six.string_types):
-            self._pre_up.extend([cmds])
+            self._before.extend([cmds])
 
         elif isinstance(cmds, list):
-            self._pre_up.extend(cmds)
+            self._before.extend(cmds)
+
+    _after = []
 
     @property
-    def post_down(self):
+    def after(self):
         """
         The is the user-defined script which is called after the networking
         stack is destructed on the exit of a unikraft unikernel and is used to
         clean up networking artifacts (bridges, vifs, leases, etc.).
         """
-        return self._post_down
+        return self._after
 
-    def append_post_down(self, cmds=[]):
+    def append_after(self, cmds=[]):
         if isinstance(cmds, six.string_types):
-            self._post_down.append(cmds)
+            self._after.append(cmds)
 
         elif isinstance(cmds, list):
-            self._post_down.extend(cmds)
+            self._after.extend(cmds)
 
-    def __init__(self,
-                 name,
-                 ip,
-                 mac,
-                 gateway,
-                 driver,
-                 bridge_name,
-                 pre_up,
-                 post_down):
-        self._name = name
-        self._ip = ip
-        self._mac = mac
-        self._gateway = gateway
-        self._driver = driver
-        self._bridge_name = bridge_name
+    def __init__(self, *args, **kwargs):
+        self._name = kwargs.get("name", None)
+        self._ip = kwargs.get("ip", None)
+        self._mac = kwargs.get("mac", None)
+        self._gateway = kwargs.get("gateway", None)
+        self._driver = kwargs.get("driver", None)
+        self._bridge = kwargs.get("bridge", None)
 
-        if isinstance(pre_up, six.string_types):
-            pre_up = [pre_up]
-        if isinstance(post_down, six.string_types):
-            post_down = [post_down]
+        before = kwargs.get("before", None)
+        after = kwargs.get("after", None)
 
-        self._pre_up = pre_up
-        self._post_down = post_down
+        if isinstance(before, six.string_types):
+            before = [before]
+        if isinstance(after, six.string_types):
+            after = [after]
+
+        self._before = before
+        self._after = after
 
     @classmethod  # noqa: C901
     def from_config(cls, name=None, config={}):
@@ -171,9 +164,9 @@ class Network(object):
         mac = None
         gateway = None
         driver = DEFAULT_NETWORK_BRIDGE_DRIVER
-        bridge_name = None
-        pre_up = []
-        post_down = []
+        bridge = None
+        before = []
+        after = []
 
         if not isinstance(config, bool):
             if 'name' in config:
@@ -196,14 +189,14 @@ class Network(object):
                     member.name for _, member in NetworkDriverTypes.__members__.items()]:
                 driver = config['driver']
 
-            if 'bridge_name' in config:
-                bridge_name = config['bridge_name']
+            if 'bridge' in config:
+                bridge = config['bridge']
 
-            if 'pre_up' in config:
-                pre_up = config['pre_up']
+            if 'before' in config:
+                before = config['before']
 
-            if 'post_down' in config:
-                post_down = config['post_down']
+            if 'after' in config:
+                after = config['after']
 
         # Instantiate the driver
         for driver_name, member in NetworkDriverTypes.__members__.items():
@@ -217,8 +210,8 @@ class Network(object):
                 )
                 break
 
-        if bridge_name is None:
-            bridge_name = name
+        if bridge is None:
+            bridge = name
 
         return cls(
             name=name,
@@ -226,31 +219,54 @@ class Network(object):
             mac=mac,
             gateway=gateway,
             driver=driver,
-            bridge_name=bridge_name,
-            pre_up=pre_up,
-            post_down=post_down,
+            bridge=bridge,
+            before=before,
+            after=after,
         )
 
     def __str__(self):
-        text = "name:        %s\n" % self.name \
-             + "pre_up:      %s\n" % (' '.join(self.pre_up)) \
-             + "driver:      %s\n" % self.driver.type.name \
-             + "bridge_name: %s\n" % self.bridge_name
+        text = "name:   %s\n" % self.name \
+             + "before: %s\n" % (' '.join(self.before)) \
+             + "driver: %s\n" % self.driver.type.name \
+             + "bridge: %s\n" % self.bridge
 
         return text
 
     def repr(self):
-        return {
-            'pre_up': self.pre_up,
-            'post_down': self.post_down
-        }
+        config = {}
+        if self.ip is not None:
+            config['ip'] = self.ip
+        if self.mac is not None:
+            config['mac'] = self.mac
+        if self.gateway is not None:
+            config['gateway'] = self.gateway
+        if self.driver is not None:
+            config['driver'] = self.driver
+        if self.bridge is not None:
+            config['bridge'] = self.bridge
+        if self.before is not None:
+            config['before'] = self.before
+        if self.after is not None:
+            config['after'] = self.after
+        return config
 
 
 class NetworkManager(object):
     _networks = []
 
     def __init__(self, network_base=[]):
-        self._networks = network_base or []
+        self._networks = []
+
+        if isinstance(network_base, dict):
+            for network in network_base.keys():
+                self.add(Network(
+                    name=network,
+                    **network_base[network]
+                ))
+
+        elif isinstance(network_base, list):
+            for network in network_base:
+                self.add(network)
 
     def add(self, network):
         if isinstance(network, Network):
@@ -262,6 +278,9 @@ class NetworkManager(object):
                     break
 
             self._networks.append(network)
+
+        elif isinstance(network, dict):
+            self._networks.add(Network(**network))
 
         elif isinstance(network, NetworkManager):
             for net in network.all():
