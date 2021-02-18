@@ -78,6 +78,9 @@ class Component(object):
 
         return self._version
 
+    @version.setter
+    def version(self, version): self._version = version
+
     _origin = None
 
     @property
