@@ -649,7 +649,7 @@ def maniest_from_name(ctx, name=None):
         for _, component in manifest.items():
             if (type is None or \
                     (type is not None \
-                        and type.shortname == component.type)) \
+                        and type == component.type)) \
                     and component.name == name:
                 components.append(component)
 
