@@ -33,7 +33,8 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from .component import Component
+from .types import ComponentType
 
 
 class Unikraft(Component):
-    pass
+    _type = ComponentType.CORE

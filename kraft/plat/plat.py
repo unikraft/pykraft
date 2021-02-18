@@ -39,9 +39,12 @@ from kraft.component import Component
 from kraft.component import ComponentManager
 from kraft.const import UK_CORE_PLAT_DIR
 from kraft.error import DisabledComponentError
+from kraft.types import ComponentType
 
 
 class Platform(Component):
+    _type = ComponentType.PLAT
+
     _runner = None
     @property
     def runner(self): return self._runner

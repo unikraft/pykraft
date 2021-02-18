@@ -65,6 +65,7 @@ from kraft.logger import logger
 from kraft.template import delete_template_resources_of_disabled_features
 from kraft.template import get_template_config
 from kraft.template import get_templates_path
+from kraft.types import ComponentType
 from kraft.util import make_list_vars
 
 
@@ -126,6 +127,7 @@ def intrusively_determine_lib_origin_version(localdir=None):
 
 class Library(Component):
     _origin_url = None
+    _type = ComponentType.LIB
 
     @property
     def origin_url(self):

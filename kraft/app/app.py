@@ -70,6 +70,8 @@ from kraft.unikraft import Unikraft
 
 
 class Application(Component):
+    _type = ComponentType.APP
+
     _config = None
     @property
     def config(self): return self._config

@@ -46,10 +46,11 @@ from kraft.const import KCONFIG_Y
 from kraft.const import UK_CORE_ARCH_DIR
 from kraft.error import DisabledComponentError
 from kraft.logger import logger
+from kraft.types import ComponentType
 
 
 class Architecture(Component):
-    pass
+    _type = ComponentType.ARCH
 
 
 class InternalArchitecture(Architecture):
