@@ -31,15 +31,13 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import io
+
 import six
-import yaml
+from ruamel.yaml import YAML
 
 from kraft.config import Config
-from kraft.config.types import ArchitectureConfig
-from kraft.config.types import LibraryConfig
-from kraft.config.types import PlatformConfig
-from kraft.config.types import RunnerConfig
-from kraft.config.version import SpecificationVersion
+from kraft.manifest import ManifestItemVersion
 
 
 def serialize_config_type(dumper, data):
@@ -71,26 +69,29 @@ def serialize_string_escape_dollar(dumper, data):
     return serialize_string(dumper, data)
 
 
-yaml.SafeDumper.add_representer(Config, serialize_dict_type)
-yaml.SafeDumper.add_representer(SpecificationVersion, serialize_config_type)
-yaml.SafeDumper.add_representer(ArchitectureConfig, serialize_dict_type)
-yaml.SafeDumper.add_representer(PlatformConfig, serialize_dict_type)
-yaml.SafeDumper.add_representer(LibraryConfig, serialize_dict_type)
-yaml.SafeDumper.add_representer(RunnerConfig, serialize_dict_type)
+def serialize_config(config, escape_dollar=False, original=None):
+    yaml = YAML(typ='rt')
 
-
-def serialize_config(config, escape_dollar=False):
     if escape_dollar:
-        yaml.SafeDumper.add_representer(str, serialize_string_escape_dollar)
-        yaml.SafeDumper.add_representer(six.text_type, serialize_string_escape_dollar)
+        yaml.representer.add_representer(str, serialize_string_escape_dollar)
+        yaml.representer.add_representer(six.text_type, serialize_string_escape_dollar)
     else:
-        yaml.SafeDumper.add_representer(str, serialize_string)
-        yaml.SafeDumper.add_representer(six.text_type, serialize_string)
-    return yaml.safe_dump(
+        yaml.representer.add_representer(str, serialize_string)
+        yaml.representer.add_representer(six.text_type, serialize_string)
+
+    yaml.representer.add_representer(Config, serialize_dict_type)
+    yaml.representer.add_representer(ManifestItemVersion, serialize_dict_type)
+
+    yaml.default_flow_style = False
+    yaml.sort_keys = False
+    yaml.preserve_quotes = True
+    yaml.explicit_start = True
+    yaml.sort_base_mapping_type_on_output = False
+    yaml.indent(mapping=2, sequence=4, offset=2)
+
+    ret = io.StringIO("")
+    yaml.dump(
         config,
-        default_flow_style=False,
-        indent=2,
-        width=80,
-        allow_unicode=True,
-        sort_keys=False
+        ret
     )
+    return ret.getvalue()
