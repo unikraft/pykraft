@@ -57,7 +57,7 @@ def kraft_lib_add(ctx, workdir=None, lib=None):
                 return False
         return True
 
-    app = Application.from_workdir(workdir)
+    app = Application.from_workdir(workdir, force_init=True)
     return app.add_lib(lib)
 
 
