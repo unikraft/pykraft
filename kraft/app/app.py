@@ -38,7 +38,6 @@ import tempfile
 from pathlib import Path
 
 import click
-import dpath.util as dpath_util
 import six
 
 import kraft.util as util
@@ -427,60 +426,18 @@ class Application(Component):
             self.make("clean")
 
     def repr(self):
-        config = {
-            'name': self.name,
-            'unikraft': self.core.repr()
-        }
-
-        if self.config is None or not isinstance(self.config, Config):
-            config['specification'] = SpecificationVersion(
-                KRAFT_SPEC_LATEST
-            )
-        else:
-            config['specification'] = self.config.specification
-
-        for arch in self.architectures.all():
-            dpath_util.new(
-                config,
-                'architectures/%s' % arch.name,
-                arch.repr()
-            )
-
-        for plat in self.platforms.all():
-            dpath_util.new(
-                config,
-                'platforms/%s' % plat.name,
-                plat.repr()
-            )
-
-        for lib in self.libraries.all():
-            dpath_util.new(
-                config,
-                'libraries/%s' % lib.name,
-                lib.repr()
-            )
-
-        if "libraries" not in config:
-            config["libraries"] = {}
-
-        if self.runner is not None:
-            config['runner'] = self.runner.repr()
-        else:
-            config['runner'] = {}
-
-        return Config(**config)
-
-    def to_yaml(self):
-        """
-        Return a YAML with the serialized string of this object.
-        """
-        return serialize_config(self.repr())
+        return self.config
 
     def save_yaml(self, file=None):
         if file is None:
             file = os.path.join(self.localdir, SUPPORTED_FILENAMES[0])
 
+        yaml = serialize_config(
+            self.repr(),
+            original=file
+        )
+
         logger.debug("Saving: %s" % file)
+
         with open(file, 'w+') as f:
-            yaml = self.to_yaml()
             f.write(yaml)
