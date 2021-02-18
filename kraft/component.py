@@ -320,3 +320,10 @@ class ComponentManager(object):
             if component.name == name:
                 return component
         return None
+
+    def repr(self):
+        ret = {}
+        for k in self.all():
+            ret[k.name] = k.repr()
+
+        return ret
