@@ -88,7 +88,7 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
     if not os.path.exists(unikernel):
         raise KraftError('Could not find unikernel: %s' % unikernel)
 
-    runner = target_platform.runner()
+    runner = target_platform.runner
     runner.use_debug = dbg
     runner.architecture = target_architecture.name
 

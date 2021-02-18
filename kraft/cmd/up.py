@@ -63,11 +63,6 @@ from kraft.logger import logger
     required=True
 )
 @click.option(
-    '--version', '-v', 'template_app_version',
-    help='The version to use from the template application.',
-    metavar="VERSION"
-)
-@click.option(
     '--plat', '-p', 'plat',
     help='Target platform.',
 )
@@ -151,7 +146,7 @@ def cmd_up(ctx, workdir=None, name=None, plat=None, arch=None, initrd=None,
            background=False, paused=False, gdb=4123, dbg=False, virtio_nic=None,
            bridge=None, interface=None, dry_run=False, memory=64, cpu_sockets=1,
            cpu_cores=1, force=False, fast=False, create_makefile=False,
-           template_app=None, template_app_version=None):
+           template_app=None):
     """
     Configures, builds and runs an application for a selected architecture and
     platform.
@@ -205,7 +200,6 @@ def cmd_up(ctx, workdir=None, name=None, plat=None, arch=None, initrd=None,
             plat=plat,
             arch=arch,
             template_app=template_app,
-            template_app_version=template_app_version,
             create_makefile=create_makefile,
             force_init=force
         )
