@@ -321,6 +321,10 @@ class ComponentManager(object):
                 return component
         return None
 
+    def set(self, k, v):
+        if k is not None:
+            self._components[k] = v
+
     def repr(self):
         ret = {}
         for k in self.all():
