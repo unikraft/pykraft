@@ -55,6 +55,11 @@ from kraft.logger import logger
     metavar="PLAT"
 )
 @click.option(
+    '--target', '-t', 'target',
+    help='Target name.',
+    metavar='TARGET'
+)
+@click.option(
     '--arch', '-m', 'arch',
     help='Target architecture.',
     metavar="ARCH"
@@ -90,7 +95,7 @@ from kraft.logger import logger
     help='Set an option\'s value.'
 )
 @click.pass_context
-def cmd_configure(ctx, plat=None, arch=None, force_configure=False,
+def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
                   show_menuconfig=False, workdir=None, yes=[], no=[], opts=[]):
     """
     Configure the unikernel using the KConfig options set in the kraft.yaml
@@ -130,6 +135,7 @@ def cmd_configure(ctx, plat=None, arch=None, force_configure=False,
         kraft_configure(
             env=ctx.obj.env,
             workdir=workdir,
+            target=target,
             plat=plat,
             arch=arch,
             force_configure=force_configure,
@@ -148,8 +154,9 @@ def cmd_configure(ctx, plat=None, arch=None, force_configure=False,
 
 
 @click.pass_context
-def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
-                    force_configure=False, show_menuconfig=False, options=[]):
+def kraft_configure(ctx, env=None, workdir=None, target=None, plat=None,
+                    arch=None, force_configure=False, show_menuconfig=False,
+                    options=[]):
     """
     Populates the local .config with the default values for the target
     application.
@@ -175,6 +182,7 @@ def kraft_configure(ctx, env=None, workdir=None, plat=None, arch=None,
             raise CannotConfigureApplication(workdir)
 
     app.configure(
+        target=target,
         arch=arch,
         plat=plat,
         options=options,
