@@ -203,3 +203,5 @@ def kraft_configure(ctx, env=None, workdir=None, target=None, plat=None,
         options=options,
         force_configure=force_configure,
     )
+
+    app.save_yaml()
