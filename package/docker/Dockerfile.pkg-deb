@@ -83,6 +83,7 @@ RUN set -xe; \
       debhelper \
       python-setuptools \
       python3-setuptools \
+      python3-dev \
       libncursesw5-dev \
       libyaml-dev \
       flex \
