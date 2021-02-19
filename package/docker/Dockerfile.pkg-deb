@@ -52,7 +52,7 @@ RUN set -xe; \
       trusty) \
         apt-get install -y \
           python3.5; \
-        update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.5 1; \
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.5 1; \
           ;; \
       sid|focal) \
         apt-get install -y \
@@ -81,7 +81,6 @@ RUN set -xe; \
       dh-python \
       devscripts \
       debhelper \
-      python3-pip \
       python-setuptools \
       python3-setuptools \
       libncursesw5-dev \
@@ -95,7 +94,14 @@ RUN set -xe; \
       gawk \
       bison \
       uuid-runtime; \
-    pip install --upgrade --force-reinstall pip==9.0.3; \
+    case ${RELEASE} in \
+      focal) \
+        pip install --upgrade --force-reinstall pip==9.0.3; \
+        ;; \
+      *) \
+        python -m pip install --upgrade --force-reinstall pip==9.0.3; \
+        ;; \
+    esac; \
     pip install -r /tmp/requirements-dev.txt; \
     pip install -r /tmp/requirements-pkg-deb.txt; \
     git clone https://github.com/spotify/dh-virtualenv.git /tmp/dh-virtualenv; \
