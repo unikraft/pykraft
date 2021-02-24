@@ -164,17 +164,19 @@ def interpolate_value(name, config_key, value, section, interpolator):
 
 
 def interpolate_environment_variables(version, config, section, environment):
-
     interpolator = Interpolator(TemplateWithDefaults, environment)
 
     def process_item(name, config_dict):
+        if isinstance(config_dict, six.string_types):
+            return interpolator.interpolate(config_dict)
+
         return dict(
             (key, interpolate_value(name, key, val, section, interpolator))
             for key, val in (config_dict or {}).items()
         )
 
-    if isinstance(config, dict):
-        return config
+    if isinstance(config, six.string_types):
+        return interpolator.interpolate(config)
 
     elif isinstance(config, list):
         return list(
