@@ -24,7 +24,7 @@ run:
       DIRTY= \
       DOCKER= \
       make get-version > dist/version
-      
+
       PKG_VENDOR=((vendor)) \
       PKG_DISTRIBUTION=((distribution)) \
       APP_VERSION=$(cat dist/version) \
