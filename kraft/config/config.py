@@ -600,7 +600,12 @@ def load_config(config_details):
         config_details.working_dir
     )
 
-    core = Unikraft(**unikraft)
+    if isinstance(unikraft, six.string_types):
+        core = Unikraft(
+            version=unikraft
+        )
+    else:
+        core = Unikraft(**unikraft)
 
     return Config(
         specification=main_file.version,
