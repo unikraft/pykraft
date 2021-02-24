@@ -273,23 +273,30 @@ class Application(Component):
 
         archs = list()
         plats = list()
-        
-        if target is not None:
-            archs.append(target.architecture)
-            plats.append(target.platform)
+
+        def match_arch(arch, target):
+            if isinstance(arch, six.string_types) and \
+                    arch == target.architecture.name:
+                return target.architecture
+            if isinstance(arch, Architecture) and \
+                    arch.name == target.architecture.name:
+                return arch
+            return None
+
+        def match_plat(plat, target):
+            if isinstance(plat, six.string_types) and \
+                    plat == target.platform.name:
+                return target.platform
+            if isinstance(plat, Platform) and \
+                    plat.name == target.platform.name:
+                return plat
+            return None
 
         for target in self.config.targets.all():
-            if isinstance(arch, str):
-                if arch == target.architecture.name:
-                    archs.append(target.architecture)
-            elif isinstance(arch, Architecture):
-                archs.append(arch)
-
-            if isinstance(plat, str):
-                if plat == target.platform.name:
-                    plats.append(target.platform)
-            elif isinstance(plat, Platform):
-                plats.append(plat)
+            if match_arch(arch, target) is not None \
+                    and match_plat(plat, target) is not None:
+                archs.append(target.architecture)
+                plats.append(target.platform)
 
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.
