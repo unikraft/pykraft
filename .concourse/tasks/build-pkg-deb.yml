@@ -7,6 +7,9 @@ image_resource:
     repository: unikraft/pkg-deb
     tag: ((tag))
 
+params:
+  DIRTY:
+
 inputs:
   - name: kraft
     path: .
@@ -21,7 +24,7 @@ run:
     - |
       PKG_VENDOR=((vendor)) \
       PKG_DISTRIBUTION=((distribution)) \
-      DIRTY= \
+      DIRTY=$DIRTY \
       DOCKER= \
       make get-version > dist/version
 
