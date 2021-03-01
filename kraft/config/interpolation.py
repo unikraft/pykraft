@@ -170,24 +170,36 @@ def interpolate_environment_variables(version, config, section, environment):
         if isinstance(config_dict, six.string_types):
             return interpolator.interpolate(config_dict)
 
-        return dict(
-            (key, interpolate_value(name, key, val, section, interpolator))
-            for key, val in (config_dict or {}).items()
-        )
+        elif isinstance(config_dict, list):
+            return list(
+                interpolator.interpolate(val)
+                for val in config_dict
+            )
+
+        elif isinstance(config_dict, dict):
+            return dict(
+                (key, interpolate_value(name, key, val, section, interpolator))
+                for key, val in (config_dict or {}).items()
+            )
+        
+        return config_dict
 
     if isinstance(config, six.string_types):
         return interpolator.interpolate(config)
 
     elif isinstance(config, list):
         return list(
-            process_item(None, item) for item in config
+            process_item(None, config_dict or {})
+            for config_dict in config
         )
 
-    else:
+    elif isinstance(config, dict):
         return dict(
             (name, process_item(name, config_dict or {}))
             for name, config_dict in config.items()
         )
+
+    return config
 
 
 class ConversionMap(object):
