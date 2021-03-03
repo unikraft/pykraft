@@ -101,6 +101,8 @@ COPY kraft/.kraftrc                     /root/.kraftrc
 
 WORKDIR /usr/src/unikraft/apps/app
 ENV UK_WORKDIR /usr/src/unikraft
+ENV UK_CACHEDIR /usr/src/unikraft/.kraftcache
+ENV KRAFTRC /usr/src/unikraft/.kraftrc
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
