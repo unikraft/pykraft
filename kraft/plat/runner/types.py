@@ -51,3 +51,14 @@ class RunnerTypes(Enum):
     @property
     def cls(self):
         return self.value[1]
+
+
+def str_to_runner(name=None):
+    if name is None:
+        return None
+
+    for r in RunnerTypes.__members__.values():
+        if name == r.name:
+            return r
+
+    return None

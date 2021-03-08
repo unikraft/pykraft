@@ -51,6 +51,8 @@ from kraft.config.serialize import serialize_config
 from kraft.const import DOT_CONFIG
 from kraft.const import MAKEFILE_UK
 from kraft.const import SUPPORTED_FILENAMES
+from kraft.const import UNIKRAFT_BUILDDIR
+from kraft.error import KraftError
 from kraft.error import KraftFileNotFound
 from kraft.error import MissingComponent
 from kraft.lib import Library
@@ -121,6 +123,13 @@ class Application(Component):
         # Check the integrity of the application
         if self.config.unikraft is None:
             raise MissingComponent("unikraft")
+
+        # Initialize the location of the known binaries
+        for target in self.config.targets.all():
+            binname = target.binary_name(self.config.name)
+            binary = os.path.join(self.localdir, UNIKRAFT_BUILDDIR, binname)
+            if binname is not None and os.path.exists(binary):
+                target.binary = binary
 
         if self._config is None:
             self._config = dict()
@@ -421,6 +430,58 @@ class Application(Component):
         if len(filenames) == 0 or force_create:
             self.save_yaml()
 
+    def run(self, target=None, initrd=None, background=False,  # noqa: C901
+            paused=False, gdb=4123, dbg=False, virtio_nic=None, bridge=None,
+            interface=None, dry_run=False, args=None, memory=64, cpu_sockets=1,
+            cpu_cores=1):
+
+        if target is None:
+            raise KraftError('Target not set')
+
+        elif target.binary is None:
+            raise KraftError('Target has not been compiled')
+
+        elif not os.path.exists(target.binary):
+            raise KraftError('Could not find unikernel: %s' % target.binary)
+
+        logger.debug("Running binary: %s" % target.binary)
+
+        runner = target.platform.runner
+        runner.use_debug = dbg
+        runner.architecture = target.architecture.name
+
+        if initrd:
+            runner.add_initrd(initrd)
+
+        if virtio_nic:
+            runner.add_virtio_nic(virtio_nic)
+
+        if bridge:
+            runner.add_bridge(bridge)
+
+        if interface:
+            runner.add_interface(interface)
+
+        if gdb:
+            runner.open_gdb(gdb)
+
+        if memory:
+            runner.set_memory(memory)
+
+        if cpu_sockets:
+            runner.set_cpu_sockets(cpu_sockets)
+
+        if cpu_cores:
+            runner.set_cpu_cores(cpu_cores)
+
+        runner.unikernel = target.binary
+        runner.execute(
+            extra_args=args,
+            background=background,
+            paused=paused,
+            dry_run=dry_run,
+        )
+
     def clean(self, proper=False):
         """
         Clean the application.
@@ -431,6 +492,16 @@ class Application(Component):
 
         else:
             self.make("clean")
+
+    @property
+    def binaries(self):
+        binaries = []
+
+        for target in self.config.targets.all():
+            if target.binary is not None:
+                binaries.append(target)
+
+        return binaries
 
     def repr(self):
         return self.config

@@ -38,6 +38,8 @@ from kraft.arch import InternalArchitecture
 from kraft.component import ComponentManager
 from kraft.const import UK_CORE_ARCHS
 from kraft.const import UK_CORE_PLATS
+from kraft.const import UNIKERNEL_IMAGE_FORMAT
+from kraft.const import UNIKERNEL_IMAGE_FORMAT_DBG
 from kraft.plat import InternalPlatform
 from kraft.plat import Platform
 
@@ -62,6 +64,20 @@ class Target(object):
     _platform = None
     @property
     def platform(self): return self._platform
+
+    _binary = None
+    @property
+    def binary(self): return self._binary
+
+    @property
+    def binary_debug(self):
+        if self._binary is not None:
+            return UNIKERNEL_IMAGE_FORMAT_DBG % self._binary
+        return None
+
+    @binary.setter
+    def binary(self, binary=None):
+        self._binary = binary
 
     def __init__(self, *args, **kwargs):
         self._config = kwargs
@@ -97,6 +113,18 @@ class Target(object):
                 self._platform = Platform(
                     name=plat
                 )
+
+    def binary_name(self, appname=None, debug=False):
+        if appname is None:
+            return None
+
+        binary = UNIKERNEL_IMAGE_FORMAT % (
+            appname,
+            self.platform.name,
+            self.architecture.name
+        )
+
+        return binary
 
     def repr(self):
         ret = {}

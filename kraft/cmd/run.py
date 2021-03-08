@@ -36,15 +36,14 @@ import os
 import sys
 
 import click
+import inquirer
 
 from kraft.app import Application
-from kraft.const import UNIKERNEL_IMAGE_FORMAT
-from kraft.error import KraftError
 from kraft.logger import logger
 
 
 @click.pass_context # noqa
-def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
+def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
               background=False, paused=False, gdb=4123, dbg=False,
               virtio_nic=None, bridge=None, interface=None, dry_run=False,
               args=None, memory=64, cpu_sockets=1, cpu_cores=1):
@@ -54,78 +53,74 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 
     app = Application.from_workdir(appdir)
 
-    target_architecture = None
+    if len(app.config.targets.all()) == 1:
+        target = app.config.targets.all()[0]
 
-    if len(app.architectures.all()) == 1:
-        target_architecture = app.architectures.all()[0]
+    elif len(app.binaries) == 1:
+        target = app.binaries[0]
+
     else:
-        for uk_architecture in app.architectures.all():
-            if arch == uk_architecture.name:
-                target_architecture = uk_architecture
+        for t in app.config.targets.all():
+            # Did the user specific a target-name?
+            if target is not None and target == t.name:
+                target = t
+                break
 
-    if target_architecture is None:
-        raise KraftError('Application architecture not configured or set')
+            # Did the user specify arch AND plat combo? Does it exist?
+            elif arch == t.architecture.name \
+                    and plat == t.platform.name:
+                target = t
+                break
 
-    target_platform = None
+    # The user did not specify something
+    if (target is not None or arch is not None or plat is not None) is False:
+        binaries = []
+        for t in app.binaries:
+            binname = os.path.basename(t.binary_debug if dbg is True else t.binary)
+            if t.name is not None:
+                binname = "%s (%s)" % (binname, t.name)
 
-    if len(app.platforms.all()) == 1:
-        target_platform = app.platforms.all()[0]
-    else:
-        for uk_platform in app.platforms.all():
-            if plat == uk_platform.name:
-                target_platform = uk_platform
+            binaries.append(binname)
 
-    if target_platform is None:
-        raise KraftError('Application platform not configured or set')
+        # Prompt user for binary selection
+        answers = inquirer.prompt([
+            inquirer.List(
+                'target',
+                message="Which target would you like to run?",
+                choices=binaries,
+            ),
+        ])
 
-    unikernel = UNIKERNEL_IMAGE_FORMAT % (
-        appdir,
-        app.name,
-        target_platform.name,
-        target_architecture.name
-    )
+        # Work backwards from binary name
+        for t in app.binaries:
+            if answers['target'] == os.path.basename(t.binary):
+                target = t
+                break
 
-    if not os.path.exists(unikernel):
-        raise KraftError('Could not find unikernel: %s' % unikernel)
-
-    runner = target_platform.runner
-    runner.use_debug = dbg
-    runner.architecture = target_architecture.name
-
-    if initrd:
-        runner.add_initrd(initrd)
-
-    if virtio_nic:
-        runner.add_virtio_nic(virtio_nic)
-
-    if bridge:
-        runner.add_bridge(bridge)
-
-    if interface:
-        runner.add_interface(interface)
-
-    if gdb:
-        runner.open_gdb(gdb)
-
-    if memory:
-        runner.set_memory(memory)
-
-    if cpu_sockets:
-        runner.set_cpu_sockets(cpu_sockets)
-
-    if cpu_cores:
-        runner.set_cpu_cores(cpu_cores)
-
-    runner.unikernel = unikernel
-    runner.execute(
-        extra_args=args,
+    app.run(
+        target=target,
+        initrd=initrd,
         background=background,
         paused=paused,
+        gdb=gdb,
+        dbg=dbg,
+        virtio_nic=virtio_nic,
+        bridge=bridge,
+        interface=interface,
         dry_run=dry_run,
+        args=args,
+        memory=memory,
+        cpu_sockets=cpu_sockets,
+        cpu_cores=cpu_cores
     )
 
 
 @click.command('run', short_help='Run the application.')
+@click.option(
+    '--target', '-t', 'target',
+    help='Name of target architecture/platform.',
+    metavar="TARGET"
+)
 @click.option(
     '--plat', '-p', 'plat',
     help='Target platform.',
@@ -154,7 +149,8 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 @click.option(
     '--gdb', '-g', 'gdb',
     help='Run a GDB server for the guest at PORT.',
-    type=int
+    type=int,
+    metavar="PORT"
 )
 @click.option(
     '--dbg', '-d', 'dbg',
@@ -203,10 +199,10 @@ def kraft_run(ctx, appdir=None, plat=None, arch=None, initrd=None,
 )
 @click.argument('args', nargs=-1)
 @click.pass_context
-def cmd_run(ctx, plat=None, arch=None, initrd=None, background=False,
-            paused=False, gdb=4123, dbg=False, virtio_nic=None, bridge=None,
-            interface=None, dry_run=False, args=None, memory=64, cpu_sockets=1,
-            cpu_cores=1, workdir=None):
+def cmd_run(ctx, target=None, plat=None, arch=None, initrd=None,
+            background=False, paused=False, gdb=4123, dbg=False,
+            virtio_nic=None, bridge=None, interface=None, dry_run=False,
+            args=None, memory=64, cpu_sockets=1, cpu_cores=1, workdir=None):
 
     if workdir is None:
         workdir = os.getcwd()
@@ -214,6 +210,7 @@ def cmd_run(ctx, plat=None, arch=None, initrd=None, background=False,
     try:
         kraft_run(
             appdir=workdir,
+            target=target,
             plat=plat,
             arch=arch,
             initrd=initrd,

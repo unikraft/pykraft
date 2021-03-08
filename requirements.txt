@@ -10,6 +10,7 @@ fcache >= 0.4.7
 feedparser >= 5.2.1, < 6
 GitPython >= 3.1.0
 htmllistparse >= 0.5.2
+inquirer >= 2.7.0
 jsonschema >= 2.5.1, < 4
 kconfiglib >= 13.7.1
 memorize.py >= 1.2

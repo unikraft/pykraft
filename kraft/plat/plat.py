@@ -38,6 +38,7 @@ from kraft.component import Component
 from kraft.component import ComponentManager
 from kraft.const import UK_CORE_PLAT_DIR
 from kraft.error import DisabledComponentError
+from kraft.plat.runner import str_to_runner
 from kraft.types import ComponentType
 
 
@@ -51,6 +52,11 @@ class Platform(Component):
     @click.pass_context
     def __init__(ctx, self, *args, **kwargs):
         self._name = kwargs.get("name", None)
+        self._core = kwargs.get("core", None)
+
+        runner = str_to_runner(self.name)
+        if runner is not None:
+            self._runner = runner.cls()
 
 
 class InternalPlatform(Platform):

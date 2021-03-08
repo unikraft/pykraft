@@ -36,4 +36,5 @@ from .kvm import KVMRunner  # noqa: F401
 from .linuxu import LinuxuRunner  # noqa: F401
 from .runner import Runner  # noqa: F401
 from .types import RunnerTypes  # noqa: F401
+from .types import str_to_runner  # noqa: F401
 from .xen import XenRunner  # noqa: F401
