@@ -52,6 +52,9 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
     """
 
     app = Application.from_workdir(appdir)
+    if not app.is_configured():
+        if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
+            app.configure()
 
     if len(app.config.targets.all()) == 1:
         target = app.config.targets.all()[0]
