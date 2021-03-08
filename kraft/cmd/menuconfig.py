@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Authors: Alexander Jung <alexander.jung@neclab.eu>
+# Authors: Alexander Jung <a.jung@lancs.ac.uk>
 #
-# Copyright (c) 2020, NEC Europe Laboratories GmbH., NEC Corporation.
+# Copyright (c) 2021, Lancaster University.
 #                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,22 +29,47 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# flake8: noqa
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .build import cmd_build
-from .clean import cmd_clean
-from .configure import cmd_configure
-from .init import cmd_init
-from .lib import cmd_lib_bump
-from .lib import cmd_lib_init
-from .lib import grp_lib
-from .list import cmd_list
-from .list import cmd_list_add
-from .list import cmd_list_pull
-from .list import cmd_list_remove
-from .list import cmd_list_update
-from .menuconfig import cmd_menuconfig
-from .run import cmd_run
-from .up import cmd_up
+import os
+import sys
+
+import click
+
+from kraft.app import Application
+from kraft.logger import logger
+
+
+@click.command('menuconfig', short_help='Open the KConfig Menu editor')
+@click.option(
+    '--workdir', '-w', 'workdir',
+    help='Specify an alternative directory for the application [default is cwd].',
+    metavar="PATH"
+)
+@click.pass_context
+def cmd_menuconfig(ctx, workdir=None):
+    """
+    Opens the KConfig Menuconfig program for the selected application.
+    """
+
+    if not sys.stdout.isatty():
+        logger.critical("Cannot open menuconfig in non-TTY environment")
+        return
+
+    if workdir is None:
+        workdir = os.getcwd()
+
+    try:
+        app = Application.from_workdir(workdir)
+        app.open_menuconfig()
+        return
+    
+    except Exception as e:
+        logger.critical(str(e))
+
+        if ctx.obj.verbose:
+            import traceback
+            logger.critical(traceback.format_exc())
+
+        sys.exit(1)
