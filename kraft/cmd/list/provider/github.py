@@ -232,6 +232,28 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
             tags = repo.get_tags()
             releases = repo.get_releases()
             did_add_version = False
+
+            if tags.totalCount > 0:
+                for tag in tags:
+                    _version = tag.name
+
+                    # interpret the tag name for symbolic distributions
+                    ref = GIT_UNIKRAFT_TAG_PATTERN.match(tag.name)
+                    if ref is not None:
+                        _version = ref.group(1)
+
+                    did_add_version = True
+                    dist.add_version(ManifestItemVersion(
+                        git_sha=tag.name,
+                        version=_version,
+                        timestamp=repo.pushed_at,
+                        tarball=GITHUB_TARBALL % (
+                            repo.owner.login,
+                            repo.name,
+                            tag.name
+                        ),
+                    ))
+
             if releases.totalCount > 0:
                 for release in releases:
                     # Skip draft releases
@@ -254,27 +276,6 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                             repo.owner.login,
                             repo.name,
                             release.tag_name
-                        ),
-                    ))
-
-            if tags.totalCount > 0:
-                for tag in tags:
-                    _version = tag.name
-
-                    # interpret the tag name for symbolic distributions
-                    ref = GIT_UNIKRAFT_TAG_PATTERN.match(tag.name)
-                    if ref is not None:
-                        _version = ref.group(1)
-
-                    did_add_version = True
-                    dist.add_version(ManifestItemVersion(
-                        git_sha=tag.name,
-                        version=_version,
-                        timestamp=repo.pushed_at,
-                        tarball=GITHUB_TARBALL % (
-                            repo.owner.login,
-                            repo.name,
-                            tag.name
                         ),
                     ))
 
