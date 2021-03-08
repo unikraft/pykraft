@@ -181,7 +181,7 @@ def interpolate_environment_variables(version, config, section, environment):
                 (key, interpolate_value(name, key, val, section, interpolator))
                 for key, val in (config_dict or {}).items()
             )
-        
+
         return config_dict
 
     if isinstance(config, six.string_types):
