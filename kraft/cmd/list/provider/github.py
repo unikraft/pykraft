@@ -231,6 +231,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
 
             tags = repo.get_tags()
             releases = repo.get_releases()
+            did_add_version = False
             if releases.totalCount > 0:
                 for release in releases:
                     # Skip draft releases
@@ -244,6 +245,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                     if ref is not None:
                         _version = ref.group(1)
 
+                    did_add_version = True
                     dist.add_version(ManifestItemVersion(
                         git_sha=release.tag_name,
                         version=_version,
@@ -255,7 +257,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                         ),
                     ))
 
-            elif tags.totalCount > 0:
+            if tags.totalCount > 0:
                 for tag in tags:
                     _version = tag.name
 
@@ -264,6 +266,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                     if ref is not None:
                         _version = ref.group(1)
 
+                    did_add_version = True
                     dist.add_version(ManifestItemVersion(
                         git_sha=tag.name,
                         version=_version,
@@ -275,7 +278,7 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
                         ),
                     ))
 
-            else:
+            if did_add_version is False:
                 dist.add_version(ManifestItemVersion(
                     git_sha=branch.commit.sha,
                     version=branch.commit.sha[:7],
