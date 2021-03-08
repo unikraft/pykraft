@@ -73,7 +73,7 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
                 break
 
     # The user did not specify something
-    if (target is not None or arch is not None or plat is not None) is False:
+    if target is None:
         binaries = []
         for t in app.binaries:
             binname = os.path.basename(t.binary_debug if dbg is True else t.binary)
