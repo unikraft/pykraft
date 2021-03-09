@@ -64,7 +64,7 @@ def cmd_menuconfig(ctx, workdir=None):
         app = Application.from_workdir(workdir)
         app.open_menuconfig()
         return
-    
+
     except Exception as e:
         logger.critical(str(e))
 
