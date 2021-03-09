@@ -301,7 +301,8 @@ class Application(Component):
                 return plat
             return None
 
-        if len(self.config.targets.all()) == 1:
+        if len(self.config.targets.all()) == 1 \
+                and target is None and arch is None and plat is None:
             target = self.config.targets.all()[0]
             archs.append(target.architecture)
             plats.append(target.platform)
