@@ -79,24 +79,34 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
     if target is None:
         binaries = []
         for t in app.binaries:
+            if not os.path.exists(t.binary):
+                continue
+
             binname = os.path.basename(t.binary_debug if dbg is True else t.binary)
             if t.name is not None:
                 binname = "%s (%s)" % (binname, t.name)
 
             binaries.append(binname)
 
+        target_answer = None
+
         # Prompt user for binary selection
-        answers = inquirer.prompt([
-            inquirer.List(
-                'target',
-                message="Which target would you like to run?",
-                choices=binaries,
-            ),
-        ])
+        if len(binaries) > 1:
+            answers = inquirer.prompt([
+                inquirer.List(
+                    'target',
+                    message="Which target would you like to run?",
+                    choices=binaries,
+                ),
+            ])
+            target_answer = answers['target']
+
+        else:
+            target_answer = binaries[0]
 
         # Work backwards from binary name
         for t in app.binaries:
-            if answers['target'] == os.path.basename(t.binary):
+            if target_answer == os.path.basename(t.binary):
                 target = t
                 break
 
