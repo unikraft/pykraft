@@ -164,7 +164,7 @@ def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
         sys.exit(1)
 
 
-@click.pass_context
+@click.pass_context  # noqa: C901
 def kraft_configure(ctx, env=None, workdir=None, target=None, plat=None,
                     arch=None, force_configure=False, show_menuconfig=False,
                     options=[], use_versions=[]):
