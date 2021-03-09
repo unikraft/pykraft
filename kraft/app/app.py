@@ -63,6 +63,7 @@ from kraft.plat import InternalPlatform
 from kraft.plat import Platform
 from kraft.plat.network import NetworkManager
 from kraft.plat.volume import VolumeManager
+from kraft.target import Target
 from kraft.target import TargetManager
 from kraft.types import break_component_naming_format
 from kraft.types import ComponentType
@@ -279,6 +280,10 @@ class Application(Component):
 
         if not self.is_configured():
             self.init()
+
+        if target is not None and isinstance(target, Target):
+            arch = target.architecture
+            plat = target.platform
 
         archs = list()
         plats = list()
