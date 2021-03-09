@@ -313,11 +313,11 @@ class Application(Component):
             plats.append(target.platform)
 
         else:
-            for target in self.config.targets.all():
-                if match_arch(arch, target) is not None \
-                        and match_plat(plat, target) is not None:
-                    archs.append(target.architecture)
-                    plats.append(target.platform)
+            for t in self.config.targets.all():
+                if match_arch(arch, t) is not None \
+                        and match_plat(plat, t) is not None:
+                    archs.append(t.architecture)
+                    plats.append(t.platform)
 
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.
