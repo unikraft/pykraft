@@ -36,6 +36,7 @@ import os
 import sys
 
 import click
+import inquirer
 
 from kraft.app import Application
 from kraft.cmd.list import kraft_list_preflight
@@ -196,10 +197,53 @@ def kraft_configure(ctx, env=None, workdir=None, target=None, plat=None,
         else:
             raise CannotConfigureApplication(workdir)
 
+    if len(app.config.targets.all()) == 1:
+        target = app.config.targets.all()[0]
+
+    elif len(app.binaries) == 1:
+        target = app.binaries[0]
+
+    else:
+        for t in app.config.targets.all():
+            # Did the user specific a target-name?
+            if target is not None and target == t.name:
+                target = t
+                break
+
+            # Did the user specify arch AND plat combo? Does it exist?
+            elif arch == t.architecture.name \
+                    and plat == t.platform.name:
+                target = t
+                break
+
+    # The user did not specify something
+    if target is None:
+        binaries = []
+
+        for t in app.binaries:
+            binname = os.path.basename(t.binary)
+            if t.name is not None:
+                binname = "%s (%s)" % (binname, t.name)
+
+            binaries.append(binname)
+
+        # Prompt user for binary selection
+        answers = inquirer.prompt([
+            inquirer.List(
+                'target',
+                message="Which target would you like to configure?",
+                choices=binaries,
+            ),
+        ])
+
+        # Work backwards from binary name
+        for t in app.binaries:
+            if answers['target'] == os.path.basename(t.binary):
+                target = t
+                break
+
     app.configure(
         target=target,
-        arch=arch,
-        plat=plat,
         options=options,
         force_configure=force_configure,
     )
