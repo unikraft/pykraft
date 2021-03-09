@@ -129,7 +129,7 @@ class Application(Component):
         for target in self.config.targets.all():
             binname = target.binary_name(self.config.name)
             binary = os.path.join(self.localdir, UNIKRAFT_BUILDDIR, binname)
-            if binname is not None and os.path.exists(binary):
+            if binname is not None:
                 target.binary = binary
 
         if self._config is None:
