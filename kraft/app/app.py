@@ -301,11 +301,17 @@ class Application(Component):
                 return plat
             return None
 
-        for target in self.config.targets.all():
-            if match_arch(arch, target) is not None \
-                    and match_plat(plat, target) is not None:
-                archs.append(target.architecture)
-                plats.append(target.platform)
+        if len(self.config.targets.all()) == 1:
+            target = self.config.targets.all()[0]
+            archs.append(target.architecture)
+            plats.append(target.platform)
+
+        else:
+            for target in self.config.targets.all():
+                if match_arch(arch, target) is not None \
+                        and match_plat(plat, target) is not None:
+                    archs.append(target.architecture)
+                    plats.append(target.platform)
 
         # Generate a dynamic .config to populate defconfig with based on
         # configure's parameterization.
