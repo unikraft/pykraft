@@ -65,5 +65,6 @@ def execute(cmd="", env={}, dry_run=False):
         popen.stdout.close()
         return_code = popen.wait()
         if return_code is not None and int(return_code) > 0:
-            logger.error("Command '%s' returned %d" % (cmd, return_code))
-            sys.exit(return_code)
+            return return_code
+
+    return 0

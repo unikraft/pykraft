@@ -269,7 +269,7 @@ class Application(Component):
         cmd = self.make_raw(
             extra=extra, verbose=verbose
         )
-        util.execute(cmd)
+        return util.execute(cmd)
 
     @click.pass_context  # noqa: C901
     def configure(ctx, self, target=None, arch=None, plat=None, options=[],
