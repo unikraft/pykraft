@@ -39,12 +39,14 @@ import click
 
 from kraft.app import Application
 from kraft.cmd.list import kraft_list_preflight
+from kraft.const import UNIKRAFT_BUILDDIR
 from kraft.logger import logger
+from kraft.util import make_progressbar
 
 
 @click.pass_context
-def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
-                fast=False, force_build=False):
+def kraft_build(ctx, verbose=False, workdir=None, fetch=True, prepare=True,
+                progress=True, target=None, fast=False, force_build=False):
     """
     """
     if workdir is None or os.path.exists(workdir) is False:
@@ -63,15 +65,46 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
         # This simply set the `-j` flag which signals to make to use all cores.
         n_proc = 0
 
-    app.build(
-        fetch=fetch,
-        prepare=prepare,
-        target=target,
-        n_proc=n_proc
-    )
+    if fetch:
+        app.fetch()
+
+    if prepare:
+        app.prepare()
+
+    if progress:
+        return_code = make_progressbar(app.make_raw(verbose=verbose))
+
+    else:
+        return_code = app.build(
+            target=target,
+            n_proc=n_proc
+        )
+
+    if return_code == 0:
+        print("\nSuccessfully built unikernels:\n")
+
+        for target in app.binaries:
+            if not os.path.exists(target.binary):
+                continue
+
+            print("  => %s/%s" % (
+                UNIKRAFT_BUILDDIR,
+                os.path.basename(target.binary)
+            ))
+            print("  => %s/%s (with symbols)" % (
+                UNIKRAFT_BUILDDIR,
+                os.path.basename(target.binary_debug)
+            ))
+
+        print("\nTo instantiate, use: kraft run\n")
 
 
 @click.command('build', short_help='Build the application.')
+@click.option(
+    '--verbose', '-v', 'verbose_build',
+    help='Verbose build',
+    is_flag=True
+)
 @click.option(
     '--fetch/--no-fetch', 'fetch',
     help='Run fetch step before build.',
@@ -80,6 +113,11 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
 @click.option(
     '--prepare/--no-prepare', 'prepare',
     help='Run prepare step before build.',
+    default=True
+)
+@click.option(
+    '--progress/--no-progress', 'progress',
+    help='Show progress of build.',
     default=True
 )
 @click.option(
@@ -94,8 +132,8 @@ def kraft_build(ctx, workdir=None, fetch=True, prepare=True, target=None,
 )
 @click.argument('target', required=False)
 @click.pass_context
-def cmd_build(ctx, fetch=True, prepare=True, target=None, fast=False,
-              force_build=False):
+def cmd_build(ctx, verbose_build=False, fetch=True, prepare=True,
+              progress=True, target=None, fast=False, force_build=False):
     """
     Builds the Unikraft application for the target architecture and platform.
     """
@@ -105,8 +143,10 @@ def cmd_build(ctx, fetch=True, prepare=True, target=None, fast=False,
     try:
         kraft_build(
             workdir=ctx.obj.workdir,
+            verbose=verbose_build,
             fetch=fetch,
             prepare=prepare,
+            progress=progress,
             target=target,
             fast=fast,
             force_build=force_build

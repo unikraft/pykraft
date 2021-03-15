@@ -39,6 +39,7 @@ import click
 
 from kraft.app import Application
 from kraft.logger import logger
+from kraft.util import make_progressbar
 
 
 @click.command('clean', short_help='Clean the application.')
@@ -52,8 +53,13 @@ from kraft.logger import logger
     help='Delete the build directory.',
     is_flag=True,
 )
+@click.option(
+    '--progress/--no-progress', 'progress',
+    help='Show progress of build.',
+    default=True
+)
 @click.pass_context
-def cmd_clean(ctx, workdir=None, proper=False):
+def cmd_clean(ctx, workdir=None, proper=False, progress=True):
     """
     Clean the build artifacts of a Unikraft unikernel application.
     """
@@ -65,6 +71,7 @@ def cmd_clean(ctx, workdir=None, proper=False):
         kraft_clean(
             workdir=workdir,
             proper=proper,
+            progress=progress,
         )
 
     except Exception as e:
@@ -78,7 +85,7 @@ def cmd_clean(ctx, workdir=None, proper=False):
 
 
 @click.pass_context
-def kraft_clean(ctx, workdir=None, proper=False):
+def kraft_clean(ctx, workdir=None, proper=False, progress=True):
     """
     Cleans the build artifacts of a Unikraft unikernel.
     """
@@ -89,6 +96,21 @@ def kraft_clean(ctx, workdir=None, proper=False):
     logger.debug("Cleaning %s..." % workdir)
 
     app = Application.from_workdir(workdir)
-    app.clean(
-        proper=proper
-    )
+
+    if progress:
+        if proper:
+            make = app.make_raw(
+                extra="properclean"
+            )
+
+        else:
+            make = app.make_raw(
+                extra="clean"
+            )
+
+        make_progressbar(make)
+
+    else:
+        app.clean(
+            proper=proper
+        )
