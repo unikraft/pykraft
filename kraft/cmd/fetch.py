@@ -29,23 +29,57 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# flake8: noqa
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from .build import cmd_build
-from .clean import cmd_clean
-from .configure import cmd_configure
-from .fetch import cmd_fetch
-from .init import cmd_init
-from .lib import cmd_lib_bump
-from .lib import cmd_lib_init
-from .lib import grp_lib
-from .list import cmd_list
-from .list import cmd_list_add
-from .list import cmd_list_pull
-from .list import cmd_list_remove
-from .list import cmd_list_update
-from .menuconfig import cmd_menuconfig
-from .run import cmd_run
-from .up import cmd_up
+import os
+import sys
+from time import sleep
+
+import click
+
+from kraft.app import Application
+from kraft.cmd.list import kraft_list_preflight
+from kraft.logger import logger
+
+
+@click.pass_context
+def kraft_fetch(ctx, workdir=None):
+    """
+    """
+    if workdir is None or os.path.exists(workdir) is False:
+        raise ValueError("working directory is empty: %s" % workdir)
+
+    logger.debug("Fetching for %s..." % workdir)
+
+    app = Application.from_workdir(workdir)
+
+    if not app.is_configured():
+        if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
+            app.configure()
+
+    app.fetch()
+
+
+@click.command('fetch', short_help='Fetch library dependencies.')
+@click.pass_context
+def cmd_fetch(ctx):
+    """
+    Fetches
+    """
+
+    kraft_list_preflight()
+
+    try:
+        kraft_fetch(
+            workdir=ctx.obj.workdir
+        )
+
+    except Exception as e:
+        logger.critical(str(e))
+
+        if ctx.obj.verbose:
+            import traceback
+            logger.critical(traceback.format_exc())
+
+        sys.exit(1)
