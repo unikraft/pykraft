@@ -32,9 +32,13 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import contextlib
 import os
 import subprocess
 import sys
+
+from tqdm import tqdm
+from tqdm.contrib import DummyTqdmFile
 
 from kraft.logger import logger
 
@@ -70,5 +74,80 @@ def execute(cmd="", env={}, dry_run=False, use_logger=False):
         return_code = popen.wait()
         if return_code is not None and int(return_code) > 0:
             return return_code
+
+    return 0
+
+
+@contextlib.contextmanager
+def std_out_err_redirect_tqdm():
+    orig_out_err = sys.stdout, sys.stderr
+    try:
+        # sys.stdout = sys.stderr = DummyTqdmFile(orig_out_err[0])
+        sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
+        yield orig_out_err[0]
+
+    # Relay exceptions
+    except Exception as exc:
+        raise exc
+
+    # Always restore sys.stdout/err if necessary
+    finally:
+        sys.stdout, sys.stderr = orig_out_err
+
+
+def make_progressbar(make=""):
+    if make is None or len(make) == 0:
+        return None
+
+    make_n = make[:]
+    make_n.append("-n")
+
+    logger.debug("Calculating how many files to build...")
+    logger.debug(" ".join(make_n))
+
+    all_make_commands = subprocess.check_output(make_n)
+    all_make_commands = all_make_commands.decode('utf-8').split('\n')
+    actual_make_commands = []
+
+    for i, command in enumerate(all_make_commands):
+        command = command.strip()
+        if command.startswith('make') \
+                or command == "" \
+                or command == ":" \
+                or "fixdep" in command:
+            pass
+
+        else:
+            actual_make_commands.append(command)
+
+    with std_out_err_redirect_tqdm() as orig_stdout:
+        logger.debug("Starting build...")
+        logger.debug(" ".join(make))
+
+        popen = subprocess.Popen(
+            make,
+            stdout=subprocess.PIPE,
+            env=os.environ
+        )
+
+        with tqdm(
+            total=len(actual_make_commands),
+            file=orig_stdout,
+            unit="file",
+            leave=False,
+            bar_format="{desc:<3}{percentage:3.0f}% {bar} {n_fmt}/{total_fmt} [{rate_fmt}{postfix}]",
+            dynamic_ncols=True) as t:  # noqa: E125
+
+            for line in popen.stdout:
+                t.update()
+                line = line.strip().decode('ascii')
+                if line.startswith("make: Leaving directory") is False and \
+                        line.startswith("make: Entering directory") is False:
+                    print(line)
+
+            t.close()
+
+        popen.stdout.close()
+        return popen.wait()
 
     return 0
