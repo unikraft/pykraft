@@ -365,13 +365,17 @@ class Application(Component):
                 logger.debug(' > ' + line)
                 tmp.write(line + '\n')
 
+        return_code = 0
+
         try:
-            self.make([
+            return_code = self.make([
                 ('UK_DEFCONFIG=%s' % path),
                 'defconfig'
             ])
         finally:
             os.remove(path)
+
+        return return_code
 
     @click.pass_context
     def add_lib(ctx, self, lib=None):
@@ -420,7 +424,7 @@ class Application(Component):
         elif target is not None:
             extra.append(target)
 
-        self.make(extra)
+        return self.make(extra, verbose)
 
     def init(self, create_makefile=False, force_create=False):
         """
