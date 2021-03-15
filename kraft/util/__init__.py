@@ -44,6 +44,7 @@ from .dir import is_dir_empty
 from .dir import recursively_copy
 from .make import make_list_vars
 from .op import execute
+from .op import make_progressbar
 from .op import merge_dicts
 from .text import pretty_columns
 from .text import prettydate
