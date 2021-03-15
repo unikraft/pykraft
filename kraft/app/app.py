@@ -403,19 +403,10 @@ class Application(Component):
         return True
 
     @click.pass_context
-    def build(ctx, self, fetch=True, prepare=True, target=None, n_proc=0):
+    def build(ctx, self, target=None, n_proc=0, verbose=False):
         extra = []
         if n_proc is not None and n_proc > 0:
             extra.append('-j%s' % str(n_proc))
-
-        if not fetch and not prepare:
-            fetch = prepare = True
-
-        if fetch:
-            self.make('fetch')
-
-        if prepare:
-            self.make('prepare')
 
         # Create a no-op when target is False
         if target is False:
@@ -425,6 +416,14 @@ class Application(Component):
             extra.append(target)
 
         return self.make(extra, verbose)
+
+    @click.pass_context
+    def fetch(ctx, self, verbose=False):
+        return self.make('fetch', verbose)
+
+    @click.pass_context
+    def prepare(ctx, self, verbose=False):
+        return self.make('prepare', verbose)
 
     def init(self, create_makefile=False, force_create=False):
         """
