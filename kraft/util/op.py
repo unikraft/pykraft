@@ -45,7 +45,7 @@ def merge_dicts(x, y):
     return z
 
 
-def execute(cmd="", env={}, dry_run=False):
+def execute(cmd="", env={}, dry_run=False, use_logger=False):
     if type(cmd) is list:
         cmd = " ".join(cmd)
 
@@ -60,7 +60,11 @@ def execute(cmd="", env={}, dry_run=False):
         )
 
         for line in popen.stdout:
-            logger.info(line.strip().decode('ascii'))
+            line = line.strip().decode('ascii')
+            if use_logger:
+                logger.info(line)
+            else:
+                print(line)
 
         popen.stdout.close()
         return_code = popen.wait()
