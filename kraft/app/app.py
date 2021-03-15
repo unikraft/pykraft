@@ -262,12 +262,12 @@ class Application(Component):
         return cmd
 
     @click.pass_context
-    def make(ctx, self, extra=None):
+    def make(ctx, self, extra=None, verbose=False):
         """
         Run a make target for this project.
         """
         cmd = self.make_raw(
-            extra=extra, verbose=ctx.obj.verbose
+            extra=extra, verbose=verbose
         )
         util.execute(cmd)
 
