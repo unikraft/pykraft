@@ -34,7 +34,6 @@ from __future__ import unicode_literals
 
 import os
 import sys
-from time import sleep
 
 import click
 
