@@ -244,7 +244,8 @@ class Application(Component):
             if not isinstance(target.platform, InternalPlatform):
                 plat_paths.append(target.platform.localdir)
 
-        cmd.append('P=%s' % ":".join(plat_paths))
+        if len(plat_paths) > 0:
+            cmd.append('P=%s' % ":".join(plat_paths))
 
         lib_paths = []
         for lib in self.config.libraries.all():
