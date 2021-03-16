@@ -1,0 +1,31 @@
+---
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: unikraft/kraft
+    tag: ((tag))
+
+params:
+  DIRTY:
+
+inputs:
+  - name: kraft
+    path: .
+
+outputs:
+  - name: dist
+
+run:
+  path: bash
+  args:
+    - -cex
+    - |
+      DIRTY=$DIRTY \
+      DOCKER= \
+      make get-version > dist/version
+
+      APP_VERSION=$(cat dist/version) \
+      DOCKER= \
+      make sdist
