@@ -39,6 +39,9 @@ import dpath.util
 import toml
 from toml import TomlEncoder
 
+from kraft.const import KRAFTRC_LIST_ORIGINS
+from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
+from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
 from kraft.logger import logger
 
 
@@ -103,3 +106,28 @@ class Settings(object):
         if val is not None:
             dpath.util.new(self._settings, prop, val)
             self.save()
+
+    @property
+    def configure_platform(self):
+        return self.get(
+            KRAFTRC_CONFIGURE_PLATFORM,
+            "kvm"
+        )
+
+    @property
+    def configure_architecture(self):
+        return self.get(
+            KRAFTRC_CONFIGURE_ARCHITECTURE,
+            "x86_64"
+        )
+
+    @property
+    def list_origins(self):
+        return self.get(
+            KRAFTRC_LIST_ORIGINS, [
+                "http://github.com/unikraft/unikraft.git",
+                "http://github.com/unikraft/plat-*",
+                "http://github.com/unikraft/app-*",
+                "http://github.com/unikraft/lib-*"
+            ]
+        )
