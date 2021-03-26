@@ -95,7 +95,7 @@ class Settings(object):
             result = dpath.util.get(self._settings, prop)
         except KeyError:
             logger.debug('Missed setting lookup: %s', prop)
-            result = None
+            result = default
 
         return result
 
