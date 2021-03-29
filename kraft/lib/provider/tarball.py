@@ -77,7 +77,6 @@ def tarball_probe_origin_versions(origin_url=None):
 
 
 class TarballLibraryProvider(LibraryProvider):
-
     @classmethod
     def is_type(cls, origin_url=None):
         if origin_url is None:
