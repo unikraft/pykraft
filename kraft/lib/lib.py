@@ -126,7 +126,6 @@ def intrusively_determine_lib_origin_version(localdir=None):
 
 
 class Library(Component):
-    _origin_url = None
     _type = ComponentType.LIB
 
     _origin_url = None
