@@ -49,7 +49,7 @@ $(eval $(call addlib_s,{{ cookiecutter.lib_kname|lower }},$(CONFIG_{{ cookiecutt
 {%- if cookiecutter.version != "" %}
 {{ cookiecutter.lib_kname|upper }}_VERSION = {{ cookiecutter.version }}
 {%- endif %}
-{{ cookiecutter.lib_kname|upper }}_URL = {{ cookiecutter.source_archive }}
+{{ cookiecutter.lib_kname|upper }}_URL = {{ cookiecutter.origin_url }}
 {{ cookiecutter.lib_kname|upper }}_SUBDIR = {{ cookiecutter.project_name }}-$({{ cookiecutter.lib_kname|upper }}_VERSION)
 {%- if cookiecutter.with_patchedir %}
 {{ cookiecutter.lib_kname|upper }}_PATCHDIR = $({{ cookiecutter.lib_kname|upper }}_BASE)/patches
