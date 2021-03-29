@@ -45,12 +45,12 @@ from kraft.const import VSEMVER_PATTERN
 from kraft.logger import logger
 
 
-def git_probe_remote_versions(source=None):  # noqa: C901
+def git_probe_remote_versions(origin_url=None):  # noqa: C901
     """
     List references in a remote repository.
 
     Args:
-        source:  The remote repository to probe.
+        origin_url:  The remote repository to probe.
 
     Returns:
         Dictionary of versions and their git shas.
@@ -58,24 +58,24 @@ def git_probe_remote_versions(source=None):  # noqa: C901
 
     versions = {}
 
-    if source is None:
+    if origin_url is None:
         return versions
 
-    if source.startswith("file://"):
-        source = source[7:]
+    if origin_url.startswith("file://"):
+        origin_url = origin_url[7:]
 
     g = GitCmd()
 
-    logger.debug("Probing remote git repository: %s..." % source)
+    logger.debug("Probing remote git repository: %s..." % origin_url)
 
     try:
-        g.ls_remote(source)
+        g.ls_remote(origin_url)
 
     except GitCommandError as e:
         logger.fatal("Could not connect to repository: %s" % str(e))
         return versions
 
-    for refs in g.ls_remote(source).split('\n'):
+    for refs in g.ls_remote(origin_url).split('\n'):
         hash_ref_list = refs.split('\t')
 
         # Empty repository
@@ -94,7 +94,7 @@ def git_probe_remote_versions(source=None):  # noqa: C901
             continue
 
         # Check if version tag
-        if source.startswith(UNIKRAFT_ORIGIN):
+        if origin_url.startswith(UNIKRAFT_ORIGIN):
             ref = GIT_UNIKRAFT_TAG_PATTERN.search(hash_ref_list[1])
 
         else:
@@ -113,22 +113,22 @@ def git_probe_remote_versions(source=None):  # noqa: C901
 class GitLibraryProvider(LibraryProvider):
 
     @classmethod
-    def is_type(cls, source=None):
-        if source is None:
+    def is_type(cls, origin_url=None):
+        if origin_url is None:
             return False
 
         try:
-            if source.startswith("file://"):
-                source = source[7:]
+            if origin_url.startswith("file://"):
+                origin_url = origin_url[7:]
 
-            GitRepo(source, search_parent_directories=True)
+            GitRepo(origin_url, search_parent_directories=True)
             return True
 
         except Exception:
             pass
 
         try:
-            GitCmd().ls_remote(source)
+            GitCmd().ls_remote(origin_url)
             return True
 
         except Exception:
@@ -136,11 +136,11 @@ class GitLibraryProvider(LibraryProvider):
 
         return False
 
-    def probe_remote_versions(self, source=None):
-        if source is None:
-            source = self.source
+    def probe_remote_versions(self, origin_url=None):
+        if origin_url is None:
+            origin_url = self.origin_url
 
-        return git_probe_remote_versions(source)
+        return git_probe_remote_versions(origin_url)
 
-    def version_source_url(self, varname=None):
-        return self.source
+    def origin_url_with_varname(self, varname=None):
+        return self.origin

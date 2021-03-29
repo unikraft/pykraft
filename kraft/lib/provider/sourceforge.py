@@ -42,7 +42,7 @@ from kraft.const import SOURCEFORGE_PROJECT_NAME
 from kraft.const import TARBALL_SUPPORTED_EXTENSIONS
 
 
-def sourceforge_probe_remote_versions(source=None):
+def sourceforge_probe_origin_versions(origin_url=None):
     """
     List known versions of a project on SourceForge.
 
@@ -54,7 +54,7 @@ def sourceforge_probe_remote_versions(source=None):
 
     """
     versions = {}
-    project_name = SOURCEFORGE_PROJECT_NAME.search(source)
+    project_name = SOURCEFORGE_PROJECT_NAME.search(origin_url)
 
     if project_name is None:
         return versions
@@ -93,11 +93,11 @@ class SourceForgeLibraryProvider(TarballLibraryProvider):
 
         return False
 
-    def probe_remote_versions(self, source=None):
-        if source is None:
-            source = self.source
+    def probe_remote_versions(self, origin_url=None):
+        if origin_url is None:
+            origin_url = self.origin_url
 
-        return sourceforge_probe_remote_versions(source)
+        return sourceforge_probe_origin_versions(origin_url)
 
-    def version_source_url(self, varname=None):
-        return self.source
+    def origin_url_with_varname(self, varname=None):
+        return self.origin_url

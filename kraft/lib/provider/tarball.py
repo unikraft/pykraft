@@ -40,26 +40,26 @@ from kraft.const import TARBALL_SUPPORTED_EXTENSIONS
 from kraft.logger import logger
 
 
-def tarball_probe_remote_versions(source=None):
+def tarball_probe_origin_versions(origin_url=None):
     versions = {}
 
-    if source is None:
+    if origin_url is None:
         return versions
 
     # Remove everything after the $ (start of variable)
-    if '/$' in source:
-        source = source[:source.index('$')]
+    if '/$' in origin_url:
+        origin_url = origin_url[:origin_url.index('$')]
 
     # Remove the filename
     else:
         for ext in TARBALL_SUPPORTED_EXTENSIONS:
-            if source.endswith(ext):
-                filename = source.split('/')[-1]
-                source = source.replace(filename, '')
+            if origin_url.endswith(ext):
+                filename = origin_url.split('/')[-1]
+                origin_url = origin_url.replace(filename, '')
                 break
 
     try:
-        cwd, listings = htmllistparse.fetch_listing(source, timeout=30)
+        cwd, listings = htmllistparse.fetch_listing(origin_url, timeout=30)
 
         for listing in listings:
             if listing.name.endswith(tuple(TARBALL_SUPPORTED_EXTENSIONS)):
@@ -79,23 +79,26 @@ def tarball_probe_remote_versions(source=None):
 class TarballLibraryProvider(LibraryProvider):
 
     @classmethod
-    def is_type(cls, origin=None):
-        if origin is None:
+    def is_type(cls, origin_url=None):
+        if origin_url is None:
             return False
 
         for ext in TARBALL_SUPPORTED_EXTENSIONS:
-            if origin.endswith(ext):
+            if origin_url.endswith(ext):
                 return True
 
         return False
 
-    def probe_remote_versions(self, source=None):
-        if source is None:
-            source = self.source
+    def probe_remote_versions(self, origin_url=None):
+        if origin_url is None:
+            origin_url = self.origin_url
 
-        return tarball_probe_remote_versions(source)
+        return tarball_probe_origin_versions(origin_url)
 
-    def version_source_archive(self, varname=None):
-        ver = SEMVER_PATTERN.search(self.source)
-        source_archive = self.source.replace(ver.group(0), varname)
-        return source_archive
+    def origin_url_with_varname(self, varname=None):
+        ver = SEMVER_PATTERN.search(self.origin_url)
+        if ver is None:
+            return None
+
+        origin_url = self.origin_url.replace(ver.group(0), varname)
+        return origin_url

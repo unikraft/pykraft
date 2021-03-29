@@ -40,14 +40,14 @@ from .sourceforge import SourceForgeLibraryProvider
 from .tarball import TarballLibraryProvider
 
 
-def determine_lib_provider(source=None):
+def determine_lib_provider(origin_url=None):
     provider = None
 
-    if source is None:
+    if origin_url is None:
         return provider
 
     for _, member in LibraryProviderType.__members__.items():
-        if member.is_type(source):
+        if member.is_type(origin_url):
             return member.cls
 
     return provider

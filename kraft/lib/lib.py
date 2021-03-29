@@ -129,9 +129,17 @@ class Library(Component):
     _origin_url = None
     _type = ComponentType.LIB
 
+    _origin_url = None
+
     @property
     def origin_url(self):
-        if self._origin_url is None and os.path.exists(self.localdir):
+        """
+        Returns the $(LIBNAME_VERSION) formatted string of the origin URL.
+        """
+        if self._origin_url is not None:
+            return self._origin_url
+
+        elif os.path.exists(self.localdir):
             self._origin_url = intrusively_determine_lib_origin_url(self._localdir)
 
         return self._origin_url
@@ -152,7 +160,7 @@ class Library(Component):
         if self._origin_provider is None and self.origin_url is not None:
             provider_cls = determine_lib_provider(self._origin_url)
             self._origin_provider = provider_cls(
-                source=self._origin_url,
+                origin_url=self._origin_url,
                 current_version=self.origin_version
             )
 
@@ -242,11 +250,11 @@ class Library(Component):
         # Fix the starting "v" in the version string
         if context['cookiecutter']['version'].startswith('v'):
             context['cookiecutter']['version'] = context['cookiecutter']['version'][1:]
-            context['cookiecutter']['source_archive'] = self.version_source_archive(
+            self._origin_url = self.origin_provider.origin_url_with_varname(
                 'v%s' % (UK_VERSION_VARNAME % self.kname)
             )
-        else:
-            context['cookiecutter']['source_archive'] = self.version_source_archive()
+
+        context['cookiecutter']['origin_url'] = self.origin_url
 
         # include automatically generated content
         context['cookiecutter']['kconfig_dependencies'] = self.determine_kconfig_dependencies()
