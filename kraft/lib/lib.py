@@ -546,15 +546,6 @@ class Library(Component):
 
         return version
 
-    def version_source_archive(self, varname=None):
-        """
-        """
-
-        if varname is None:
-            varname = UK_VERSION_VARNAME % self.kname
-
-        return self.origin_provider.version_source_archive(varname)
-
     # TODO: Intrusively determine which additional unikraft librareis are
     # needed for this library to run.
     def determine_kconfig_dependencies(self):
