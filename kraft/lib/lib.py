@@ -213,6 +213,11 @@ class Library(Component):
 
     @property
     def origin_provider(self):
+        """
+        Heuristically determines where the origin URL is provided from.  These
+        are provided as a child from the library provider class
+        kraft.lib.provider.Provider.
+        """
         if self._origin_provider is None and self.origin_url is not None:
             provider_cls = determine_lib_provider(self._origin_url)
             self._origin_provider = provider_cls(
