@@ -176,6 +176,27 @@ class Library(Component):
 
         return self._origin_archive
 
+    _origin_filename = None
+
+    @property
+    def origin_filename(self):
+        """
+        Returns the filename of the origin from the evaluated archive URL.
+        """
+        if self._origin_filename is not None:
+            return self._origin_filename
+
+        elif self.origin_provider is not None:
+            origin_filename = self.origin_provider.origin_filename
+
+        if origin_filename is not None:
+            self._origin_filename = origin_filename
+
+        elif self.origin_archive is not None:
+            self._origin_filename = os.path.basename(self.origin_archive)
+
+        return self._origin_filename
+
     _origin_version = None
 
     @property

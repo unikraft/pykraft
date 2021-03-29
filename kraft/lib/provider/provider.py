@@ -59,3 +59,7 @@ class LibraryProvider(object):
 
     def origin_url_with_varname(self, varname=None):
         return self.origin_url
+
+    @property
+    def origin_filename(self):
+        return None
