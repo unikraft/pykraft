@@ -42,6 +42,7 @@ from kraft.config.environment import Environment
 from kraft.const import KRAFTRC
 from kraft.const import UNIKRAFT_APPSDIR
 from kraft.const import UNIKRAFT_ARCHSDIR
+from kraft.const import UNIKRAFT_BUILDDIR
 from kraft.const import UNIKRAFT_CACHEDIR
 from kraft.const import UNIKRAFT_COREDIR
 from kraft.const import UNIKRAFT_LIBSDIR
@@ -165,6 +166,13 @@ class KraftContext:
     @property
     def workdir(self):
         return self._workdir
+
+    @property
+    def builddir(self):
+        if self.workdir is not None and os.path.exists(self.workdir):
+            return os.path.join(self.workdir, UNIKRAFT_BUILDDIR)
+
+        return None
 
     @workdir.setter
     def workdir(self, workdir):
