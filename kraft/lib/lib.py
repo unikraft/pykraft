@@ -149,6 +149,33 @@ class Library(Component):
 
         return self._origin_url
 
+    _origin_archive = None
+
+    @property
+    def origin_archive(self):
+        """
+        Returns the evaluated URL of the origin.  This is an exact location of
+        the remote archive.
+        """
+        if self._origin_archive is not None:
+            return self._origin_archive
+
+        elif self.origin_provider is not None and self.origin_version is not None:
+            origin_archive = self.origin_provider.origin_url_with_varname(
+                self.origin_version
+            )
+
+        if origin_archive is not None:
+            self._origin_archive = origin_archive
+
+        elif self.origin_url is not None and self.origin_version is not None:
+            self._origin_archive = self.origin_url.replace(
+                UK_VERSION_VARNAME % self.kname,
+                self.origin_version
+            )
+
+        return self._origin_archive
+
     _origin_version = None
 
     @property
