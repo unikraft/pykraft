@@ -142,6 +142,11 @@ class Library(Component):
         elif os.path.exists(self.localdir):
             self._origin_url = intrusively_determine_lib_origin_url(self._localdir)
 
+        elif self.origin_provider is not None:
+            return self.origin_provider.origin_url_with_varname(
+                UK_VERSION_VARNAME % self.kname
+            )
+
         return self._origin_url
 
     _origin_version = None
