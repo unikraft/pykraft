@@ -218,10 +218,11 @@ class Component(object):
                 # TODO indicate component type in error message
                 raise UnknownVersionError(version, self._manifest)
 
+    @property
     def is_downloaded(self):
         return self.localdir is not None \
-            and os.path.exists(self._localdir) \
-            and os.path.exists(os.path.join(self._localdir, MAKEFILE_UK))
+            and os.path.exists(self.localdir) \
+            and os.path.exists(os.path.join(self.localdir, MAKEFILE_UK))
 
     def download(self, localdir=None, equality=ManifestVersionEquality.EQ,
                  use_git=False, override_existing=False):
@@ -237,7 +238,7 @@ class Component(object):
         )
 
     def intrusively_determine_kconfig(self):
-        if self.is_downloaded():
+        if self.is_downloaded:
             config_uk = os.path.join(self.localdir, CONFIG_UK)
             if os.path.exists(config_uk):
                 logger.debug("Reading: %s..." % config_uk)
