@@ -440,7 +440,12 @@ class Application(Component):
 
     @click.pass_context
     def fetch(ctx, self, verbose=False):
-        return self.make('fetch', verbose)
+        extra = []
+
+        if ctx.obj.settings.fetch_prioritize_origin is False:
+            extra.extend(self.list_possible_mirrors())
+
+        return self.make(extra, verbose)
 
     @click.pass_context
     def prepare(ctx, self, verbose=False):
