@@ -57,6 +57,7 @@ from kraft.const import UNIKRAFT_FETCHED_FILE
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_FETCH_LIB_PATTERN
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_VERSION_EXT
+from kraft.const import UNIKRAFT_PREPARED_FILE
 from kraft.const import VSEMVER_PATTERN
 from kraft.error import BumpLibraryDowngrade
 from kraft.error import CannotDetermineRemoteVersion
@@ -588,6 +589,18 @@ class Library(Component):
             return False
 
         if os.path.exists(os.path.join(builddir, UNIKRAFT_FETCHED_FILE)):
+            return True
+
+        return False
+
+    @click.pass_context
+    @property
+    def is_prepared(ctx, self):
+        builddir = self.builddir
+        if builddir is None:
+            return False
+
+        if os.path.exists(os.path.join(builddir, UNIKRAFT_PREPARED_FILE)):
             return True
 
         return False
