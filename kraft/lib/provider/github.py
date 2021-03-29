@@ -40,12 +40,12 @@ from kraft.const import TARBALL_SUPPORTED_EXTENSIONS
 # from git.cmd import Git as GitCmd
 
 
-def github_org_name(source=None):
+def github_org_name(origin_url=None):
     for prefix in REPO_VALID_URL_PREFIXES:
-        if source.startswith(prefix):
-            source = source[len(prefix):]
+        if origin_url.startswith(prefix):
+            origin_url = origin_url[len(prefix):]
 
-    github_parts = source.split('/')
+    github_parts = origin_url.split('/')
 
     return github_parts[1], github_parts[2]
 
@@ -62,27 +62,27 @@ class GitHubLibraryProvider(GitLibraryProvider):
 
         return False
 
-    def probe_remote_versions(self, source=None):
-        if source is None:
-            source = self._source
+    def probe_remote_versions(self, origin_url=None):
+        if origin_url is None:
+            origin_url = self._origin_url
 
         # Convert a archive URL to a git URL
-        if source.endswith(tuple(TARBALL_SUPPORTED_EXTENSIONS)):
-            org, repo = github_org_name(source)
+        if origin_url.endswith(tuple(TARBALL_SUPPORTED_EXTENSIONS)):
+            org, repo = github_org_name(origin_url)
 
-            self._source = source = "https://%s/%s/%s.git" % (
+            self._origin_url = origin_url = "https://%s/%s/%s.git" % (
                 GITHUB_ORIGIN, org, repo
             )
 
-        return git_probe_remote_versions(source)
+        return git_probe_remote_versions(origin_url)
 
-    def version_source_archive(self, varname=None):
+    def origin_url_with_varname(self, varname=None):
         if varname is None:
-            return self.source
+            return self.origin_url
 
-        source = self.source
+        origin_url = self.origin_url
 
-        org, repo = github_org_name(source)
+        org, repo = github_org_name(origin_url)
 
         if repo.endswith('.git'):
             repo = repo[:-4]

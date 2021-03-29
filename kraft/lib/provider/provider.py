@@ -38,24 +38,24 @@ PROVIDER_STATUS_EMPTY = "empty"
 
 
 class LibraryProvider(object):
-    _source = None
+    _origin_url = None
     @property
-    def source(self): return self._source
+    def origin_url(self): return self._origin_url
 
     _current_version = None
     @property
     def current_version(self): return self._current_version
 
-    def __init__(self, source=None, current_version=None):
-        self._source = source
+    def __init__(self, origin_url=None, origin_version=None):
+        self._origin_url = origin_url
         self._current_version = current_version
 
     @classmethod
     def is_type(self):
         pass
 
-    def probe_remote_versions(self, source=None):
+    def probe_remote_versions(self, origin_url=None):
         return []
 
-    def version_source_archive(self, varname=None):
-        return self.source
+    def origin_url_with_varname(self, varname=None):
+        return self.origin_url
