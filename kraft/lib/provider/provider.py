@@ -42,13 +42,13 @@ class LibraryProvider(object):
     @property
     def origin_url(self): return self._origin_url
 
-    _current_version = None
+    _origin_version = None
     @property
-    def current_version(self): return self._current_version
+    def origin_version(self): return self._origin_version
 
     def __init__(self, origin_url=None, origin_version=None):
         self._origin_url = origin_url
-        self._current_version = current_version
+        self._origin_version = origin_version
 
     @classmethod
     def is_type(self):

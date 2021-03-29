@@ -148,6 +148,10 @@ class Library(Component):
 
     @property
     def origin_version(self):
+        """
+        Returns the version specified in the Makefile.uk of the library, found
+        from LIBNAME_VERSION.
+        """
         if self._origin_version is None and os.path.exists(self.localdir):
             self._origin_version = intrusively_determine_lib_origin_version(self._localdir)
 
@@ -161,7 +165,7 @@ class Library(Component):
             provider_cls = determine_lib_provider(self._origin_url)
             self._origin_provider = provider_cls(
                 origin_url=self._origin_url,
-                current_version=self.origin_version
+                origin_version=self.origin_version
             )
 
         return self._origin_provider
