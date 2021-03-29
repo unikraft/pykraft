@@ -196,6 +196,30 @@ class Library(Component):
 
         return self._origin_filename
 
+    @property
+    @click.pass_context
+    def origin_mirrors(ctx, self):
+        """
+        Returns a list of evaluated origin URL mirrors.  This method uses
+        information from the .kraftrc for a list of mirrors.
+        """
+
+        mirror_bases = ctx.obj.settings.fetch_mirrors
+        if mirror_bases is None or len(mirror_bases) == 0:
+            return []
+
+        origin_mirrors = []
+
+        for mirror_base in mirror_bases:
+            origin_mirrors.append(os.path.join(
+                mirror_base,
+                "libs",
+                self.name,
+                self.origin_filename
+            ))
+
+        return origin_mirrors
+
     _origin_version = None
 
     @property
