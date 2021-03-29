@@ -146,6 +146,8 @@ KRAFTRC_LIST_ORIGINS = "list/origins"
 KRAFTRC_INIT_WORKDIR = "init/workdir"
 KRAFTRC_CONFIGURE_PLATFORM = "configure/platform"
 KRAFTRC_CONFIGURE_ARCHITECTURE = "configure/architecture"
+KRAFTRC_FETCH_MIRRORS = "fetch/mirrors"
+KRAFTRC_FETCH_PRIORITIZE_ORIGIN = "fetch/prioritize_origin"
 
 KCONFIG = "CONFIG_%s"
 KCONFIG_Y = 'y'

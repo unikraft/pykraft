@@ -1,3 +1,9 @@
+[fetch]
+prioritize_origin = false
+mirrors = [
+  "https://releases.unikraft.org/mirrors",
+]
+
 [configure]
 platform = "kvm"
 architecture = "x86_64"

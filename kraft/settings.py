@@ -39,9 +39,11 @@ import dpath.util
 import toml
 from toml import TomlEncoder
 
-from kraft.const import KRAFTRC_LIST_ORIGINS
-from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
 from kraft.const import KRAFTRC_CONFIGURE_ARCHITECTURE
+from kraft.const import KRAFTRC_CONFIGURE_PLATFORM
+from kraft.const import KRAFTRC_FETCH_MIRRORS
+from kraft.const import KRAFTRC_FETCH_PRIORITIZE_ORIGIN
+from kraft.const import KRAFTRC_LIST_ORIGINS
 from kraft.logger import logger
 
 
@@ -106,6 +108,21 @@ class Settings(object):
         if val is not None:
             dpath.util.new(self._settings, prop, val)
             self.save()
+
+    @property
+    def fetch_mirrors(self):
+        return self.get(
+            KRAFTRC_FETCH_MIRRORS, [
+                "https://releases.unikraft.org/mirrors"
+            ]
+        )
+
+    @property
+    def fetch_prioritize_origin(self):
+        return self.get(
+            KRAFTRC_FETCH_PRIORITIZE_ORIGIN,
+            False
+        )
 
     @property
     def configure_platform(self):
