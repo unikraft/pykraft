@@ -53,6 +53,7 @@ from kraft.const import SEMVER_PATTERN
 from kraft.const import TEMPLATE_LIB
 from kraft.const import UK_VERSION_VARNAME
 from kraft.const import UNIKRAFT_BUILDDIR
+from kraft.const import UNIKRAFT_FETCHED_FILE
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_FETCH_LIB_PATTERN
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_VERSION_EXT
@@ -578,6 +579,18 @@ class Library(Component):
 
         self._builddir = os.path.join(builddir, libname)
         return self._builddir
+
+    @property
+    @click.pass_context
+    def is_fetched(ctx, self):
+        builddir = self.builddir
+        if builddir is None:
+            return False
+
+        if os.path.exists(os.path.join(builddir, UNIKRAFT_FETCHED_FILE)):
+            return True
+
+        return False
 
     # TODO: Intrusively determine which additional unikraft librareis are
     # needed for this library to run.
