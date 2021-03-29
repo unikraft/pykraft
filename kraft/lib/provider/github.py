@@ -32,6 +32,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import os
+
 from .git import git_probe_remote_versions
 from .git import GitLibraryProvider
 from kraft.const import GITHUB_ORIGIN
@@ -88,3 +90,7 @@ class GitHubLibraryProvider(GitLibraryProvider):
             repo = repo[:-4]
 
         return "https://github.com/%s/%s/archive/%s.zip" % (org, repo, varname)
+
+    @property
+    def origin_filename(self):
+        return os.path.basename(self.origin_url_with_varname(self.origin_version))
