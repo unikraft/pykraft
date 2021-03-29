@@ -38,6 +38,7 @@ import tempfile
 from pathlib import Path
 
 import click
+import requests
 import six
 
 import kraft.util as util
@@ -52,6 +53,7 @@ from kraft.const import DOT_CONFIG
 from kraft.const import MAKEFILE_UK
 from kraft.const import SUPPORTED_FILENAMES
 from kraft.const import UNIKRAFT_BUILDDIR
+from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
 from kraft.error import KraftError
 from kraft.error import KraftFileNotFound
 from kraft.error import MissingComponent
@@ -417,6 +419,24 @@ class Application(Component):
             extra.append(target)
 
         return self.make(extra, verbose)
+
+    def list_possible_mirrors(self):
+        extra = []
+        for lib in self.config.libraries.all():
+            if not lib.is_fetched:
+                for mirror in lib.origin_mirrors:
+                    response = requests.head(mirror)
+                    if response.status_code == 200:
+                        extra.append(
+                            lib.kname +
+                            UNIKRAFT_LIB_MAKEFILE_URL_EXT +
+                            "=" +
+                            mirror
+                        )
+                    else:
+                        logger.debug("Mirror down: %s" % mirror)
+                        break
+        return extra
 
     @click.pass_context
     def fetch(ctx, self, verbose=False):
