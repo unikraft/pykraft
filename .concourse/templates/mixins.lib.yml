@@ -1,0 +1,198 @@
+#! SPDX-License-Identifier: BSD-3-Clause
+#!
+#! Authors: Alexander Jung <alexander.jung@neclab.eu>
+#!
+#! Copyright (c) 2020, NEC Laboratories Europe GmbH.,
+#!                     NEC Corporation. All rights reserved.
+#!
+#! Redistribution and use in source and binary forms, with or without
+#! modification, are permitted provided that the following conditions
+#! are met:
+#!
+#! 1. Redistributions of source code must retain the above copyright
+#!    notice, this list of conditions and the following disclaimer.
+#! 2. Redistributions in binary form must reproduce the above copyright
+#!    notice, this list of conditions and the following disclaimer in the
+#!    documentation and/or other materials provided with the distribution.
+#! 3. Neither the name of the copyright holder nor the names of its
+#!    contributors may be used to endorse or promote products derived from
+#!    this software without specific prior written permission.
+#!
+#! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#! POSSIBILITY OF SUCH DAMAGE.
+
+#! Concourse task to notify Mattermost of task failure
+#!
+#! params
+#!   task: the name of the task which failed
+#!   base_ref: the name of the branch which it failed on
+#!   base_sha: the commit sha which the task failed on
+#!   error_log: the log of the error to be printed
+#!
+#@ def mattermost_notify_failure(repo, task, base_ref, base_sha, error_log=""):
+put: mattermost-notify
+params:
+  silent: true #! prevent logging to hide Mattermost API communication
+  channel: "#cicd-dev"
+  #@yaml/text-templated-strings
+  text: |
+    :exclamation: **Pipeline [`$BUILD_PIPELINE_NAME`]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME)@[`(@= str(base_ref) @)`](https://github.com/unikraft/(@= str(repo) @)/tree/(@= str(base_sha) @)) / [`$BUILD_JOB_NAME`]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME) on task [`(@= str(task) @)`]($ATC_EXTERNAL_URL/builds/$BUILD_ID) failed!**
+    (@- if error_log != "": @)
+    ```bash
+    (@= error_log @)
+    ```
+    (@- end @)
+    [View in Concourse]($ATC_EXTERNAL_URL/builds/$BUILD_ID) | `fly i -b $BUILD_ID -s (@= str(task) @)`
+#@ end
+
+#! Set a pull-request status
+#!
+#! params:
+#!   status: The status, options: pending, success, failure
+#!   context: The name of the task in context
+#!   description: Short description of task
+#!
+#@ def pull_request_status(status="success", context="", description=""):
+put: pull-request-status-update
+resource: pull-request
+get_params:
+  skip_download: true
+inputs:
+  - pull-request
+params:
+  context: #@ context
+  description: #@ description
+  path: pull-request
+  status: #@ status
+#@ end
+
+#! Resource for matching Reviewed-By trailers.  This is used for approving and
+#! starting the merge window of the PR.
+#!
+#! params:
+#!   repo: The remote repository where the PR originates
+#!
+#@ def pr_approved_resource(repo):
+name: pull-request-approved
+type: github-pr-comment-resource
+icon: check-circle
+source:
+  repository: #@ repo
+  access_token: ((github.access-token))
+  comments: ["^\\/reviewed-by (?P<reviewed_by>.*)$"]
+  map_comment_meta: true
+#@ end
+
+#! Checkpatch job plan
+#!
+#! params:
+#!   unikraft: The unikraft resource object
+#!
+#@ def checkpatch_pr_job(unikraft):
+name: checkpatch
+serial: true
+plan:
+  - get: pull-request
+    trigger: true
+    version: every
+  - in_parallel:
+      steps:
+        - load_var: pull-request-id
+          file: pull-request/.git/resource/pr
+        - load_var: pull-request-sha
+          file: pull-request/.git/resource/head_sha
+        - get: pipelines-and-tasks
+        - get: #@ unikraft.resource
+  
+  - put: pull-request-status-update
+    resource: pull-request
+    get_params:
+      list_changed_files: true
+      skip_download: true
+    inputs:
+      - pull-request
+    params:
+      context: checkpatch
+      description: Running checkpatch
+      path: pull-request
+      status: pending
+
+  - task: checkpatch
+    file: pipelines-and-tasks/tasks/checkpatch.yml
+    input_mapping:
+      source: pull-request
+      unikraft: #@ unikraft.resource
+
+    on_failure:
+      do:
+        - load_var: comment
+          file: comment/comment.txt
+          format: raw
+        - put: pull-request-status-update
+          resource: pull-request
+          get_params:
+            skip_download: true
+          inputs:
+            - pull-request
+          params:
+            context: checkpatch
+            description: Failed against checkpatch
+            path: pull-request
+            status: failure
+            comment: ((.:comment))
+            delete_previous_comments: true
+
+    on_success:
+      put: pull-request-status-update
+      resource: pull-request
+      get_params:
+        skip_download: true
+      inputs:
+        - pull-request
+      params:
+        context: checkpatch
+        description: Passed against checkpatch
+        path: pull-request
+        status: success
+#@ end
+
+#! Concourse resource for release artifacts
+#!
+#! params:
+#!   vendor: The vendor name for the deb resource
+#!   distribution: The distribution name for the deb resource
+#!   extra: Additional text to append to the resource name
+#!
+#@ def deb_resource(vendor, distribution, extra=""):
+name: #@ "{}-{}-deb{}".format(vendor, distribution, extra)
+type: rclone
+icon: archive-arrow-up-outline
+source:
+  config: |
+    [remote]
+    type = sftp
+    host = ((releases.host))
+    user = ((releases.user))
+    port = ((releases.port))
+    key_file = /tmp/rclone/key_file
+  files:
+    key_file: |
+      ((releases.private-key))
+#@ end
+
+#@ def publish_deb(vendor, distribution):
+put: #@ "{}-{}-deb".format(vendor, distribution)
+params:
+  source: dist/*.deb
+  destination:
+    - dir: #@ "remote:((releases.root-dir))/cicd-input/{}/{}/".format(vendor, distribution)
+#@ end
