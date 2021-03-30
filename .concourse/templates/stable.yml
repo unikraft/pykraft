@@ -1,0 +1,509 @@
+#! SPDX-License-Identifier: BSD-3-Clause
+#!
+#! Authors: Alexander Jung <a.jung@lancs.ac.uk>
+#!
+#! Copyright (c) 2020, Lancaster University.  All rights reserved.
+#!
+#! Redistribution and use in source and binary forms, with or without
+#! modification, are permitted provided that the following conditions
+#! are met:
+#!
+#! 1. Redistributions of source code must retain the above copyright
+#!    notice, this list of conditions and the following disclaimer.
+#! 2. Redistributions in binary form must reproduce the above copyright
+#!    notice, this list of conditions and the following disclaimer in the
+#!    documentation and/or other materials provided with the distribution.
+#! 3. Neither the name of the copyright holder nor the names of its
+#!    contributors may be used to endorse or promote products derived from
+#!    this software without specific prior written permission.
+#!
+#! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#! POSSIBILITY OF SUCH DAMAGE.
+
+#@ load("@ytt:data",     "data")
+#@ load("@ytt:assert",   "assert")
+#@ load("@ytt:struct",   "struct")
+#! #@ load("unikraft.star", "uk")
+#@ load("mixins.lib.yml", "deb_resource")
+
+#! Template immediate data values
+#@ branch   = data.values.branch or \
+#@            assert.fail("branch must be specified")
+#@ versions = data.values.versions or \
+#@            assert.fail("versions must be specified")
+#@ debs     = data.values.debs or \
+#@            assert.fail("debs must be specified")
+#@ tests    = data.values.tests or \
+#@            assert.fail("tests must be specified")
+#@ archs    = data.values.archs or \
+#@            assert.fail("archs must be specified")
+
+---
+groups:
+  - name: all
+    jobs:
+      - "*"
+  
+  - name: tests
+    jobs:
+      - test-*
+
+  - name: docker
+    jobs:
+      - docker-*
+  
+  #@ for vendor in debs:
+  - name: #@ "pkg-{}".format(vendor.name)
+    jobs:
+      #@ for distribution in vendor.distributions:
+      - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+      - #@ "pkg-{}-{}".format(vendor.name, distribution)
+      - #@ "test-pkg-{}-{}".format(vendor.name, distribution)
+      #@ end
+  #@ end
+
+
+resource_types:
+  - name: docker-image-resource
+    type: docker-image
+    privileged: true
+    source:
+      repository: unikraft/concourse-docker-image-resource
+      tag: latest
+
+  - name: rclone
+    type: docker-image
+    source:
+      repository: ndrjng/concourse-rclone-resource
+      tag: latest
+
+
+resources:
+  - name: #@ "kraft-{}".format(branch)
+    type: git
+    icon: github
+    check_every: 30m
+    webhook_token: ((webhook-token))
+    source:
+      uri: https://github.com/unikraft/kraft.git
+      branch: concourse
+      fetch_tags: true
+
+  - name: docker-qemu
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/qemu
+      tag: #@ "{}-{}".format(versions.qemu, branch)
+
+  - name: docker-qemu-smoke
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/qemu
+      tag: #@ "{}-{}-smoke".format(versions.qemu, branch)
+
+  #@ for arch in archs:
+  - name: #@ "docker-gcc-{}".format(arch.name)
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/gcc
+      tag: #@ "{}-{}-{}".format(versions.gcc, arch.name, branch)
+
+  - name: #@ "docker-gcc-{}-smoke".format(arch.name)
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/gcc
+      tag: #@ "{}-{}-{}-smoke".format(versions.gcc, arch.name, branch)
+  #@ end
+
+  - name: docker-kraft
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/kraft
+      tag: #@ branch
+
+  - name: docker-kraft-smoke
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/kraft
+      tag: #@ "{}-smoke".format(branch)
+
+  - name: docker-kraft-dev
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/kraft
+      tag: #@ "{}-dev".format(branch)
+
+  - name: docker-kraft-dev-smoke
+    type: docker-image-resource
+    icon: docker
+    source: 
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/kraft
+      tag: #@ "{}-dev-smoke".format(branch)
+
+  #@ for vendor in debs:
+  #@ for distribution in vendor.distributions:
+  - #@ deb_resource(vendor.name, distribution)
+  - #@ deb_resource(vendor.name, distribution, "-smoke")
+  - name: #@ "docker-pkg-{}-{}-{}".format(vendor.name, distribution, branch)
+    icon: docker
+    type: docker-image-resource
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/pkg-deb
+      tag: #@ "{}-{}-{}".format(vendor.name, distribution, branch)
+  #@ end
+  #@ end
+
+jobs:
+  - name: docker-qemu
+    plan:
+      - get: #@ "kraft-{}".format(branch)
+        trigger: true
+        version: latest
+
+      - task: docker-qemu
+        privileged: true
+        file: #@ "kraft-{}/.concourse/tasks/build-docker-qemu.yml".format(branch)
+        input_mapping:
+          kraft: #@ "kraft-{}".format(branch)
+        params:
+          BUILD_ARG_QEMU_VERSION: #@ versions.qemu
+
+      - load_var: docker-qemu-digest
+        file: image/digest
+
+      - put: docker-qemu-smoke
+        params:
+          load_file: image/image.tar
+          load_repository: ((.:docker-qemu-digest))
+        get_params:
+          skip_download: true
+
+  #@ for arch in archs:
+  - name: #@ "docker-gcc-{}".format(arch.name)
+    plan:
+      - get: #@ "kraft-{}".format(branch)
+        trigger: true
+        version: latest
+
+      - task: docker-gcc
+        privileged: true
+        file: #@ "kraft-{}/.concourse/tasks/build-docker-gcc.yml".format(branch)
+        input_mapping:
+          kraft: #@ "kraft-{}".format(branch)
+        params:
+          BUILD_ARG_UK_ARCH: #@ arch.name
+          BUILD_ARG_GCC_VERSION: #@ versions.gcc
+          BUILD_ARG_BINUTILS_VERSION: #@ versions.binutils
+          BUILD_ARG_GLIB_VERSION: #@ versions.glib
+
+      - load_var: docker-gcc-digest
+        file: image/digest
+
+      - put: #@ "docker-gcc-{}-smoke".format(arch.name)
+        params:
+          load_file: image/image.tar
+          load_repository: ((.:docker-gcc-digest))
+        get_params:
+          skip_download: true
+  #@ end
+
+  - name: docker-kraft
+    plan:
+      - get: #@ "kraft-{}".format(branch)
+        trigger: true
+        version: latest
+        passed:
+          - docker-qemu
+      #@ for arch in archs:
+          - #@ "docker-gcc-{}".format(arch.name)
+      #@ end
+      
+      - get: docker-qemu-smoke
+        passed:
+          - docker-qemu
+
+      #@ for arch in archs:
+      - get: #@ "docker-gcc-{}-smoke".format(arch.name)
+        passed:
+          - #@ "docker-gcc-{}".format(arch.name)
+      #@ end
+
+      - in_parallel:
+          fail_fast: true
+          steps:
+            
+            #! build the base iamge
+            - do:
+              - task: docker-kraft
+                privileged: true
+                file: #@ "kraft-{}/.concourse/tasks/build-docker-kraft.yml".format(branch)
+                input_mapping:
+                  kraft: #@ "kraft-{}".format(branch)
+                params:
+                  TARGET: kraft
+                  BUILD_ARG_GCC_VERSION: #@ versions.gcc
+
+              - load_var: docker-kraft-digest
+                file: image/digest
+
+              - put: docker-kraft-smoke
+                params:
+                  load_file: image/image.tar
+                  load_repository: ((.:docker-kraft-digest))
+                get_params:
+                  skip_download: true
+
+            #! build the developer image
+            - do:
+              - task: docker-kraft-dev
+                privileged: true
+                file: #@ "kraft-{}/.concourse/tasks/build-docker-kraft.yml".format(branch)
+                input_mapping:
+                  kraft: #@ "kraft-{}".format(branch)
+                params:
+                  TARGET: kraft-dev
+                  BUILD_ARG_GCC_VERSION: #@ versions.gcc
+
+              - load_var: docker-kraft-dev-digest
+                file: image/digest
+
+              - put: docker-kraft-dev-smoke
+                params:
+                  load_file: image/image.tar
+                  load_repository: ((.:docker-kraft-dev-digest))
+                get_params:
+                  skip_download: true
+
+  #@ for test in tests:
+  - name: #@ test.name
+    plan:
+    - get: #@ "kraft-{}".format(branch)
+      trigger: true
+      version: latest
+      passed:
+        - docker-kraft
+        
+    - get: docker-kraft-dev-smoke
+      passed:
+        - docker-kraft
+
+    - task: #@ test.name
+      file: #@ "kraft-{}/.concourse/tasks/test-kraft.yml".format(branch)
+      image: docker-kraft-dev-smoke
+      vars:
+        target_cmd: #@ test.cmd
+      input_mapping:
+        kraft: #@ "kraft-{}".format(branch)
+  #@ end
+
+  - name: release-docker
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - do:
+              - get: docker-kraft-dev-smoke
+                trigger: true
+                version: latest
+                passed:
+                  - docker-kraft
+                #@ for test in tests:
+                  - #@ test.name
+                #@ end
+                params:
+                  save: true
+              - load_var: docker-kraft-dev-digest
+                file: docker-kraft-dev-smoke/image-id
+              - put: docker-kraft-dev
+                params:
+                  load_file: docker-kraft-dev-smoke/image
+                  load_repository: ((.:docker-kraft-dev-digest))
+                get_params:
+                  skip_download: true
+
+            - do:
+              - get: docker-kraft-smoke
+                passed:
+                  - docker-kraft
+                params:
+                  save: true
+              - load_var: docker-kraft-digest
+                file: docker-kraft-smoke/image-id
+              - put: docker-kraft
+                params:
+                  load_file: docker-kraft-smoke/image
+                  load_repository: ((.:docker-kraft-digest))
+                get_params:
+                  skip_download: true
+            
+            - do:
+              - get: docker-qemu-smoke
+                passed:
+                  - docker-qemu
+                params:
+                  save: true
+              - load_var: docker-qemu-digest
+                file: docker-qemu-smoke/image-id
+              - put: docker-qemu
+                params:
+                  load_file: docker-qemu-smoke/image
+                  load_repository: ((.:docker-qemu-digest))
+                get_params:
+                  skip_download: true
+
+            #@ for arch in archs:
+            - do:
+              - get: #@ "docker-gcc-{}-smoke".format(arch.name)
+                passed:
+                  - #@ "docker-gcc-{}".format(arch.name)
+                params:
+                  save: true
+              - load_var: #@ "docker-gcc-{}-digest".format(arch.name)
+                file: #@ "docker-gcc-{}-smoke/image-id".format(arch.name)
+              - put: #@ "docker-gcc-{}".format(arch.name)
+                params:
+                  load_file: #@ "docker-gcc-{}-smoke/image".format(arch.name)
+                  load_repository: #@ "((.:docker-gcc-{}-digest))".format(arch.name)
+                get_params:
+                  skip_download: true
+            #@ end
+
+  #@ for vendor in debs:
+  #@ for distribution in vendor.distributions:
+  - name: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+    plan:
+      - get: #@ "kraft-{}".format(branch)
+        trigger: true
+        version: latest
+        passed:
+        #@ for test in tests:
+          - #@ test.name
+        #@ end
+
+      - task: docker-pkg-deb
+        privileged: true
+        file: #@ "kraft-{}/.concourse/tasks/build-docker-pkg-deb.yml".format(branch)
+        input_mapping:
+          kraft: #@ "kraft-{}".format(branch)
+        params:
+          BUILD_ARG_PKG_VENDOR: #@ vendor.name
+          BUILD_ARG_PKG_DISTRIBUTION: #@ distribution
+
+      - load_var: docker-pkg-deb-digest
+        file: image/digest
+
+      - put: #@ "docker-pkg-{}-{}-{}".format(vendor.name, distribution, branch)
+        params:
+          load_file: image/image.tar
+          load_repository: ((.:docker-pkg-deb-digest))
+          tag: #@ "{}-{}-{}".format(vendor.name, distribution, branch)
+        get_params:
+          skip_download: true
+  
+  - name: #@ "pkg-{}-{}".format(vendor.name, distribution)
+    plan:
+      - get: #@ "kraft-{}".format(branch)
+        trigger: true
+        version: latest
+        passed:
+          - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+
+      - get: #@ "docker-pkg-{}-{}-{}".format(vendor.name, distribution, branch)
+        passed:
+          - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+
+      - task: pkg-deb
+        file: #@ "kraft-{}/.concourse/tasks/build-pkg-deb.yml".format(branch)
+        image: #@ "docker-pkg-{}-{}-{}".format(vendor.name, distribution, branch)
+        vars:
+          tag: #@ "{}-{}-{}".format(vendor.name, distribution, branch)
+          vendor: #@ vendor.name
+          distribution: #@ distribution
+        input_mapping:
+          kraft: #@ "kraft-{}".format(branch)
+      
+      - load_var: kraft-version
+        file: dist/version
+
+      - put: #@ "{}-{}-deb-smoke".format(vendor.name, distribution)
+        params:
+          source: dist/*.deb
+          destination:
+            - dir: #@ "remote:((releases.deb-dir))"
+              path: #@ "/{}/{}/{}/".format(vendor.name, distribution, "testing")
+              vendor: #@ vendor.name
+              distribution: #@ distribution
+              branch: testing
+  
+  - name: #@ "test-pkg-{}-{}".format(vendor.name, distribution)
+    plan:
+      - get: #@ "kraft-{}".format(branch)
+        trigger: true
+        version: latest
+        passed:
+          - #@ "pkg-{}-{}".format(vendor.name, distribution)
+      
+      - get: #@ "{}-{}-deb-smoke".format(vendor.name, distribution)
+        passed:
+          - #@ "pkg-{}-{}".format(vendor.name, distribution)
+      
+      - load_var: basename
+        file: #@ "{}-{}-deb-smoke/basename".format(vendor.name, distribution)
+
+      - task: test-pkg-deb
+        file: #@ "kraft-{}/.concourse/tasks/test-pkg-deb.yml".format(branch)
+        vars:
+          tag: #@ "{}-{}-{}".format(vendor.name, distribution, branch)
+          vendor: #@ vendor.name
+          distribution: #@ distribution
+          branch: #@ branch
+          basename: ((.:basename))
+        input_mapping:
+          kraft: #@ "kraft-{}".format(branch)
+        on_success:
+          put: #@ "{}-{}-deb".format(vendor.name, distribution)
+          params:
+            source: dist/*.deb
+            destination:
+              - dir: #@ "remote:((releases.deb-dir))"
+                path: #@ "/{}/{}/{}/".format(vendor.name, distribution, "stable")
+                vendor: #@ vendor.name
+                distribution: #@ distribution
+                branch: stable
+
+  #@ end
+  #@ end
