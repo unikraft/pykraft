@@ -56,7 +56,6 @@ groups:
     jobs:
       - docker-qemu
       - docker-kraft
-      - pkg-pypi
       #@ for arch in archs:
       - #@ "docker-gcc-{}".format(arch.name)
       #@ end
@@ -124,12 +123,6 @@ resource_types:
       repository: ndrjng/concourse-rclone-resource
       tag: latest
 
-  - name: pypi
-    type: docker-image
-    source:
-      repository: cfplatformeng/concourse-pypi-resource
-
-
 resources:
   - name: pull-request
     type: pull-request
@@ -188,19 +181,6 @@ resources:
       repository: unikraft/pkg-deb
   #@ end
   #@ end
-
-  - name: kraft-pypi
-    icon: language-python
-    type: pypi
-    source:
-      name: kraft
-      name_must_match: false
-      repository:
-        test: true
-        username: ((pypi-test.username))
-        password: ((pypi-test.password))
-        authenticate: in
-
 
 jobs:
   - name: docker-qemu
@@ -375,41 +355,6 @@ jobs:
       on_success: #@ pull_request_status("success", test.name, "Test passed")
       on_failure: #@ pull_request_status("failure", test.name, "Test failed")
   #@ end
-
-  - name: pkg-pypi
-    plan:
-      - get: pull-request
-        trigger: true
-        version: every
-        passed:
-        #@ for test in tests:
-          - #@ test.name
-        #@ end
-        params:
-          fetch_tags: true
-
-      - #@ pull_request_status("pending", "pkg-pypi", "Building PyPI package...")
-
-      - get: docker-kraft-dev
-        passed:
-          - docker-kraft
-
-      - file: pull-request/.git/resource/pr
-        load_var: pull-request-number
-
-      - task: pkg-pypi
-        file: pull-request/.concourse/tasks/build-pkg-pypi.yaml
-        image: docker-kraft-dev
-        vars:
-          tag: pr-((.:pull-request-number))
-        input_mapping:
-          kraft: pull-request
-        on_success: #@ pull_request_status("success", "pkg-pypi", "Successfully built PyPI package")
-        on_failure: #@ pull_request_status("failure", "pkg-pypi", "Failed to build PyPI package")
-
-      - put: kraft-pypi
-        params:
-          glob: dist/*.tar.gz
 
   #@ for vendor in debs:
   #@ for distribution in vendor.distributions:
