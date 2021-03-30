@@ -95,7 +95,7 @@ resources:
     webhook_token: ((webhook-token))
     source:
       uri: https://github.com/unikraft/kraft.git
-      branch: concourse
+      branch: stable
       fetch_tags: true
 
   - name: docker-qemu
