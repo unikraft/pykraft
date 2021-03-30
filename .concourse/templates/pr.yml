@@ -1,0 +1,480 @@
+#! SPDX-License-Identifier: BSD-3-Clause
+#!
+#! Authors: Alexander Jung <a.jung@lancs.ac.uk>
+#!
+#! Copyright (c) 2020, Lancaster University.  All rights reserved.
+#!
+#! Redistribution and use in source and binary forms, with or without
+#! modification, are permitted provided that the following conditions
+#! are met:
+#!
+#! 1. Redistributions of source code must retain the above copyright
+#!    notice, this list of conditions and the following disclaimer.
+#! 2. Redistributions in binary form must reproduce the above copyright
+#!    notice, this list of conditions and the following disclaimer in the
+#!    documentation and/or other materials provided with the distribution.
+#! 3. Neither the name of the copyright holder nor the names of its
+#!    contributors may be used to endorse or promote products derived from
+#!    this software without specific prior written permission.
+#!
+#! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#! POSSIBILITY OF SUCH DAMAGE.
+
+#@ load("@ytt:data",     "data")
+#@ load("@ytt:assert",   "assert")
+#@ load("@ytt:struct",   "struct")
+#@ load("mixins.lib.yml", \
+#@  "pull_request_status", \
+#@  "deb_resource" \
+#@ )
+
+#! Template immediate data values
+#@ branch   = data.values.branch or \
+#@            assert.fail("branch must be specified")
+#@ versions = data.values.versions or \
+#@            assert.fail("versions must be specified")
+#@ debs     = data.values.debs or \
+#@            assert.fail("debs must be specified")
+#@ tests    = data.values.tests or \
+#@            assert.fail("tests must be specified")
+#@ archs    = data.values.archs or \
+#@            assert.fail("archs must be specified")
+
+
+---
+groups:
+  - name: all
+    jobs:
+      - docker-qemu
+      - docker-kraft
+      #@ for arch in archs:
+      - #@ "docker-gcc-{}".format(arch.name)
+      #@ end
+      #@ for test in tests:
+      - #@ test.name
+      #@ end
+      #@ for vendor in debs:
+      #@ for distribution in vendor.distributions:
+      - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+      - #@ "pkg-{}-{}".format(vendor.name, distribution)
+      - #@ "test-pkg-{}-{}".format(vendor.name, distribution)
+      #@ end
+      #@ end
+  
+  - name: tests
+    jobs:
+      #@ for test in tests:
+      - #@ test.name
+      #@ end
+      #@ for vendor in debs:
+      #@ for distribution in vendor.distributions:
+      - #@ "test-pkg-{}-{}".format(vendor.name, distribution)
+      #@ end
+      #@ end
+
+  - name: docker
+    jobs:
+      - docker-qemu
+      - docker-kraft
+      #@ for arch in archs:
+      - #@ "docker-gcc-{}".format(arch.name)
+      #@ end
+      #@ for vendor in debs:
+      #@ for distribution in vendor.distributions:
+      - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+      #@ end
+      #@ end
+  
+  #@ for vendor in debs:
+  - name: #@ "pkg-{}".format(vendor.name)
+    jobs:
+      #@ for distribution in vendor.distributions:
+      - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+      - #@ "pkg-{}-{}".format(vendor.name, distribution)
+      - #@ "test-pkg-{}-{}".format(vendor.name, distribution)
+      #@ end
+  #@ end
+
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: teliaoss/github-pr-resource
+
+  - name: docker-image-resource
+    type: docker-image
+    privileged: true
+    source:
+      repository: unikraft/concourse-docker-image-resource
+      tag: latest
+
+  - name: rclone
+    type: docker-image
+    source:
+      repository: ndrjng/concourse-rclone-resource
+      tag: latest
+
+
+resources:
+  - name: pull-request
+    type: pull-request
+    icon: github
+    check_every: 30m
+    webhook_token: ((webhook-token))
+    source:
+      repository: unikraft/kraft
+      access_token: ((github.access-token))
+      base_branch: #@ branch
+      ignore_drafts: false
+
+  - name: docker-qemu
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/qemu
+
+  #@ for arch in archs:
+  - name: #@ "docker-gcc-{}".format(arch.name)
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/gcc
+  #@ end
+
+  - name: docker-kraft
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/kraft
+
+  - name: docker-kraft-dev
+    type: docker-image-resource
+    icon: docker
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/kraft
+
+  #@ for vendor in debs:
+  #@ for distribution in vendor.distributions:
+  - #@ deb_resource(vendor.name, distribution)
+  - name: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+    icon: docker
+    type: docker-image-resource
+    source:
+      username: ((dockerhub.username))
+      password: ((dockerhub.password))
+      repository: unikraft/pkg-deb
+  #@ end
+  #@ end
+
+
+jobs:
+  - name: docker-qemu
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+
+      - #@ pull_request_status("pending", "docker-qemu", "Building image...")
+
+      - task: docker-qemu
+        privileged: true
+        file: pull-request/.concourse/tasks/build-docker-qemu.yml
+        input_mapping:
+          kraft: pull-request
+        params:
+          BUILD_ARG_QEMU_VERSION: #@ versions.qemu
+        on_success: #@ pull_request_status("success", "docker-qemu", "Successfully built unikraft/qemu image")
+        on_failure: #@ pull_request_status("failure", "docker-qemu", "Failed to build unikraft/qemu image")
+
+      - load_var: docker-qemu-digest
+        file: image/digest
+
+      - put: docker-qemu
+        params:
+          load_file: image/image.tar
+          load_repository: ((.:docker-qemu-digest))
+          tag_file: pull-request/.git/resource/pr
+          tag_prefix: pr-
+        get_params:
+          skip_download: true
+  
+  #@ for arch in archs:
+  - name: #@ "docker-gcc-{}".format(arch.name)
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+
+      - #@ pull_request_status("pending", "docker-gcc-{}".format(arch.name), "Building image...")
+
+      - file: pull-request/.git/resource/pr
+        load_var: pull-request-number
+
+      - task: docker-gcc
+        privileged: true
+        file: pull-request/.concourse/tasks/build-docker-gcc.yml
+        input_mapping:
+          kraft: pull-request
+        params:
+          UK_ARCH: #@ arch.name
+        on_success: #@ pull_request_status("success", "docker-gcc-{}".format(arch.name), "Successfully built unikraft/gcc:pr-((.:pull-request-number))-{}".format(arch.name))
+        on_failure: #@ pull_request_status("failure", "docker-gcc-{}".format(arch.name), "Failed to build unikraft/gcc:pr-((.:pull-request-number))-{}".format(arch.name))
+
+      - load_var: docker-gcc-digest
+        file: image/digest
+
+      - put: #@ "docker-gcc-{}".format(arch.name)
+        params:
+          load_file: image/image.tar
+          load_repository: ((.:docker-gcc-digest))
+          tag: #@ "pr-((.:pull-request-number))-{}".format(arch.name)
+        get_params:
+          skip_download: true
+  #@ end
+
+  - name: docker-kraft
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+        passed:
+          - docker-qemu
+        #@ for arch in archs:
+          - #@ "docker-gcc-{}".format(arch.name)
+        #@ end
+
+      - get: docker-qemu
+        passed:
+          - docker-qemu
+
+      #@ for arch in archs:
+      - get: #@ "docker-gcc-{}".format(arch.name)
+        passed:
+          - #@ "docker-gcc-{}".format(arch.name)
+      #@ end
+
+      - file: pull-request/.git/resource/pr
+        load_var: pull-request-number
+
+      - in_parallel:
+          fail_fast: true
+          steps:
+            
+            #! build the base iamge
+            - do:
+              - #@ pull_request_status("pending", "docker-kraft", "Building image...")
+
+              - task: docker-kraft
+                privileged: true
+                file: pull-request/.concourse/tasks/build-docker-kraft.yml
+                input_mapping:
+                  kraft: pull-request
+                params:
+                  BUILD_ARG_GCC_VERSION: pr-((.:pull-request-number))
+                  BUILD_ARG_QEMU_VERSION: pr-((.:pull-request-number))
+                on_success: #@ pull_request_status("success", "docker-kraft", "Successfully built unikraft/kraft:pr-((.:pull-request-number))")
+                on_failure: #@ pull_request_status("failure", "docker-kraft", "Failed to build unikraft/kraft:pr-((.:pull-request-number))")
+
+              - load_var: docker-kraft-digest
+                file: image/digest
+
+              - put: docker-kraft
+                params:
+                  load_file: image/image.tar
+                  load_repository: ((.:docker-kraft-digest))
+                  tag_file: pull-request/.git/resource/pr
+                  tag_prefix: pr-
+                get_params:
+                  skip_download: true
+            
+            #! build the developer image
+            - do:
+              - #@ pull_request_status("pending", "docker-kraft-dev", "Building image...")
+
+              - task: docker-kraft-dev
+                privileged: true
+                file: pull-request/.concourse/tasks/build-docker-kraft.yml
+                input_mapping:
+                  kraft: pull-request
+                params:
+                  TARGET: kraft-dev
+                on_success: #@ pull_request_status("success", "docker-kraft-dev", "Successfully built unikraft/kraft:dev-pr-((.:pull-request-number))")
+                on_failure: #@ pull_request_status("failure", "docker-kraft-dev", "Failed to build unikraft/kraft:dev-pr-((.:pull-request-number))")
+
+              - load_var: docker-kraft-dev-digest
+                file: image/digest
+
+              - put: docker-kraft-dev
+                params:
+                  load_file: image/image.tar
+                  load_repository: ((.:docker-kraft-dev-digest))
+                  tag_file: pull-request/.git/resource/pr
+                  tag_prefix: dev-pr-
+                get_params:
+                  skip_download: true
+
+  #@ for test in tests:
+  - name: #@ test.name
+    plan:
+    - get: pull-request
+      trigger: true
+      version: latest
+      passed:
+        - docker-kraft
+      params:
+        fetch_tags: true
+
+    - #@ pull_request_status("pending", test.name, "Testing...")
+  
+    - get: docker-kraft-dev
+      passed:
+        - docker-kraft
+
+    - task: #@ test.name
+      file: pull-request/.concourse/tasks/test-kraft.yml
+      image: docker-kraft-dev
+      vars:
+        target_cmd: #@ test.cmd
+      input_mapping:
+        kraft: pull-request
+      on_success: #@ pull_request_status("success", test.name, "Test passed")
+      on_failure: #@ pull_request_status("failure", test.name, "Test failed")
+  #@ end
+
+  #@ for vendor in debs:
+  #@ for distribution in vendor.distributions:
+  - name: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+        passed:
+        #@ for test in tests:
+          - #@ test.name
+        #@ end
+
+      - #@ pull_request_status("pending", "docker-pkg-{}-{}".format(vendor.name, distribution), "Building image...")
+
+      - file: pull-request/.git/resource/pr
+        load_var: pull-request-number
+
+      - task: docker-pkg-deb
+        privileged: true
+        file: pull-request/.concourse/tasks/build-docker-pkg-deb.yml
+        input_mapping:
+          kraft: pull-request
+        params:
+          BUILD_ARG_PKG_VENDOR: #@ vendor.name
+          BUILD_ARG_PKG_DISTRIBUTION: #@ distribution
+        on_success: #@ pull_request_status("success", "docker-pkg-{}-{}".format(vendor.name, distribution), "Successfully built unikraft/pkg-deb:{}-{}-pr-((.:pull-request-number)) image".format(vendor.name, distribution))
+        on_failure: #@ pull_request_status("failure", "docker-pkg-{}-{}".format(vendor.name, distribution), "Failed to build unikraft/pkg-deb:{}-{}-pr-((.:pull-request-number)) image".format(vendor.name, distribution))
+
+      - load_var: docker-pkg-deb-digest
+        file: image/digest
+
+      - put: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+        params:
+          load_file: image/image.tar
+          load_repository: ((.:docker-pkg-deb-digest))
+          tag_file: pull-request/.git/resource/pr
+          tag_prefix: #@ "{}-{}-pr-".format(vendor.name, distribution)
+        get_params:
+          skip_download: true
+  
+  - name: #@ "pkg-{}-{}".format(vendor.name, distribution)
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+        passed:
+          - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+        params:
+          fetch_tags: true
+
+      - #@ pull_request_status("pending", "pkg-{}-{}".format(vendor.name, distribution), "Packaging .deb...")
+      
+      - get: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+        passed:
+          - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+
+      - file: pull-request/.git/resource/pr
+        load_var: pull-request-number
+
+      - task: pkg-deb
+        file: pull-request/.concourse/tasks/build-pkg-deb.yml
+        image: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
+        vars:
+          tag: pr-((.:pull-request-number))
+          vendor: #@ vendor.name
+          distribution: #@ distribution
+        params:
+          DIRTY: -pr-((.:pull-request-number))
+        input_mapping:
+          kraft: pull-request
+        on_success: #@ pull_request_status("success", "pkg-{}-{}".format(vendor.name, distribution), "Packaging .deb passed")
+        on_failure: #@ pull_request_status("failure", "pkg-{}-{}".format(vendor.name, distribution), "Packaging .deb failed")
+
+      - load_var: kraft-version
+        file: dist/version
+
+      - put: #@ "{}-{}-deb".format(vendor.name, distribution)
+        params:
+          source: dist/*.deb
+          destination:
+            - dir: #@ "remote:((releases.deb-dir))"
+              path: #@ "/{}/{}/{}/".format(vendor.name, distribution, "testing")
+              vendor: #@ vendor.name
+              distribution: #@ distribution
+              branch: testing
+  
+  - name: #@ "test-pkg-{}-{}".format(vendor.name, distribution)
+    plan:
+      - get: pull-request
+        trigger: true
+        version: latest
+        passed:
+          - #@ "pkg-{}-{}".format(vendor.name, distribution)
+
+      - #@ pull_request_status("pending", "test-pkg-{}-{}".format(vendor.name, distribution), "Testing .deb install...")
+      
+      - get: #@ "{}-{}-deb".format(vendor.name, distribution)
+        passed:
+          - #@ "pkg-{}-{}".format(vendor.name, distribution)
+      
+      - load_var: basename
+        file: #@ "{}-{}-deb/basename".format(vendor.name, distribution)
+
+      - file: pull-request/.git/resource/pr
+        load_var: pull-request-number
+
+      - task: test-pkg-deb
+        file: pull-request/.concourse/tasks/test-pkg-deb.yml
+        vars:
+          tag: pr-((.:pull-request-number))
+          vendor: #@ vendor.name
+          distribution: #@ distribution
+          branch: testing
+          basename: ((.:basename))
+        input_mapping:
+          kraft: pull-request
+        on_success: #@ pull_request_status("success", "test-pkg-{}-{}".format(vendor.name, distribution), "Installing .deb passed")
+        on_failure: #@ pull_request_status("failure", "test-pkg-{}-{}".format(vendor.name, distribution), "Installing .deb failed")
+  #@ end
+  #@ end
