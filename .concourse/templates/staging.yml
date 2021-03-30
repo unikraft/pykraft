@@ -52,7 +52,7 @@ groups:
   - name: all
     jobs:
       - "*"
-  
+
   - name: tests
     jobs:
       - test-*
@@ -60,7 +60,7 @@ groups:
   - name: docker
     jobs:
       - docker-*
-  
+
   #@ for vendor in debs:
   - name: #@ "pkg-{}".format(vendor.name)
     jobs:
@@ -214,7 +214,7 @@ jobs:
       #@ for arch in archs:
           - #@ "docker-gcc-{}".format(arch.name)
       #@ end
-      
+
       - get: docker-qemu
         passed:
           - docker-qemu
@@ -228,7 +228,7 @@ jobs:
       - in_parallel:
           fail_fast: true
           steps:
-            
+
             #! build the base iamge
             - do:
               - task: docker-kraft
@@ -279,7 +279,7 @@ jobs:
       version: latest
       passed:
         - docker-kraft
-        
+
     - get: docker-kraft-dev
       passed:
         - docker-kraft
@@ -324,7 +324,7 @@ jobs:
           tag: #@ "{}-{}-{}".format(vendor.name, distribution, branch)
         get_params:
           skip_download: true
-  
+
   - name: #@ "pkg-{}-{}".format(vendor.name, distribution)
     plan:
       - get: #@ "kraft-{}".format(branch)
@@ -346,7 +346,7 @@ jobs:
           distribution: #@ distribution
         input_mapping:
           kraft: #@ "kraft-{}".format(branch)
-      
+
       - load_var: kraft-version
         file: dist/version
 
@@ -359,7 +359,7 @@ jobs:
               vendor: #@ vendor.name
               distribution: #@ distribution
               branch: #@ branch
-  
+
   - name: #@ "test-pkg-{}-{}".format(vendor.name, distribution)
     plan:
       - get: #@ "kraft-{}".format(branch)
@@ -367,11 +367,11 @@ jobs:
         version: latest
         passed:
           - #@ "pkg-{}-{}".format(vendor.name, distribution)
-      
+
       - get: #@ "{}-{}-deb".format(vendor.name, distribution)
         passed:
           - #@ "pkg-{}-{}".format(vendor.name, distribution)
-      
+
       - load_var: basename
         file: #@ "{}-{}-deb/basename".format(vendor.name, distribution)
 

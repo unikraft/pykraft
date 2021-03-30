@@ -112,7 +112,7 @@ plan:
           file: pull-request/.git/resource/head_sha
         - get: pipelines-and-tasks
         - get: #@ unikraft.resource
-  
+
   - put: pull-request-status-update
     resource: pull-request
     get_params:

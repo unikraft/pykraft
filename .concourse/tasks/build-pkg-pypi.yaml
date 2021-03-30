@@ -24,7 +24,7 @@ run:
     - |
       DIRTY=$DIRTY \
       DOCKER= \
-      make get-version > dist/version
+      make get-version | sed "s/+.*//" > dist/version
 
       APP_VERSION=$(cat dist/version) \
       DOCKER= \

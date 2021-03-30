@@ -56,6 +56,7 @@ groups:
     jobs:
       - docker-qemu
       - docker-kraft
+      - pkg-pypi
       #@ for arch in archs:
       - #@ "docker-gcc-{}".format(arch.name)
       #@ end
@@ -69,7 +70,7 @@ groups:
       - #@ "test-pkg-{}-{}".format(vendor.name, distribution)
       #@ end
       #@ end
-  
+
   - name: tests
     jobs:
       #@ for test in tests:
@@ -93,7 +94,7 @@ groups:
       - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
       #@ end
       #@ end
-  
+
   #@ for vendor in debs:
   - name: #@ "pkg-{}".format(vendor.name)
     jobs:
@@ -122,6 +123,11 @@ resource_types:
     source:
       repository: ndrjng/concourse-rclone-resource
       tag: latest
+
+  - name: pypi
+    type: docker-image
+    source:
+      repository: cfplatformeng/concourse-pypi-resource
 
 
 resources:
@@ -183,6 +189,18 @@ resources:
   #@ end
   #@ end
 
+  - name: kraft-pypi
+    icon: language-python
+    type: pypi
+    source:
+      name: kraft
+      name_must_match: false
+      repository:
+        test: true
+        username: ((pypi-test.username))
+        password: ((pypi-test.password))
+        authenticate: in
+
 
 jobs:
   - name: docker-qemu
@@ -214,7 +232,7 @@ jobs:
           tag_prefix: pr-
         get_params:
           skip_download: true
-  
+
   #@ for arch in archs:
   - name: #@ "docker-gcc-{}".format(arch.name)
     plan:
@@ -276,7 +294,7 @@ jobs:
       - in_parallel:
           fail_fast: true
           steps:
-            
+
             #! build the base iamge
             - do:
               - #@ pull_request_status("pending", "docker-kraft", "Building image...")
@@ -303,7 +321,7 @@ jobs:
                   tag_prefix: pr-
                 get_params:
                   skip_download: true
-            
+
             #! build the developer image
             - do:
               - #@ pull_request_status("pending", "docker-kraft-dev", "Building image...")
@@ -342,7 +360,7 @@ jobs:
         fetch_tags: true
 
     - #@ pull_request_status("pending", test.name, "Testing...")
-  
+
     - get: docker-kraft-dev
       passed:
         - docker-kraft
@@ -357,6 +375,41 @@ jobs:
       on_success: #@ pull_request_status("success", test.name, "Test passed")
       on_failure: #@ pull_request_status("failure", test.name, "Test failed")
   #@ end
+
+  - name: pkg-pypi
+    plan:
+      - get: pull-request
+        trigger: true
+        version: every
+        passed:
+        #@ for test in tests:
+          - #@ test.name
+        #@ end
+        params:
+          fetch_tags: true
+
+      - #@ pull_request_status("pending", "pkg-pypi", "Building PyPI package...")
+
+      - get: docker-kraft-dev
+        passed:
+          - docker-kraft
+
+      - file: pull-request/.git/resource/pr
+        load_var: pull-request-number
+
+      - task: pkg-pypi
+        file: pull-request/.concourse/tasks/build-pkg-pypi.yaml
+        image: docker-kraft-dev
+        vars:
+          tag: pr-((.:pull-request-number))
+        input_mapping:
+          kraft: pull-request
+        on_success: #@ pull_request_status("success", "pkg-pypi", "Successfully built PyPI package")
+        on_failure: #@ pull_request_status("failure", "pkg-pypi", "Failed to build PyPI package")
+
+      - put: kraft-pypi
+        params:
+          glob: dist/*.tar.gz
 
   #@ for vendor in debs:
   #@ for distribution in vendor.distributions:
@@ -397,7 +450,7 @@ jobs:
           tag_prefix: #@ "{}-{}-pr-".format(vendor.name, distribution)
         get_params:
           skip_download: true
-  
+
   - name: #@ "pkg-{}-{}".format(vendor.name, distribution)
     plan:
       - get: pull-request
@@ -409,7 +462,7 @@ jobs:
           fetch_tags: true
 
       - #@ pull_request_status("pending", "pkg-{}-{}".format(vendor.name, distribution), "Packaging .deb...")
-      
+
       - get: #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
         passed:
           - #@ "docker-pkg-{}-{}".format(vendor.name, distribution)
@@ -443,7 +496,7 @@ jobs:
               vendor: #@ vendor.name
               distribution: #@ distribution
               branch: testing
-  
+
   - name: #@ "test-pkg-{}-{}".format(vendor.name, distribution)
     plan:
       - get: pull-request
@@ -453,11 +506,11 @@ jobs:
           - #@ "pkg-{}-{}".format(vendor.name, distribution)
 
       - #@ pull_request_status("pending", "test-pkg-{}-{}".format(vendor.name, distribution), "Testing .deb install...")
-      
+
       - get: #@ "{}-{}-deb".format(vendor.name, distribution)
         passed:
           - #@ "pkg-{}-{}".format(vendor.name, distribution)
-      
+
       - load_var: basename
         file: #@ "{}-{}-deb/basename".format(vendor.name, distribution)
 
