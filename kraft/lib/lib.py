@@ -213,12 +213,13 @@ class Library(Component):
         origin_mirrors = []
 
         for mirror_base in mirror_bases:
-            origin_mirrors.append(os.path.join(
-                mirror_base,
-                "libs",
-                self.name,
-                self.origin_filename
-            ))
+            if self.origin_filename is not None:
+                origin_mirrors.append(os.path.join(
+                    mirror_base,
+                    "libs",
+                    self.name,
+                    self.origin_filename
+                ))
 
         return origin_mirrors
 
