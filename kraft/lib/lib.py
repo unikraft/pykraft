@@ -164,12 +164,12 @@ class Library(Component):
             return self._origin_archive
 
         elif self.origin_provider is not None and self.origin_version is not None:
-            origin_archive = self.origin_provider.origin_url_with_varname(
+            self._origin_archive = self.origin_provider.origin_url_with_varname(
                 self.origin_version
             )
 
-        if origin_archive is not None:
-            self._origin_archive = origin_archive
+        if self._origin_archive is not None:
+            return self._origin_archive
 
         elif self.origin_url is not None and self.origin_version is not None:
             self._origin_archive = self.origin_url.replace(
@@ -189,11 +189,9 @@ class Library(Component):
         if self._origin_filename is not None:
             return self._origin_filename
 
-        elif self.origin_provider is not None:
-            origin_filename = self.origin_provider.origin_filename
-
-        if origin_filename is not None:
-            self._origin_filename = origin_filename
+        elif self.origin_provider is not None and \
+                self.origin_provider.origin_filename is not None:
+            self._origin_filename = self.origin_provider.origin_filename
 
         elif self.origin_archive is not None:
             self._origin_filename = os.path.basename(self.origin_archive)
