@@ -328,21 +328,21 @@ class Application(Component):
         dotconfig.extend(self.config.unikraft.kconfig or [])
 
         for arch in archs:
-            if not arch.is_downloaded():
+            if not arch.is_downloaded:
                 raise MissingComponent(arch.name)
 
             dotconfig.extend(arch.kconfig)
             dotconfig.append(arch.kconfig_enabled_flag)
 
         for plat in plats:
-            if not plat.is_downloaded():
+            if not plat.is_downloaded:
                 raise MissingComponent(plat.name)
 
             dotconfig.extend(plat.kconfig)
             dotconfig.append(plat.kconfig_enabled_flag)
 
         for lib in self.config.libraries.all():
-            if not lib.is_downloaded():
+            if not lib.is_downloaded:
                 raise MissingComponent(lib.name)
 
             dotconfig.extend(lib.kconfig)

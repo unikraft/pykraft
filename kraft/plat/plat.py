@@ -64,9 +64,10 @@ class InternalPlatform(Platform):
     @property
     def core(self): return self._core
 
+    @property
     def is_downloaded(self):
         if self._core is not None:
-            return self._core.is_downloaded()
+            return self._core.is_downloaded
         return False
 
     _localdir = None
