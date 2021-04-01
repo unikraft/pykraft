@@ -143,42 +143,10 @@ class Application(Component):
         if workdir is None:
             workdir = ctx.obj.workdir
 
-        config = None
-        try:
-            config = load_config(find_config(workdir, None, ctx.obj.env))
-        except KraftFileNotFound:
-            pass
-
-        # Dynamically update the configuration specification based on version
-        # overrides provided by use_versions
-        for use in use_versions:
-            _type, name, _, version = break_component_naming_format(use)
-
-            if _type is ComponentType.CORE:
-                config.unikraft.version = version
-
-            for k, target in enumerate(config.targets.all()):
-                if _type is ComponentType.ARCH or _type is None:
-                    if target.architecture.name == name:
-                        _type = ComponentType.ARCH
-                        target.architecture.version = version
-                        config.targets.set(k, target)
-                        break
-
-                if _type is ComponentType.PLAT or _type is None:
-                    if target.platform.name == name:
-                        _type = ComponentType.PLAT
-                        target.platform.version = version
-                        config.targets.set(k, target)
-                        break
-
-            if _type is ComponentType.LIB or _type is None:
-                for k, lib in enumerate(config.libraries.all()):
-                    if lib.name == name:
-                        _type = ComponentType.LIB
-                        lib.version = version
-                        config.libraries.set(k, lib)
-                        break
+        config = load_config(
+            find_config(workdir, None, ctx.obj.env),
+            use_versions=use_versions
+        )
 
         return cls(
             config=config,

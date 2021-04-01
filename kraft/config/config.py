@@ -58,6 +58,8 @@ from kraft.logger import logger
 from kraft.plat.network import NetworkManager
 from kraft.plat.volume import VolumeManager
 from kraft.target import TargetManager
+from kraft.types import break_component_naming_format
+from kraft.types import ComponentType
 from kraft.unikraft import Unikraft
 
 
@@ -350,7 +352,8 @@ def get_project_name(workdir, project_name=None, environment=None):
     return 'default'
 
 
-def process_kraftfile(kraftfile, environment, service_name=None, interpolate=True):
+def process_kraftfile(kraftfile, environment, service_name=None,  # noqa: C901
+                      interpolate=True):
     if kraftfile.config is None:
         return kraftfile
 
@@ -433,12 +436,37 @@ def process_kraftfile(kraftfile, environment, service_name=None, interpolate=Tru
             environment
         )
 
+    if isinstance(processed_config['unikraft'], (six.string_types, int, float)):
+        processed_config['unikraft'] = {
+            'version': processed_config['unikraft']
+        }
+
     processed_config['libraries'] = interpolate_environment_variables(
         kraftfile.version,
         kraftfile.get_libraries(),
         "libraries",
         environment
     )
+
+    for library in processed_config['libraries']:
+        version = processed_config['libraries'][library]
+        if isinstance(version, (six.string_types, int, float)):
+            processed_config['libraries'][library] = {
+                'version': version
+            }
+
+    for i, conf in enumerate(processed_config['targets']):
+        if 'architecture' in conf:
+            if isinstance(conf['architecture'], (six.string_types, int, float)):
+                processed_config['targets'][i]['architecture'] = {
+                    'name': processed_config['targets'][i]['architecture']
+                }
+
+        if 'platform' in conf:
+            if isinstance(conf['platform'], (six.string_types, int, float)):
+                processed_config['targets'][i]['platform'] = {
+                    'name': processed_config['targets'][i]['platform']
+                }
 
     kraftfile = kraftfile._replace(config=processed_config)
     return kraftfile
@@ -523,7 +551,7 @@ def load_mapping(config_files, get_func, entity_type, working_dir=None):
     return mapping
 
 
-def load_config(config_details):
+def load_config(config_details, use_versions=[]):  # noqa: C901
     """Load the configuration from a working directory and a list of
     configuration files.  Files are loaded in order, and merged on top
     of each other to create the final configuration.
@@ -600,12 +628,31 @@ def load_config(config_details):
         config_details.working_dir
     )
 
-    if isinstance(unikraft, six.string_types):
-        core = Unikraft(
-            version=unikraft
-        )
-    else:
-        core = Unikraft(**unikraft)
+    # Dynamically update the configuration specification based on version
+    # overrides provided by use_versions
+    for use in use_versions:
+        _type, name, _, version = break_component_naming_format(use)
+
+        if _type is ComponentType.CORE:
+            unikraft['version'] = version
+
+        for i, conf in enumerate(targets):
+            if _type is ComponentType.ARCH or _type is None:
+                if 'architecture' in conf and \
+                        conf['architecture']['name'] == name:
+                    targets[i]['architecture']['version'] = version
+
+            if _type is ComponentType.PLAT or _type is None:
+                if 'platform' in conf and \
+                        conf['platform']['name'] == name:
+                    targets[i]['platform']['version'] = version
+
+        if _type is ComponentType.LIB or _type is None:
+            for lib, conf in libraries.items():
+                if lib == name:
+                    libraries[lib]['version'] = version
+
+    core = Unikraft(**unikraft)
 
     return Config(
         specification=main_file.version,
