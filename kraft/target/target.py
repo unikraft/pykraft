@@ -98,6 +98,14 @@ class Target(object):
                 self._architecture = Architecture(
                     name=arch
                 )
+        elif isinstance(arch, dict):
+            if 'name' in arch and arch['name'] in UK_CORE_ARCHS:
+                self._architecture = InternalArchitecture(
+                    **arch,
+                    core=self.core
+                )
+            else:
+                self._architecture = Architecture(**arch)
 
         plat = kwargs.get('platform', None)
         if isinstance(plat,  Platform):
@@ -113,6 +121,14 @@ class Target(object):
                 self._platform = Platform(
                     name=plat
                 )
+        elif isinstance(plat, dict):
+            if 'name' in plat and plat['name'] in UK_CORE_PLATS:
+                self._platform = InternalPlatform(
+                    **plat,
+                    core=self.core
+                )
+            else:
+                self._platform = Platform(**plat)
 
     def binary_name(self, appname=None, debug=False):
         if appname is None:
