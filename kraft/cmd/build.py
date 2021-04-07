@@ -80,23 +80,25 @@ def kraft_build(ctx, verbose=False, workdir=None, fetch=True, prepare=True,
             n_proc=n_proc
         )
 
-    if return_code == 0:
-        print("\nSuccessfully built unikernels:\n")
+    if return_code > 0:
+        sys.exit(return_code)
 
-        for target in app.binaries:
-            if not os.path.exists(target.binary):
-                continue
+    print("\nSuccessfully built unikernels:\n")
 
-            print("  => %s/%s" % (
-                UNIKRAFT_BUILDDIR,
-                os.path.basename(target.binary)
-            ))
-            print("  => %s/%s (with symbols)" % (
-                UNIKRAFT_BUILDDIR,
-                os.path.basename(target.binary_debug)
-            ))
+    for target in app.binaries:
+        if not os.path.exists(target.binary):
+            continue
 
-        print("\nTo instantiate, use: kraft run\n")
+        print("  => %s/%s" % (
+            UNIKRAFT_BUILDDIR,
+            os.path.basename(target.binary)
+        ))
+        print("  => %s/%s (with symbols)" % (
+            UNIKRAFT_BUILDDIR,
+            os.path.basename(target.binary_debug)
+        ))
+
+    print("\nTo instantiate, use: kraft run\n")
 
 
 @click.command('build', short_help='Build the application.')
