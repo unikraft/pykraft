@@ -99,6 +99,7 @@ TARBALL_SUPPORTED_EXTENSIONS = [
     '.tar.xz',
     '.tar',
     '.tgz',
+    '.tbz2'
 ]
 
 SOURCEFORGE_PROJECT_NAME = re.compile(
