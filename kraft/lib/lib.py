@@ -247,6 +247,12 @@ class Library(Component):
         """
         if self._origin_provider is None and self.origin_url is not None:
             provider_cls = determine_lib_provider(self._origin_url)
+            if provider_cls is None:
+                logger.warn(
+                    "Cannot determine provider for: %s" % self._origin_url
+                )
+                return None
+
             self._origin_provider = provider_cls(
                 origin_url=self._origin_url,
                 origin_version=self.origin_version
