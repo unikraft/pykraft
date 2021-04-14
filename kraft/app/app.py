@@ -413,6 +413,8 @@ class Application(Component):
         if ctx.obj.settings.fetch_prioritize_origin is False:
             extra.extend(self.list_possible_mirrors())
 
+        extra.append('fetch')
+
         return self.make(extra, verbose)
 
     @click.pass_context
