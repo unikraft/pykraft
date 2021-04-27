@@ -16,7 +16,7 @@ install the requirements:
 
 To install `kraft` simply run:
 
-    pip3 install git+https://github.com/unikraft/kraft.git
+    pip3 install git+https://github.com/unikraft/kraft.git@staging
 
 You can then type `kraft` to see its help menu
 
@@ -25,8 +25,8 @@ You can then type `kraft` to see its help menu
 The simplest way to get the sources for, build and run an application
 is by running the following commands:
 
-    kraft list
-    kraft up -p PLATFORM -m ARCHITECTURE APP
+    kraft list update
+    kraft up -t helloworld@staging ./my-first-unikernel
 
 At present, Unikraft and kraft support the following applications:
 
