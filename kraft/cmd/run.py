@@ -195,7 +195,8 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
 @click.option(
     '--memory', '-M', 'memory',
     help="Assign MB memory to the guest.",
-    type=int
+    type=int,
+    default=64
 )
 @click.option(
     '--cpu-sockets', '-s', 'cpu_sockets',
