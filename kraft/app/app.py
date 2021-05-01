@@ -476,7 +476,7 @@ class Application(Component):
         if gdb:
             runner.open_gdb(gdb)
 
-        if memory:
+        if isinstance(memory, int) and memory > 0:
             runner.set_memory(memory)
 
         if cpu_sockets:
