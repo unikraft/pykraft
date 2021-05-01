@@ -109,7 +109,7 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
                 force_pull=force_init,
             )
 
-        logger.info('Initialized new unikraft application: %s' % appdir)
+        app = Application.from_workdir(appdir)
 
     # If no application is provided, we can initialize a template by dumping
     # a YAML file
@@ -129,9 +129,12 @@ def kraft_app_init(ctx, appdir=None, name=None, plat=None, arch=None,
             ignore_version=force_init
         )
 
-        app.init(
-            create_makefile=create_makefile
-        )
+    app.name = name
+    app.init(
+        create_makefile=create_makefile
+    )
+
+    logger.info('Initialized new unikraft application: %s' % appdir)
 
 
 @click.command('init', short_help='Initialize a new unikraft application.')
