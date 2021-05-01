@@ -85,11 +85,14 @@ class Application(Component):
     def __init__(ctx, self, *args, **kwargs):
         super(Application, self).__init__(*args, **kwargs)
 
+        self._config = kwargs.get('config', None)
+        self._name = kwargs.get('name', None)
+
         # Determine name from localdir
         if self._name is None and self._localdir is not None:
             self._name = os.path.basename(self._localdir)
 
-        self._config = kwargs.get('config', None)
+        self.config.name = self._name
 
         # Determine how configuration is passed to this class
         if self._config is None:
@@ -114,7 +117,7 @@ class Application(Component):
                 volumes = VolumeManager(volumes)
 
             self._config = Config(
-                name=kwargs.get('name', None),
+                name=kwargs.get('name', self._name),
                 arguments=kwargs.get("arguments", None),
                 before=kwargs.get("before", None),
                 after=kwargs.get("after", None),
