@@ -34,6 +34,7 @@ from __future__ import unicode_literals
 
 import os
 import subprocess
+import tarfile
 import tempfile
 from pathlib import Path
 
@@ -65,6 +66,7 @@ from kraft.plat import InternalPlatform
 from kraft.plat import Platform
 from kraft.plat.network import NetworkManager
 from kraft.plat.volume import VolumeManager
+from kraft.plat.volume import VolumeDriver
 from kraft.target import Target
 from kraft.target import TargetManager
 from kraft.types import break_component_naming_format
@@ -484,6 +486,17 @@ class Application(Component):
 
         if cpu_cores:
             runner.set_cpu_cores(cpu_cores)
+
+        for volume in self.config.volumes.all():
+            if volume.driver is VolumeDriver.VOL_9PFS:
+                path = os.path.join(self.localdir, volume.name)
+
+                if not os.path.exists(path):
+                    tar = tarfile.open(volume.source)
+                    tar.extractall(path)
+                    tar.close()
+
+                runner.add_virtio_9pfs(path)
 
         runner.unikernel = target.binary
         runner.execute(
