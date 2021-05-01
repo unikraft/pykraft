@@ -90,6 +90,8 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
 
         target_answer = None
 
+        binaries = list(set(binaries))
+
         # Prompt user for binary selection
         if len(binaries) > 1:
             answers = inquirer.prompt([
