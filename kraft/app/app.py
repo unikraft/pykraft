@@ -65,8 +65,8 @@ from kraft.manifest import maniest_from_name
 from kraft.plat import InternalPlatform
 from kraft.plat import Platform
 from kraft.plat.network import NetworkManager
-from kraft.plat.volume import VolumeManager
 from kraft.plat.volume import VolumeDriver
+from kraft.plat.volume import VolumeManager
 from kraft.target import Target
 from kraft.target import TargetManager
 from kraft.types import break_component_naming_format
