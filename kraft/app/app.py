@@ -398,7 +398,13 @@ class Application(Component):
         for lib in self.config.libraries.all():
             if not lib.is_fetched:
                 for mirror in lib.origin_mirrors:
-                    response = requests.head(mirror)
+                    try:
+                        response = requests.head(mirror)
+
+                    except Exception:
+                        logger.debug("Mirror down: %s" % mirror)
+                        break
+
                     if response.status_code == 200:
                         extra.append(
                             lib.kname +
