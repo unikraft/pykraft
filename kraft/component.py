@@ -71,6 +71,9 @@ class Component(object):
     @property
     def name(self): return self._name
 
+    @name.setter
+    def name(self, name=None): self._name = name
+
     _version = None
 
     @property
