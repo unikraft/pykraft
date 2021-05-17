@@ -212,14 +212,15 @@ endif
 
 
 .PHONY: docker-kraft
+docker-kraft: IMAGE_VERSION ?= $(subst +,.,$(APP_VERSION))
 ifeq ($(KRAFT_TARGET),kraft-dev)
-docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)-dev
+docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(IMAGE_VERSION)-dev
 else
-docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(APP_VERSION)
+docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(IMAGE_VERSION)
 endif
 docker-kraft:
 ifneq (,$(findstring help,$(MAKECMDGOALS)))
-	@echo "Usage: [APP_VERSION=... IMAGE_NAME=...] $(MAKE) $@                            "
+	@echo "Usage: [IMAGE_VERSION=... IMAGE_NAME=...] $(MAKE) $@                            "
 	@echo "                                                                              "
 	@echo "  Build the kraft Docker container ultimately known as unikraft/kraft:latest. "
 	@echo "                                                                              "

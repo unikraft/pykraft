@@ -35,14 +35,17 @@ from setuptools import find_packages
 from setuptools import setup
 
 from kraft import __description__
-from kraft import __version__
+from kraft import __program__
 
 with open('requirements.txt') as f:
     required = [x for x in f.read().splitlines() if not x.startswith("#")]
 
 setup(
-    name='unikraft-tools',
-    version=__version__,
+    name=__program__,
+    use_scm_version=True,
+    setup_requires=[
+        'setuptools_scm'
+    ],
     packages=find_packages(exclude=['tests.*', 'tests']),
     description=__description__,
     license='',

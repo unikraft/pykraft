@@ -33,26 +33,12 @@ KRAFTDIR             ?= $(CURDIR)
 DOCKERDIR            ?= $(KRAFTDIR)/docker
 DISTDIR              ?= $(KRAFTDIR)/dist
 
-ifeq ($(HASH),)
-HASH_COMMIT          ?= HEAD
-HASH                 ?= $(shell git update-index -q --refresh && \
-                                git describe --tags)
-
-# Others can't be dirty by definition
-ifneq ($(HASH_COMMIT),HEAD)
-HASH_COMMIT          ?= HEAD
-endif
-DIRTY                ?= $(shell git update-index -q --refresh && \
-                                git diff-index --quiet HEAD -- $(KRAFTDIR) || \
-                                echo "-dirty")
-endif
-
 APP_NAME             ?= kraft
 PKG_NAME             ?= unikraft-tools
 PKG_ARCH             ?= amd64
 PKG_VENDOR           ?= debian
 PKG_DISTRIBUTION     ?= sid
-APP_VERSION          ?= $(shell echo "$(HASH)$(DIRTY)" | tail -c +2)
+APP_VERSION          ?= $(shell $(SNAKE) setup.py --version)
 REPO                 ?= https://github.com/unikraft/kraft
 ORG                  ?= unikraft
 

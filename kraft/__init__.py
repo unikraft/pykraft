@@ -32,11 +32,21 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from pkg_resources import DistributionNotFound
+from pkg_resources import get_distribution
+
+
+__package__ = 'unikraft-tools'
 __program__ = 'kraft'
-__version__ = '0.4.1-alpha.0'
+__version__ = 'unset'
 __description__ = '''
 Define, configure, build and run unikernel applications.
 '''
 __all__ = [
     'kraft'
 ]
+
+try:
+    __version__ = get_distribution(__package__).version
+except DistributionNotFound:
+    pass  # package is not installed
