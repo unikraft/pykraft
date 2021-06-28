@@ -351,7 +351,10 @@ class Application(Component):
         finally:
             os.remove(path)
 
-        return return_code
+        if return_code > 0:
+            raise KraftError("Could not configure application")
+
+        return True
 
     @click.pass_context
     def add_lib(ctx, self, lib=None):
