@@ -37,12 +37,32 @@ from setuptools import setup
 from kraft import __description__
 from kraft import __program__
 
+
 with open('requirements.txt') as f:
     required = [x for x in f.read().splitlines() if not x.startswith("#")]
 
+
+def version_scheme(version):
+    import setuptools_scm.version
+    if version.exact:
+        return setuptools_scm.version.guess_next_simple_semver(
+            version.tag,
+            retain=setuptools_scm.version.SEMVER_LEN,
+            increment=False
+        )
+    else:
+        return version.format_next_version(
+            setuptools_scm.version.guess_next_simple_semver,
+            retain=setuptools_scm.version.SEMVER_MINOR
+        )
+
+
 setup(
     name=__program__,
-    use_scm_version=True,
+    use_scm_version={
+        "version_scheme": version_scheme,
+        "local_scheme": "dirty-tag",
+    },
     setup_requires=[
         'setuptools_scm'
     ],
