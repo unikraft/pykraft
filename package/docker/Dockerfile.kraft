@@ -88,6 +88,7 @@ COPY --from=qemu /share/qemu/           /share/qemu
 
 WORKDIR /usr/src/kraft
 
+COPY .git                               /usr/src/kraft/.git
 COPY kraft                              /usr/src/kraft/kraft
 COPY scripts                            /usr/src/kraft/scripts
 COPY requirements.txt                   /usr/src/kraft/requirements.txt
