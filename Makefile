@@ -65,7 +65,7 @@ SNAKE                ?= python3
 RM                   ?= rm
 GIT                  ?= git
 MKDIR                ?= mkdir
-SED                  ?= sed
+SED                  ?= sed/b
 TAR                  ?= tar
 CP                   ?= cp
 CD                   ?= cd
@@ -201,7 +201,7 @@ $(.PROXY)pkg-deb:
 else
 $(.PROXY)pkg-deb: DEBUILD ?= debuild
 $(.PROXY)pkg-deb: DEBUILD_FLAGS ?= --preserve-env -b -us -uc
-$(.PROXY)pkg-deb: $(.PROXY)sdist $(.PROXY)changelog $(.PROXY)bump
+$(.PROXY)pkg-deb: $(.PROXY)sdist $(.PROXY)changelog
 $(.PROXY)pkg-deb:
 	$(Q)$(MKDIR) -p $(DISTDIR)/build
 	$(Q)$(TAR) -x -C $(DISTDIR)/build \
@@ -221,17 +221,8 @@ ifneq (,$(findstring help,$(MAKECMDGOALS)))
 $(.PROXY)sdist: no-help
 else
 $(.PROXY)sdist: SETUPPY_FLAGS ?= -d $(DISTDIR)
-$(.PROXY)sdist: bump
+$(.PROXY)sdist:
 	$(Q)$(SNAKE) setup.py sdist $(SETUPPY_FLAGS)
-endif
-
-
-.PHONY: bump
-ifneq (,$(findstring help,$(MAKECMDGOALS)))
-bump: no-help
-else
-bump:
-	$(Q)$(SED) -i --regexp-extended "s/__version__[ ='0-9a-zA-Z\.\-]+/__version__ = '$(APP_VERSION)'/g" $(KRAFTDIR)/kraft/__init__.py
 endif
 
 
