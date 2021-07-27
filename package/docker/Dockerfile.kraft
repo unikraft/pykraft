@@ -53,9 +53,10 @@ COPY --from=gcc-arm /bin/               /bin
 COPY --from=gcc-arm /lib/gcc/           /lib/gcc
 COPY --from=gcc-arm /libexec/gcc/       /libexec/gcc
 
-COPY --from=gcc-arm64 /bin/             /bin
-COPY --from=gcc-arm64 /lib/gcc/         /lib/gcc
-COPY --from=gcc-arm64 /libexec/gcc/     /libexec/gcc
+COPY --from=gcc-arm64 /bin/               /bin
+COPY --from=gcc-arm64 /lib/gcc/           /lib/gcc
+COPY --from=gcc-arm64 /libexec/gcc/       /libexec/gcc
+COPY --from=gcc-arm64 /aarch64-linux-gnu/ /aarch64-linux-gnu
 
 RUN set -xe; \
     ln -s /bin/${GCC_PREFIX}-as         /bin/as; \
@@ -82,6 +83,7 @@ RUN set -xe; \
     ln -s /bin/${GCC_PREFIX}-size       /bin/size; \
     ln -s /bin/${GCC_PREFIX}-strings    /bin/strings; \
     ln -s /bin/${GCC_PREFIX}-strip      /bin/strip;
+
 
 COPY --from=qemu /bin/                  /bin
 COPY --from=qemu /share/qemu/           /share/qemu
