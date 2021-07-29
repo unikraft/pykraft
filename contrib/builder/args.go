@@ -32,9 +32,9 @@
 package main
 
 import (
-	"os"
-	u "github.com/unikraft/kraft/contrib/common"
 	"github.com/akamensky/argparse"
+	u "github.com/unikraft/kraft/contrib/common"
+	"os"
 )
 
 const (
@@ -61,5 +61,5 @@ func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 		&argparse.Options{Required: false, Help: "Add additional properties " +
 			"for Makefile"})
 
-	return u.ParserWrapper(p, os.Args)
+	return p.Parse(os.Args)
 }

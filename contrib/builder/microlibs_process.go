@@ -32,10 +32,10 @@
 package main
 
 import (
+	u "github.com/unikraft/kraft/contrib/common"
 	"io/ioutil"
 	"strings"
 	"sync"
-	u "github.com/unikraft/kraft/contrib/common"
 )
 
 const (
@@ -211,7 +211,7 @@ func cloneLibsFolders(unikraftPath string, matchedLibs []string,
 			if !exists {
 				// If the micro-libs is not in the local host, clone it
 				if err := cloneGitRepo("git://xenbits.xen.org/unikraft/"+
-					"libs/"+lib+".git", unikraftPath+u.LIBSFOLDER); err != nil {
+					"libs/"+lib+".git", unikraftPath+ u.LIBSFOLDER); err != nil {
 					u.PrintWarning(err)
 				}
 			} else {

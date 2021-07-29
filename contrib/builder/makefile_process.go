@@ -32,9 +32,9 @@
 package main
 
 import (
+	u "github.com/unikraft/kraft/contrib/common"
 	"path/filepath"
 	"strings"
-	u "github.com/unikraft/kraft/contrib/common"
 )
 
 // ----------------------------Generate Makefile--------------------------------

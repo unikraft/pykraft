@@ -35,32 +35,16 @@
 package main
 
 import (
-	"os/user"
 	u "github.com/unikraft/kraft/contrib/common"
+	"os/user"
 )
 
 func main() {
-
-	// Init global arguments
-	args := new(u.Arguments)
-	parser, err := args.InitArguments("kraft-devel-builder", "")
-	if err != nil {
-		u.PrintErr(err)
-	}
-
-	// Parse arguments
-	if err := args.ParseMainArguments(parser, args); err != nil {
-		u.PrintErr(err)
-	}
 
 	// Get user home folder
 	usr, err := user.Current()
 	if err != nil {
 		u.PrintErr(err)
 	}
-
-	var data *u.Data
-
-	RunBuildTool(usr.HomeDir, data)
-
+	RunBuildTool(usr.HomeDir)
 }

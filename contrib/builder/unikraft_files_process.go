@@ -35,9 +35,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	u "github.com/unikraft/kraft/contrib/common"
 	"os"
 	"path/filepath"
-	u "github.com/unikraft/kraft/contrib/common"
+	"strings"
 )
 
 // ---------------------------Create Include Folder-----------------------------
@@ -181,9 +182,23 @@ var srcLanguages = map[string]int{
 	".cpp": 0,
 	".cc":  0,
 	".S":   0,
+	".s":   0,
 	".asm": 0,
-	//".py":  0,
-	//".go":  0,
+	".py":  0,
+	".go":  0,
+}
+
+func filterSourcesFiles(sourceFiles []string) []string {
+	filterSrcFiles := make([]string, 0)
+	for _, file := range sourceFiles {
+		if !strings.Contains(file, "copy") &&
+			!strings.Contains(file, "test") &&
+			!strings.Contains(file, "unit") {
+			filterSrcFiles = append(filterSrcFiles, file)
+		}
+
+	}
+	return filterSrcFiles
 }
 
 func processSourceFiles(sourcesPath, appFolder, includeFolder string,

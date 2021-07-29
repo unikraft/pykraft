@@ -32,6 +32,7 @@
 package main
 
 import (
+	"github.com/AlecAivazis/survey"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -47,6 +48,7 @@ const (
 	success
 )
 
+const pageSize = 10
 // -----------------------------Generate Config---------------------------------
 
 // generateConfigUk generates a 'Config.uk' file for the Unikraft build system.
@@ -130,7 +132,7 @@ func parseMakeOutput(output string) string {
 // RunBuildTool runs the automatic build tool to build a unikernel of a
 // given application.
 //
-func RunBuildTool(homeDir string, data *u.Data) {
+func RunBuildTool(homeDir string) {
 
 	// Init and parse local arguments
 	args := new(u.Arguments)
@@ -178,13 +180,14 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	}
 
 	// If data is not initialized, read output from dependency analysis tool
-	if data == nil {
-		u.PrintInfo("Initialize data")
-		outFolder := homeDir + u.SEP + programName + "_" + u.OUTFOLDER
-		if data, err = u.ReadDataJson(outFolder+programName, data); err != nil {
-			u.PrintErr(err)
-		}
+	var data *u.Data
+
+	outFolder := homeDir + u.SEP + programName + "_" + u.OUTFOLDER
+	u.PrintInfo("Initialize data from: " + outFolder)
+	if data, err = u.ReadDataJson(outFolder+programName, data); err != nil {
+		u.PrintErr(err.Error() + " : Make sure to run the dependency analyser first")
 	}
+
 
 	// Create unikraft application path
 	appFolderPtr, err := createUnikraftApp(programName, unikraftPath)
@@ -209,6 +212,23 @@ func RunBuildTool(homeDir string, data *u.Data) {
 	if sourceFiles, err = processSourceFiles(sourcesPath, appFolder, *includeFolder,
 		sourceFiles, includesFiles); err != nil {
 		u.PrintErr(err)
+	}
+
+	// Filter source files to limit build errors (e.g., remove test files,
+	//multiple main file, ...)
+	filterSourceFiles := filterSourcesFiles(sourceFiles)
+
+	// Prompt file selection
+	prompt := &survey.MultiSelect{
+		Message:  "Select the sources of the program",
+		Options:  sourceFiles,
+		Default:  filterSourceFiles,
+		PageSize: pageSize,
+	}
+
+	var selectedFiles []string
+	if err := survey.AskOne(prompt, &selectedFiles); err != nil {
+		panic(err)
 	}
 
 	// Match micro-libs
@@ -236,7 +256,7 @@ func RunBuildTool(homeDir string, data *u.Data) {
 
 	// Generate Makefiles
 	if err := generateMake(programName, appFolder, unikraftPath, *args.StringArg[makefileArg],
-		matchedLibs, sourceFiles, externalLibs); err != nil {
+		matchedLibs, selectedFiles, externalLibs); err != nil {
 		u.PrintErr(err)
 	}
 

@@ -70,3 +70,4 @@ builder-deps:
 	$(GOGET) github.com/akamensky/argparse
 	$(GOGET) github.com/awalterschulze/gographviz
 	$(GOGET) github.com/sergi/go-diff/...
+	$(GOGET) github.com/AlecAivazis/survey
