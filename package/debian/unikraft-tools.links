@@ -6,3 +6,4 @@ usr/share/unikraft-tools/usr/bin/kraft-devel-builder usr/bin/kraft-devel-builder
 usr/share/unikraft-tools/usr/bin/kraft-devel-crawler usr/bin/kraft-devel-crawler
 usr/share/unikraft-tools/usr/bin/kraft-devel-depender usr/bin/kraft-devel-depender
 usr/share/unikraft-tools/usr/bin/kraft-devel-verifier usr/bin/kraft-devel-verifier
+usr/share/unikraft-tools/usr/bin/kraft-devel-binary-analyser usr/bin/kraft-devel-binary-analyser

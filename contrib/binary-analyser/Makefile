@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Authors: Alexander Jung <alexander.jung@neclab.eu>
+# Authors: Gaulthier Gain <gaulthier.gain@uliege.be>
+#          Alexander Jung <alexander.jung@neclab.eu>
 #
-# Copyright (c) 2020, NEC Europe Laboratories GmbH.,
-#                     NEC Corporation. All rights reserved.
+# Copyright (c) 2020, Université de Liège., ULiege. All rights reserved.
+#               2020, NEC Laboratories Europe GmbH, NEC Corporation.
+#                     All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,33 +33,38 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 ifeq ($(KRAFTDIR),)
-CONTRIBDIR ?= $(CURDIR)
-OUTDIR     ?= /usr/bin
+CONTRIBDIR   ?= $(CURDIR)/../
 else
-CONTRIBDIR ?= $(KRAFTDIR)/contrib
-OUTDIR     ?= $(KRAFTDIR)/bin
+CONTRIBDIR   ?= $(KRAFTDIR)/contrib
 endif
 
-.PHONY: contrib
-ifneq (,$(findstring help,$(MAKECMDGOALS)))
-install: no-help
-else
-contrib: gotools
-endif
+DEVELBINARY ?= $(CONTRIBDIR)/binary-analyser
+OUTDIR       ?= $(DEVELBINARY)/out
 
-.PHONY: gotools
+# Program arguments
+BINARY      := kraft-devel-binary-analyser
+ARCH         ?= amd64
 
-include $(CONTRIBDIR)/builder/Makefile
-gotools: kraft-devel-builder
+# Tools
+DOCKER       ?= docker
+GO           ?= go
+GOBUILD      ?= $(GO) build
+GOCLEAN      ?= $(GO) clean
+GOGET        ?= $(GO) get
+CD           ?= cd
+CHMOD        ?= chmod
 
-include $(CONTRIBDIR)/crawler/Makefile
-gotools: kraft-devel-crawler
+# Targets
+$(BINARY): binary-analyser-deps
+	($(CD) $(DEVELBINARY) && \
+		CGO_ENABLED=0 GOOS=linux GOARCH=$(ARCH) $(GOBUILD) -v \
+			-o $(OUTDIR)/$(BINARY))
+	$(CHMOD) +x $(OUTDIR)/$(BINARY)
 
-include $(CONTRIBDIR)/depender/Makefile
-gotools: kraft-devel-depender
+binary-analyser-clean:
+	$(GOCLEAN)
+	rm -vf $(OUTDIR)/$(BINARY)
 
-include $(CONTRIBDIR)/verifier/Makefile
-gotools: kraft-devel-verifier
-
-include $(CONTRIBDIR)/binary-analyser/Makefile
-gotools: kraft-devel-binary-analyser
+binary-analyser-deps:
+	$(GOGET) github.com/fatih/color
+	$(GOGET) github.com/akamensky/argparse

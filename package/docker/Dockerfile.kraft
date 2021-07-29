@@ -90,6 +90,7 @@ COPY --from=gotools /usr/bin/kraft-devel-builder /bin/
 COPY --from=gotools /usr/bin/kraft-devel-crawler /bin/
 COPY --from=gotools /usr/bin/kraft-devel-depender /bin/
 COPY --from=gotools /usr/bin/kraft-devel-verifier /bin/
+COPY --from=gotools /usr/bin/kraft-devel-binary-analyser /bin/
 
 
 COPY .git                               /usr/src/kraft/.git
