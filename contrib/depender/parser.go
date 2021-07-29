@@ -49,40 +49,6 @@ type recursiveData struct {
 
 // --------------------------------Static Output--------------------------------
 
-// parseReadELF parses the output of the 'readelf' command.
-//
-func parseReadELF(output string, data *u.StaticData) {
-	types := map[string]bool{"FUNC": true, "FILE": true, "OBJECT": true}
-
-	// Check the output of 'readelf' command
-	for _, line := range strings.Split(output, "\n") {
-		words := strings.Fields(line)
-
-		if len(words) > 8 && types[words[3]] {
-			symbol := strings.Split(words[7], "@")
-			data.Symbols[symbol[0]] = symbol[1]
-		}
-	}
-}
-
-// parseNM parses the output of the 'nm' command.
-//
-func parseNM(output string, data *u.StaticData) {
-	// Get the list of system calls
-	systemCalls := initSystemCalls()
-
-	// Check the output of 'nm' command
-	var re = regexp.MustCompile(`(?m)([U|T|B|D]\s)(.*)\s*`)
-	for _, match := range re.FindAllStringSubmatch(output, -1) {
-		// Add to system calls map if symbol is a system call
-		if _, isSyscall := systemCalls[match[2]]; isSyscall {
-			data.SystemCalls[match[2]] = ""
-		} else {
-			data.Symbols[match[2]] = ""
-		}
-	}
-}
-
 // parsePackagesName parses the output of the 'apt-cache pkgnames' command.
 //
 // It returns a string which represents the name of application used by the
@@ -153,6 +119,41 @@ func parseDependencies(output string, data, dependenciesMap,
 	return listDep
 }
 
+// parseLDDMac parses the output of the 'ldd' command (on mac).
+//
+// It returns a slice of strings which represents all the shared libs of
+// a particular package.
+func parseLDDMac(output string, data map[string][]string, lddMap map[string][]string,
+	fullDeps bool) []string {
+
+	listLdd := make([]string, 0)
+	lines := strings.Split(output, "\n")
+	// Remove first element
+	lines = lines[1:]
+
+	for _, line := range lines {
+
+		// Execute ldd only if fullDeps mode is set
+		if fullDeps {
+			rd := recursiveData{
+				data:     data,
+				glMap:    lddMap,
+				printDep: nil,
+				cmd:      "otool -L " + line + " | awk '{ print $1 }'",
+				line:     line,
+				listStr:  listLdd,
+				level:    -1,
+			}
+			listLdd = append(listLdd, line)
+			parseRecursive(rd)
+		} else {
+			data[line] = nil
+		}
+
+	}
+	return listLdd
+}
+
 // parseLDD parses the output of the 'ldd' command.
 //
 // It returns a slice of strings which represents all the shared libs of
@@ -169,7 +170,7 @@ func parseLDD(output string, data map[string][]string, lddMap map[string][]strin
 			lib, path := words[0], words[1]
 
 			// Execute ldd only if fullDeps mode is set
-			if fullDeps {
+			if fullDeps && strings.HasPrefix(path, "/") {
 				rd := recursiveData{
 					data:     data,
 					glMap:    lddMap,
@@ -182,7 +183,12 @@ func parseLDD(output string, data map[string][]string, lddMap map[string][]strin
 				listLdd = append(listLdd, lib)
 				parseRecursive(rd)
 			} else {
-				data[lib] = nil
+				// Associate the path if it exists
+				if strings.Contains(path, ".so") {
+					data[lib] = []string{path}
+				} else {
+					data[lib] = nil
+				}
 			}
 		}
 	}
@@ -231,11 +237,10 @@ func detectPermissionDenied(str string) bool {
 	return false
 }
 
-// parseTrace parses the output of the '(s)|(f)trace' command.
+// parseTrace parses the output of the 'ftrace' command.
 //
 // It returns true if command must be run with sudo, otherwise false.
-func parseTrace(output string, data map[string]string) bool {
-
+func parseFtrace(output string, data map[string]string) bool {
 	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\((.*)`)
 	for _, match := range re.FindAllStringSubmatch(output, -1) {
 		if len(match) > 1 {
@@ -247,6 +252,32 @@ func parseTrace(output string, data map[string]string) bool {
 			}
 			// Add symbol to map
 			data[match[1]] = ""
+		}
+	}
+	return false
+}
+
+// parseTrace parses the output of the '(s)|(f)trace' command.
+//
+// It returns true if command must be run with sudo, otherwise false.
+func parseStrace(output string, data map[string]int) bool {
+
+	systemCalls := initSystemCalls()
+	var re = regexp.MustCompile(`([a-zA-Z_0-9@/-]+?)\((.*)`)
+	for _, match := range re.FindAllStringSubmatch(output, -1) {
+		if len(match) > 1 {
+			// Detect if Permission denied is thrown
+			detected := detectPermissionDenied(match[2])
+			if detected {
+				// Command must be run with sudo
+				return true
+			}
+			// Add symbol to map
+			if _, isSyscall := systemCalls[match[1]]; isSyscall {
+				data[match[1]] = systemCalls[match[1]]
+			} else {
+				data[match[1]] = -1
+			}
 		}
 	}
 	return false

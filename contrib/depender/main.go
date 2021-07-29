@@ -41,25 +41,10 @@ import (
 
 func main() {
 
-	// Init global arguments
-	args := new(u.Arguments)
-	parser, err := args.InitArguments("kraft-devel-depender", "")
-	if err != nil {
-		u.PrintErr(err)
-	}
-
-	// Parse arguments
-	if err := args.ParseMainArguments(parser, args); err != nil {
-		u.PrintErr(err)
-	}
-
 	// Get user home folder
 	usr, err := user.Current()
 	if err != nil {
 		u.PrintErr(err)
 	}
-
-	var data *u.Data
-
-	RunAnalyserTool(usr.HomeDir, data)
+	RunAnalyserTool(usr.HomeDir, new(u.Data))
 }

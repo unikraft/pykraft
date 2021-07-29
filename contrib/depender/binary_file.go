@@ -33,8 +33,36 @@ package main
 
 import (
 	"debug/elf"
+	"errors"
 	"os"
 )
+
+// getMachOS reads and decodes a Mac os file.
+//
+// It returns an error if any otherwise it returns nil.
+func getMachOS(filename string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// Read and decode MachOS identifier
+	var ident [16]uint8
+	if _, err = f.ReadAt(ident[0:], 0); err != nil {
+		return err
+	}
+
+	if ident[0] != '\xca' || ident[1] != '\xfe' || ident[2] != '\xba' || ident[3] != '\xbe' {
+		return nil
+	} else if ident[0] != '\xcf' || ident[1] != '\xfa' || ident[2] != '\xed' || ident[3] != '\xfe' {
+		return nil
+	} else if ident[0] != '\xfe' || ident[1] != '\xed' || ident[2] != '\xfa' || ident[3] != '\xcf' {
+		return nil
+	}
+
+	return errors.New("not compatible machos format")
+}
 
 // getElf reads and decodes an ELF file.
 //
@@ -45,7 +73,6 @@ func getElf(filename string) (*elf.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
 
 	_elf, err := elf.NewFile(f)
 	if err != nil {

@@ -32,6 +32,8 @@
 package main
 
 import (
+	"debug/elf"
+	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -44,8 +46,8 @@ import (
 func RunAnalyserTool(homeDir string, data *u.Data) {
 
 	// Support only Unix
-	if strings.ToLower(runtime.GOOS) != "linux" {
-		u.PrintErr("Only UNIX/Linux platforms are supported")
+	if strings.ToLower(runtime.GOOS) == "windows" {
+		u.PrintErr("Windows platform is not supported")
 	}
 
 	// Init and parse local arguments
@@ -56,6 +58,12 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	}
 	if err := parseLocalArguments(p, args); err != nil {
 		u.PrintErr(err)
+	}
+
+	// Get the kind of analysis (0: both; 1: static; 2: dynamic)
+	typeAnalysis := *args.IntArg[typeAnalysis]
+	if typeAnalysis < 0 || typeAnalysis > 2 {
+		u.PrintErr(errors.New("analysis argument must be between [0,2]"))
 	}
 
 	// Get program path
@@ -76,16 +84,34 @@ func RunAnalyserTool(homeDir string, data *u.Data) {
 	// Display Minor Details
 	displayProgramDetails(programName, programPath, args)
 
-	// Check if the program is an ELF
-	checkElf(&programPath)
+	var elfFile *elf.File
+	isDynamic := false
+	isLinux := strings.ToLower(runtime.GOOS) == "linux"
+
+	// Check if the program is a binary
+	if isLinux {
+		elfFile, isDynamic = checkElf(&programPath)
+	} else if strings.ToLower(runtime.GOOS) == "darwin" {
+		u.PrintWarning("Static analysis is limited on macOS")
+		checkMachOS(&programPath)
+	}
 
 	// Run static analyser
-	u.PrintHeader1("(1.1) RUN STATIC ANALYSIS")
-	runStaticAnalyser(args, programName, programPath, outFolder, data)
+	if typeAnalysis == 0 || typeAnalysis == 1 {
+		u.PrintHeader1("(1.1) RUN STATIC ANALYSIS")
+		runStaticAnalyser(elfFile, isDynamic, isLinux, args, programName, programPath, outFolder, data)
+	}
 
 	// Run dynamic analyser
-	u.PrintHeader1("(1.2) RUN DYNAMIC ANALYSIS")
-	runDynamicAnalyser(args, programName, programPath, outFolder, data)
+	if typeAnalysis == 0 || typeAnalysis == 2 {
+		if isLinux {
+			u.PrintHeader1("(1.2) RUN DYNAMIC ANALYSIS")
+			runDynamicAnalyser(args, programName, programPath, outFolder, data)
+		} else {
+			// dtruss/dtrace on mac needs to disable system integrity protection
+			u.PrintWarning("Dynamic analysis is not currently supported on macOS")
+		}
+	}
 
 	// Save Data to JSON
 	if err = u.RecordDataJson(outFolder+programName, data); err != nil {
@@ -121,8 +147,16 @@ func displayProgramDetails(programName, programPath string, args *u.Arguments) {
 	fmt.Println("----------------------------------------------")
 }
 
+// checkMachOS checks if the program (from its path) is an Mach os file
+func checkMachOS(programPath *string) {
+	if err := getMachOS(*programPath); err != nil {
+		u.PrintErr(err)
+	}
+}
+
 // checkElf checks if the program (from its path) is an ELF file
-func checkElf(programPath *string) {
+func checkElf(programPath *string) (*elf.File, bool) {
+	dynamicCompiled := false
 	elfFile, err := getElf(*programPath)
 	if err != nil {
 		u.PrintErr(err)
@@ -131,20 +165,32 @@ func checkElf(programPath *string) {
 		u.PrintWarning("Only ELF binaries are supported! Some analysis" +
 			" procedures will be skipped")
 	} else {
+
 		// Get ELF architecture
 		architecture, machine := GetElfArchitecture(elfFile)
 		fmt.Println("ELF Class: ", architecture)
 		fmt.Println("Machine: ", machine)
 		fmt.Println("Entry Point: ", elfFile.Entry)
+		for _, s := range elfFile.Sections {
+			if strings.Contains(s.Name, ".dynamic") {
+				fmt.Println("Type: Dynamically compiled")
+				dynamicCompiled = true
+				break
+			}
+		}
+		if !dynamicCompiled {
+			fmt.Println("Type: Statically compiled")
+		}
 		fmt.Println("----------------------------------------------")
 	}
+	return elfFile, dynamicCompiled
 }
 
 // runStaticAnalyser runs the static analyser
-func runStaticAnalyser(args *u.Arguments, programName, programPath,
+func runStaticAnalyser(elfFile *elf.File, isDynamic, isLinux bool, args *u.Arguments, programName, programPath,
 	outFolder string, data *u.Data) {
 
-	staticAnalyser(*args, data, programPath)
+	staticAnalyser(elfFile, isDynamic, isLinux, *args, data, programPath)
 
 	// Save static Data into text file if display mode is set
 	if *args.BoolArg[saveOutputArg] {

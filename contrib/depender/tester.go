@@ -28,12 +28,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
 package main
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	u "github.com/unikraft/kraft/contrib/common"
 	"math/rand"
 	"net"
 	"os"
@@ -42,7 +44,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	u "github.com/unikraft/kraft/contrib/common"
 )
 
 const (
