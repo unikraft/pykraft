@@ -1,0 +1,33 @@
+{
+  "typeTest": "exec",
+  "timeMsCommand": 2000,
+  "listCommands": [
+    "sudo exiwhat",
+    "sudo exim -bP",
+    "sudo mailq",
+    "sudo exim -bpc",
+    "sudo exim -bp | exiqsumm",
+    "sudo exim -bt monmail@domaine.fr",
+    "sudo exiqgrep -f [user]@domaine",
+    "sudo exiqgrep -r [user]@domaine",
+    "sudo exiqgrep -o 120",
+    "sudo exiqgrep -y 120",
+    "sudo exim -Mf message-id",
+    "sudo exim -Mt message-id",
+    "sudo exim -M message-id",
+    "sudo exim -Mvl message-id",
+    "sudo exim -Mvh message-id",
+    "sudo exim -Mvb message-id",
+    "sudo exim -Mrm message-id",
+    "sudo exim -qf",
+    "sudo exim -qff",
+    "sudo exim -Mes message-id address",
+    "sudo exim -bpr | grep -Eo \"<[^ ]*@[^ ]*>\", | sort | uniq -c",
+    "sudo exim -bpr | grep -Eo \"^\s*[^ ]*@[^ ]*$\", | sort | uniq -c",
+    "sudo exiqgrep -o 43000 -i | xargs exim -Mrm",
+    "sudo exiqgrep -z -i | xargs exim -Mrm",
+    "sudo exiqgrep -i -f [user]@domaine | xargs exim -Mrm",
+    "sudo exiqgrep -o 43000 -i -f [user]@domaine | xargs exim -Mrm",
+    "sudo grep -lr 'bla bla bla' /var/spool/exim/input/ | sed -e 's/^.*\/\([a-zA-Z0-9-]*\)-[DH]$/\1/g' | xargs exim -Mrm"
+  ]
+}

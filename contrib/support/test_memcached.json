@@ -1,0 +1,25 @@
+{
+  "typeTest": "telnet",
+  "addressTelnet": "127.0.0.1",
+  "portTelnet": 11211,
+  "timeMsCommand": 2000,
+  "listCommands": [
+    "stats",
+    "stats slabs",
+    "stats items",
+    "stats cachedump 1 0",
+    "get testkey",
+    "VALUE testkey 0 9",
+    "test data",
+    "add newkey 0 60 5",
+    "replace key 0 60 5",
+    "prepend key 0 60 15",
+    "stats malloc",
+    "flush_all",
+    "set hello 0 900 9",
+    "get hello",
+    "VALUE world 0 9",
+    "get hello",
+    "delete hello"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "typeTest": "exec",
+  "timeMsCommand": 2000,
+  "listCommands": [
+    "dig unicore-project.eu +nssearch",
+    "sudo rndc dumpdb -cache",
+    "sudo rndc flush",
+    "sudo rndc status",
+    "sudo rndc reload",
+    "sudo rndc zonestatus unicore-project.eu",
+    "sudo rndc reload unicore-project.eu",
+    "sudo rndc refresh zone unicore-project.eu",
+    "sudo rndc refresh unicore-project.eu",
+    "sudo rndc status",
+    "sudo rndc thaw unicore-project.eu",
+    "sudo rndc thaw ",
+    "sudo rndc notify",
+    "sudo rndc dumpdb -all",
+    "sudo rndc sign unicore-project.eu",
+    "sudo rndc secroots",
+    "sudo rndc trace",
+    "sudo rndc recursing",
+    "sudo rndc freeze",
+    "sudo rndc freeze unicore-project.eu",
+    "sudo rndc notify unicore-project.eu",
+    "nslookup unicore-project.eu",
+    "nslookup 141.85.241.196",
+    "dig unicore-project.eu +nssearch",
+    "sudo rndc notrace",
+    "sudo rndc restart",
+    "sudo rndc stop"
+  ]
+}

@@ -1,0 +1,6 @@
+nginx -h
+nginx -v
+nginx -V
+nginx -t
+nginx -T
+nginx -Tq

@@ -1,5 +1,6 @@
 # Manifest syntax https://docs.python.org/2/distutils/sourcedist.html
 graft kraft
+graft bin
 
 recursive-exclude __pycache__  *.pyc *.pyo *.orig *.un~
 

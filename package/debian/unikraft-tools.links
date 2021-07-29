@@ -2,3 +2,7 @@ usr/share/unikraft-tools/bin/kraft usr/bin/kraft
 usr/share/unikraft-tools/bin/kraft-net usr/bin/kraft-net
 usr/share/unikraft-tools/bin/qemu-guest usr/bin/qemu-guest
 usr/share/unikraft-tools/bin/kvm-guest usr/bin/kvm-guest
+usr/share/unikraft-tools/usr/bin/kraft-devel-builder usr/bin/kraft-devel-builder
+usr/share/unikraft-tools/usr/bin/kraft-devel-crawler usr/bin/kraft-devel-crawler
+usr/share/unikraft-tools/usr/bin/kraft-devel-depender usr/bin/kraft-devel-depender
+usr/share/unikraft-tools/usr/bin/kraft-devel-verifier usr/bin/kraft-devel-verifier
