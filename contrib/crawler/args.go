@@ -63,5 +63,5 @@ func parseLocalArguments(p *argparse.Parser, args *u.Arguments) error {
 	args.InitArgParse(p, args, u.STRING, "r", repoArg,
 		&argparse.Options{Required: false, Help: "Path of the repository"})
 
-	return u.ParserWrapper(p, os.Args)
+	return p.Parse(os.Args)
 }
