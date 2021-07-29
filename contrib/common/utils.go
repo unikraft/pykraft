@@ -32,6 +32,7 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -82,8 +83,6 @@ func DownloadFile(url string) (*string, error) {
 // error if any, otherwise it returns nil.
 func GetProgramPath(programName *string) (string, error) {
 	var programPath string
-	println(*programName)
-
 	if ok, err := Exists(*programName); err != nil {
 		return programPath, err
 	} else if ok {
@@ -194,7 +193,11 @@ func RecordDataJson(filename string, data *Data) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(filename+".json", b, os.ModePerm); err != nil {
+	var prettyJSON bytes.Buffer
+	if err = json.Indent(&prettyJSON, b, "", "\t"); err != nil {
+		return err
+	}
+	if err = ioutil.WriteFile(filename+".json", prettyJSON.Bytes(), os.ModePerm); err != nil {
 		return err
 	}
 

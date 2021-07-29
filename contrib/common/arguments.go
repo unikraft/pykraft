@@ -33,10 +33,9 @@ package common
 
 import (
 	"errors"
+	"github.com/akamensky/argparse"
 	"os"
 	"strings"
-
-	"github.com/akamensky/argparse"
 )
 
 // Exported constants to determine arguments type.
@@ -53,13 +52,14 @@ const (
 	BUILD   = "build"
 	VERIF   = "verif"
 	PERF    = "perf"
+	BINARY  = "binary"
 )
 
 const (
 	unknownArgs = "unknown arguments"
 )
 
-// Exported constants to represent different types of arguments.
+// Arguments are exported constants to represent different types of arguments.
 type Arguments struct {
 	IntArg    map[string]*int
 	BoolArg   map[string]*bool
@@ -95,7 +95,7 @@ func ParserWrapper(p *argparse.Parser, args []string) error {
 	return err
 }
 
-// ParseArguments parses arguments of the application.
+// ParseMainArguments parses arguments of the application.
 //
 // It returns an error if any, otherwise it returns nil.
 func (*Arguments) ParseMainArguments(p *argparse.Parser, args *Arguments) error {

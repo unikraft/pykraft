@@ -41,7 +41,7 @@ const MENUCONFIG = "menuconfig"
 const CONFIG = "config"
 const SELECT = "select"
 
-// processConfigUK processes each line of a "Config.uk" file.
+// ProcessConfigUK processes each line of a "Config.uk" file.
 //
 // //
 func ProcessConfigUK(lines []string, fullSelect bool,

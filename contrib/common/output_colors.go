@@ -33,9 +33,8 @@ package common
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/fatih/color"
+	"log"
 )
 
 // PrintHeader1 prints a big header formatted string on stdout.

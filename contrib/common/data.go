@@ -41,13 +41,13 @@ type Data struct {
 type StaticData struct {
 	Dependencies map[string][]string `json:"dependencies"`
 	SharedLibs   map[string][]string `json:"shared_libs"`
-	SystemCalls  map[string]string   `json:"system_calls"`
+	SystemCalls  map[string]int      `json:"system_calls"`
 	Symbols      map[string]string   `json:"symbols"`
 }
 
 // Exported struct that represents data for dynamic dependency analysis.
 type DynamicData struct {
 	SharedLibs  map[string][]string `json:"shared_libs"`
-	SystemCalls map[string]string   `json:"system_calls"`
+	SystemCalls map[string]int      `json:"system_calls"`
 	Symbols     map[string]string   `json:"symbols"`
 }
