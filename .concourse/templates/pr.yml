@@ -287,6 +287,7 @@ jobs:
                 params:
                   BUILD_ARG_GCC_VERSION: pr-((.:pull-request-number))
                   BUILD_ARG_QEMU_VERSION: pr-((.:pull-request-number))
+                  BUILD_ARG_USE_LOCAL: "yes"
                 on_success: #@ pull_request_status("success", "docker-kraft", "Successfully built unikraft/kraft:pr-((.:pull-request-number))")
                 on_failure: #@ pull_request_status("failure", "docker-kraft", "Failed to build unikraft/kraft:pr-((.:pull-request-number))")
 

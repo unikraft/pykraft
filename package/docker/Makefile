@@ -218,6 +218,11 @@ docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(IMAGE_VERSION)-dev
 else
 docker-kraft: IMAGE_NAME ?= $(ORG)/$(APP_NAME):$(IMAGE_VERSION)
 endif
+ifeq ($(USE_LOCAL),yes)
+docker-kraft: LOCAL_TAG ?= -$(TAG)
+else
+docker-kraft: LOCAL_TAG ?=
+endif
 docker-kraft:
 ifneq (,$(findstring help,$(MAKECMDGOALS)))
 	@echo "Usage: [IMAGE_VERSION=... IMAGE_NAME=...] $(MAKE) $@                            "
@@ -242,6 +247,7 @@ else
 		--build-arg UK_ARCH=$(UK_ARCH) \
 		--build-arg GCC_VERSION=$(GCC_VERSION) \
 		--build-arg QEMU_VERSION=$(QEMU_VERSION) \
+		--build-arg LOCAL_TAG=$(LOCAL_TAG) \
 		--cache-from $(ORG)/$(APP_NAME):latest \
 		--cache-from $(IMAGE_NAME) \
 		--file $(DOCKERDIR)/Dockerfile.kraft \
