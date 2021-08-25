@@ -60,8 +60,8 @@ class VolumeDriver(Enum):
 
     @classmethod
     def from_name(cls, name=None):
-        for vol in VolumeDriver.__members__.items():
-            if name == vol[1].name:
+        for vol in VolumeDriver:
+            if name == vol.name:
                 return vol
 
         return None
@@ -90,7 +90,7 @@ class Volume(object):
 
     def __init__(self, *args, **kwargs):
         self._name = kwargs.get("name", None)
-        self._driver = kwargs.get("driver", None)
+        self._driver = VolumeDriver.from_name(kwargs.get("driver", None))
         self._source = kwargs.get("source", None)
         self._workdir = kwargs.get("workdir", None)
 
@@ -106,7 +106,7 @@ class Volume(object):
     def repr(self):
         config = {}
         if self.driver is not None:
-            config['driver'] = self.driver
+            config['driver'] = self.driver.name
         if self.source is not None:
             config['source'] = self.source
 
