@@ -92,8 +92,6 @@ class Application(Component):
         if self._name is None and self._localdir is not None:
             self._name = os.path.basename(self._localdir)
 
-        self.config.name = self._name
-
         # Determine how configuration is passed to this class
         if self._config is None:
             unikraft = kwargs.get("unikraft", dict())
@@ -127,6 +125,9 @@ class Application(Component):
                 volumes=volumes,
                 networks=networks,
             )
+
+        if self.config.name is None:
+            self.config.name = self._name
 
         # Check the integrity of the application
         if self.config.unikraft is None:
