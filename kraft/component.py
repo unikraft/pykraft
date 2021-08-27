@@ -249,6 +249,9 @@ class Component(object):
 
         return None
 
+    def __str__(self):
+        return "%s/%s@%s" % (self._type.shortname, self._name, self._version)
+
     def repr(self):
         config = {}
 
