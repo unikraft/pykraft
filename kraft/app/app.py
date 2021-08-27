@@ -53,6 +53,8 @@ from kraft.config.serialize import serialize_config
 from kraft.const import DOT_CONFIG
 from kraft.const import MAKEFILE_UK
 from kraft.const import SUPPORTED_FILENAMES
+from kraft.const import UK_CORE_ARCHS
+from kraft.const import UK_CORE_PLATS
 from kraft.const import UNIKRAFT_BUILDDIR
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
 from kraft.error import KraftError
@@ -98,7 +100,12 @@ class Application(Component):
             if not isinstance(unikraft, Unikraft):
                 unikraft = Unikraft(unikraft)
 
-            targets = kwargs.get("targets", dict())
+            targets = kwargs.get("targets", TargetManager([
+                Target(
+                    architecture=UK_CORE_ARCHS[0],
+                    platform=UK_CORE_PLATS[0]
+                )
+            ]))
             if not isinstance(targets, TargetManager):
                 targets = TargetManager(targets)
 
