@@ -123,7 +123,7 @@ class ManifestItemVersion(object):
         self._tarball_checksum = kwargs.get('tarball_checksum', None)
 
     def __str__(self):
-        return "<ManifestItemVersion %s>" % (self._version)
+        return self._version
 
     def __setstate__(self, state):
         if "meta" in state:
