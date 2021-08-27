@@ -379,6 +379,10 @@ class Application(Component):
                 return False
 
             for manifest in manifests:
+                if manifest.type != ComponentType.LIB:
+                    continue
+
+                logger.info("Adding %s@%s" % (manifest, version))
                 self.config.libraries.add(Library(
                     name=name,
                     version=version,
