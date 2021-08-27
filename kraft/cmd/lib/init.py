@@ -75,7 +75,6 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
     lib.set_template_value('author_name', author_name)
     lib.set_template_value('author_email', author_email)
     lib.set_template_value('provide_main', provide_main)
-    print(initial_branch)
     lib.set_template_value('initial_branch', initial_branch)
 
     # if dependencies is not None:
