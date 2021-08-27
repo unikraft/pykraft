@@ -343,10 +343,13 @@ class Library(Component):
         # Set additional template values
 
         # Fix the starting "v" in the version string
-        if context['cookiecutter']['version'].startswith('v'):
-            context['cookiecutter']['version'] = context['cookiecutter']['version'][1:]
+        if context['cookiecutter']['version'] != "":
+            starts_with_v = ""
+            if context['cookiecutter']['version'].startswith('v'):
+                starts_with_v = "v"
+                context['cookiecutter']['version'] = context['cookiecutter']['version'][1:]
             self._origin_url = self.origin_provider.origin_url_with_varname(
-                'v%s' % (UK_VERSION_VARNAME % self.kname)
+                '%s%s' % (starts_with_v, UK_VERSION_VARNAME % self.kname)
             )
 
         context['cookiecutter']['origin_url'] = self.origin_url
