@@ -320,10 +320,15 @@ class MissingManifest(KraftError):
 
 
 class MissingComponent(KraftError):
-    def __init__(self, name):
+    _component = None
+    @property
+    def component(self): return self._component
+
+    def __init__(self, component):
         super(MissingComponent, self).__init__(
-            "Cannot initialize application without component: %s" % name
+            "Cannot initialize application without component: %s" % component
         )
+        self._component = component
 
 
 class UnknownApplicationTemplateName(KraftError):

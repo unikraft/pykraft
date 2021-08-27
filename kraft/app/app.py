@@ -302,21 +302,21 @@ class Application(Component):
 
         for arch in archs:
             if not arch.is_downloaded:
-                raise MissingComponent(arch.name)
+                raise MissingComponent(arch)
 
             dotconfig.extend(arch.kconfig)
             dotconfig.append(arch.kconfig_enabled_flag)
 
         for plat in plats:
             if not plat.is_downloaded:
-                raise MissingComponent(plat.name)
+                raise MissingComponent(plat)
 
             dotconfig.extend(plat.kconfig)
             dotconfig.append(plat.kconfig_enabled_flag)
 
         for lib in self.config.libraries.all():
             if not lib.is_downloaded:
-                raise MissingComponent(lib.name)
+                raise MissingComponent(lib)
 
             dotconfig.extend(lib.kconfig)
             dotconfig.append(lib.kconfig_enabled_flag)
