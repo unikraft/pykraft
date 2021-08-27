@@ -451,6 +451,11 @@ class Application(Component):
         """
         Initialize an app component's directory.
         """
+
+        if os.path.exists(self.localdir) is False or force_create:
+            logger.debug("Creating: %s" % self.localdir)
+            Path(self.localdir).mkdir(parents=True, exist_ok=True)
+
         makefile_uk = os.path.join(self.localdir, MAKEFILE_UK)
         if os.path.exists(makefile_uk) is False or force_create:
             logger.debug("Creating: %s" % makefile_uk)
