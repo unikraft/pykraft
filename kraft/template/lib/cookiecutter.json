@@ -10,5 +10,6 @@
   "with_gitignore": true,
   "with_docs": true,
   "with_patchedir": false,
+  "initial_branch": "staging",
   "copyright_holder": "NEC Laboratories Europe GmbH"
 }

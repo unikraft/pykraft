@@ -56,7 +56,7 @@ from kraft.types import ComponentType
 def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
                    author_email=None, origin_url=None, origin_version=None,
                    provide_main=False, dependencies=list(), force_create=False,
-                   no_input=False, soft_pack=False):
+                   no_input=False, soft_pack=False, initial_branch=None):
     """
     """
 
@@ -75,6 +75,8 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
     lib.set_template_value('author_name', author_name)
     lib.set_template_value('author_email', author_email)
     lib.set_template_value('provide_main', provide_main)
+    print(initial_branch)
+    lib.set_template_value('initial_branch', initial_branch)
 
     # if dependencies is not None:
     #     library.set_template_value('kconfig_dependencies', dependencies)
@@ -151,12 +153,18 @@ def kraft_lib_init(ctx, libdir=None, name=None, author_name=None,
     help="Softly pack the component so that it is available via kraft list.",
     is_flag=True
 )
+@click.option(
+    '--initial-branch', '-b', 'initial_branch',
+    help="The initial Git branch of the new library.",
+    metavar="BRANCH",
+    default=UNIKRAFT_RELEASE_STAGING
+)
 @click.argument('name', required=False)
 @click.pass_context
 def cmd_lib_init(ctx, name=None, author_name=None, author_email=None,
                  origin_version=None, origin_url=None, provide_main=False,
                  workdir=None, force_create=False, no_input=False,
-                 soft_pack=False):
+                 soft_pack=False, initial_branch=None):
     """
     Initialize a new Unikraft library.
     """
@@ -225,7 +233,8 @@ def cmd_lib_init(ctx, name=None, author_name=None, author_email=None,
             provide_main=provide_main,
             force_create=force_create,
             no_input=no_input,
-            soft_pack=soft_pack
+            soft_pack=soft_pack,
+            initial_branch=initial_branch
         )
     except Exception as e:
         logger.critical(str(e))

@@ -58,6 +58,7 @@ from kraft.const import UNIKRAFT_LIB_MAKEFILE_FETCH_LIB_PATTERN
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_URL_EXT
 from kraft.const import UNIKRAFT_LIB_MAKEFILE_VERSION_EXT
 from kraft.const import UNIKRAFT_PREPARED_FILE
+from kraft.const import UNIKRAFT_RELEASE_STAGING
 from kraft.const import VSEMVER_PATTERN
 from kraft.error import BumpLibraryDowngrade
 from kraft.error import CannotDetermineRemoteVersion
@@ -357,6 +358,10 @@ class Library(Component):
         # include template dir or url in the context dict
         context['cookiecutter']['_template'] = get_templates_path(TEMPLATE_LIB)
 
+        # set the initial branch
+        if context['cookiecutter']['initial_branch'] == "":
+            context['cookiecutter']['initial_branch'] = UNIKRAFT_RELEASE_STAGING
+
         # add all vars that were never prompted
         for key in self._template_values:
             if key not in context['cookiecutter']:
@@ -382,6 +387,7 @@ class Library(Component):
         repo.config_writer().set_value("user", "name", self.template_value['author_name']).release()
         repo.config_writer().set_value("user", "email", self.template_value['author_email']).release()
         repo.index.commit('Initial commit (blank)')
+        repo.branches[0].rename(context['cookiecutter']['initial_branch'])
 
         logger.info("Generated new library: %s" % self.localdir)
 
