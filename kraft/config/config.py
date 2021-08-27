@@ -227,7 +227,7 @@ class Config(object):
         self._networks = networks
 
     def __init__(self, *args, **kwargs):
-        self.specification = kwargs.get('specification', None)
+        self.specification = kwargs.get('specification', KRAFT_SPEC_LATEST)
         self.name = kwargs.get('name', None)
         self.arguments = kwargs.get('arguments', [])
         self.before = kwargs.get('before', None)
