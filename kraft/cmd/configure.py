@@ -40,12 +40,14 @@ import inquirer
 
 from kraft.app import Application
 from kraft.cmd.list import kraft_list_preflight
+from kraft.cmd.list.pull import kraft_list_pull
 from kraft.const import KCONFIG
 from kraft.const import KCONFIG_EQ
 from kraft.const import KCONFIG_N
 from kraft.const import KCONFIG_Y
 from kraft.error import CannotConfigureApplication
 from kraft.error import KraftError
+from kraft.error import MissingComponent
 from kraft.logger import logger
 
 
@@ -154,6 +156,34 @@ def cmd_configure(ctx, target=None, plat=None, arch=None, force_configure=False,
             options=options,
             use_versions=use_versions,
         )
+
+    except MissingComponent as e:
+        if force_configure is False:
+            logger.warn(e)
+
+        if force_configure or \
+                click.confirm("Would you like to pull %s?" % e.component): # noqa
+            try:
+                kraft_list_pull(
+                    name=str(e.component),
+                    pull_dependencies=False,
+                    skip_app=True
+                )
+            except Exception:
+                if ctx.obj.verbose:
+                    import traceback
+                    logger.critical(traceback.format_exc())
+
+                sys.exit(1)
+
+            # Try to configure again
+            ctx.forward(cmd_configure, force_configure=True)
+
+        elif ctx.obj.verbose:
+            import traceback
+            logger.critical(traceback.format_exc())
+
+            sys.exit(1)
 
     except Exception as e:
         logger.critical(str(e))
