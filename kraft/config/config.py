@@ -244,7 +244,7 @@ class Config(object):
             v = getattr(self, k[1:])
             if isinstance(v, (six.string_types, dict, list)):
                 ret[k[1:]] = v
-            elif v is not None and hasattr(v, 'repr'):
+            elif v is not None and hasattr(v, 'repr') and v.repr() != {}:
                 ret[k[1:]] = v.repr()
 
         return ret
