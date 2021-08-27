@@ -362,6 +362,13 @@ class Library(Component):
         if context['cookiecutter']['initial_branch'] == "":
             context['cookiecutter']['initial_branch'] = UNIKRAFT_RELEASE_STAGING
 
+        # set copyright holder
+        if context['cookiecutter']['copyright_holder'] == "":
+            context['cookiecutter']['copyright_holder'] = "%s <%s>" % (
+                context['cookiecutter']['author_name'],
+                context['cookiecutter']['author_email']
+            )
+
         # add all vars that were never prompted
         for key in self._template_values:
             if key not in context['cookiecutter']:
