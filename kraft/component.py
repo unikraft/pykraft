@@ -300,10 +300,9 @@ class ComponentManager(object):
             logger.critical("Cannot instantiate manager, missing cls: %s", self)
             return
 
-        if components is None:
-            self._components = list()
+        self._components = list()
 
-        elif isinstance(components, list):
+        if isinstance(components, list):
             for component in components:
                 if isinstance(component, self.cls):
                     self._components.append(component)
