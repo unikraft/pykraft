@@ -96,10 +96,28 @@ def kraft_update(ctx, origins=list()):
                     ctx.obj.cache.save(origin, manifest)
 
     except RateLimitExceededException:
-        logger.error("".join([
-            "GitHub rate limit exceeded.  You can tell kraft to use a ",
-            "personal access token by setting the UK_KRAFT_GITHUB_TOKEN ",
-            "environmental variable."]))
+        for line in [
+            "GitHub rate limit exceeded!  If you have not done so already,",
+            "you can tell kraft to use a personal access token when contacting",
+            "the GitHub API.  First, visit:",
+            "",
+            "  https://github.com/settings/tokens/new",
+            "",
+            "then select 'repo:public_repo'.  You can then set the",
+            "environmental variable UK_KRAFT_GITHUB_TOKEN with this new token,",
+            "for example:",
+            "",
+            "  export UK_KRAFT_GITHUB_TOKEN=<token>",
+            "",
+            "Once this is done, please try again :-)"
+        ]:
+            logger.error(line)
+
+        if ctx.obj.verbose:
+            import traceback
+            logger.critical(traceback.format_exc())
+
+        sys.exit(1)
 
     except Exception as e:
         logger.critical(str(e))
