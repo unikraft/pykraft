@@ -38,17 +38,18 @@ from urllib.parse import urlparse
 
 import click
 
+from kraft.cmd.list.update import kraft_update
 from kraft.const import KRAFTRC_LIST_ORIGINS
 from kraft.logger import logger
 
 
 @click.pass_context
-def kraft_list_add(ctx, origin=None):
+def kraft_list_add(ctx, origin=None, update=False):
     """
     """
     if isinstance(origin, list):
         for o in origin:
-            kraft_list_add(o)
+            kraft_list_add(o, update=update)
         return
 
     existing_origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
@@ -72,17 +73,26 @@ def kraft_list_add(ctx, origin=None):
     ctx.obj.settings.set(KRAFTRC_LIST_ORIGINS, existing_origins)
     logger.info("Saved: %s" % origin)
 
+    if update:
+        with ctx:
+            kraft_update(origin)
+
 
 @click.command('add', short_help='Add a remote manifest or repository.')
+@click.option(
+    '--update/--no-update', 'update',
+    help='Update the list of known remote components.',
+    default=False
+)
 @click.argument('origin', nargs=-1)
 @click.pass_context
-def cmd_list_add(ctx, origin=None):
+def cmd_list_add(ctx, update=False, origin=None):
     """
     Add a remote repository to search for components.
     """
 
     try:
-        kraft_list_add(list(origin))
+        kraft_list_add(list(origin), update=update)
 
     except Exception as e:
         logger.critical(str(e))
