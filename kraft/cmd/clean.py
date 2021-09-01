@@ -54,13 +54,19 @@ from kraft.util import make_progressbar
     is_flag=True,
 )
 @click.option(
+    '--dist', '-d', 'dist',
+    help='Delete the build directory and configuration files.',
+    is_flag=True,
+)
+@click.option(
     '--progress/--no-progress', 'progress',
     help='Show progress of build.',
     default=True
 )
 @click.argument('libs', nargs=-1)
 @click.pass_context
-def cmd_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
+def cmd_clean(ctx, workdir=None, proper=False, dist=False, progress=True,
+              libs=None):
     """
     Clean the build artifacts of a Unikraft unikernel application.
     """
@@ -72,6 +78,7 @@ def cmd_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
         kraft_clean(
             workdir=workdir,
             proper=proper,
+            dist=dist,
             progress=progress,
             libs=libs,
         )
@@ -87,7 +94,8 @@ def cmd_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
 
 
 @click.pass_context
-def kraft_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
+def kraft_clean(ctx, workdir=None, proper=False, dist=False, progress=True,
+                libs=None):
     """
     Cleans the build artifacts of a Unikraft unikernel.
     """
@@ -101,24 +109,29 @@ def kraft_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
 
     if progress:
         if proper:
-            make = app.make_raw(
+            make_progressbar(app.make_raw(
                 extra="properclean"
-            )
+            ))
+
+        elif dist:
+            make_progressbar(app.make_raw(
+                extra="distclean"
+            ))
 
         else:
             if len(libs) is not None and len(libs) > 0:
                 for lib in list(libs):
-                    make = app.make_raw(
+                    make_progressbar(app.make_raw(
                         extra="clean-lib%s" % lib
-                    )
-                    make_progressbar(make)
+                    ))
+
             else:
-                make = app.make_raw(
+                make_progressbar(app.make_raw(
                     extra="clean"
-                )
-                make_progressbar(make)
+                ))
 
     else:
         app.clean(
-            proper=proper
+            proper=proper,
+            dist=dist
         )

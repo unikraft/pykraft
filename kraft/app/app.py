@@ -535,13 +535,16 @@ class Application(Component):
             dry_run=dry_run,
         )
 
-    def clean(self, proper=False):
+    def clean(self, proper=False, dist=False):
         """
         Clean the application.
         """
 
         if proper:
             self.make("properclean")
+
+        elif dist:
+            self.make("distclean")
 
         else:
             self.make("clean")
