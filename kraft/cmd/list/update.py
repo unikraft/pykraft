@@ -36,6 +36,7 @@ import sys
 from queue import Queue
 
 import click
+import six
 from github.GithubException import RateLimitExceededException
 
 from .provider.types import ListProviderType
@@ -54,9 +55,14 @@ def cmd_list_update(ctx):
     kraft_update()
 
 
-@click.pass_context
-def kraft_update(ctx):
-    origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
+@click.pass_context  # noqa: C901
+def kraft_update(ctx, origins=list()):
+    if isinstance(origins, six.string_types):
+        origins = [origins]
+
+    if len(origins) == 0:
+        origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
+
     if origins is None or len(origins) == 0:
         logger.error("No source origins available.  Please see: kraft list add --help")
         sys.exit(1)
