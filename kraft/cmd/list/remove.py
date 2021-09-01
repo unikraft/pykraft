@@ -60,7 +60,6 @@ def kraft_list_remove(ctx, origin=None):
     if os.path.exists(origin):
         origin = os.path.abspath(origin)
 
-    existing_origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
     for i, o in enumerate(existing_origins):
         cur_uri = urlparse(o)
         if (o == origin
