@@ -32,6 +32,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import os
 import sys
 from urllib.parse import urlparse
 
@@ -50,11 +51,21 @@ def kraft_list_remove(ctx, origin=None):
             kraft_list_remove(o)
         return
 
+    existing_origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
+    if existing_origins is None:
+        existing_origins = list()
+
     new_uri = urlparse(origin)
+
+    if os.path.exists(origin):
+        origin = os.path.abspath(origin)
+
     existing_origins = ctx.obj.settings.get(KRAFTRC_LIST_ORIGINS)
     for i, o in enumerate(existing_origins):
         cur_uri = urlparse(o)
-        if new_uri.netloc == cur_uri.netloc and new_uri.path == cur_uri.path:
+        if (o == origin
+                or (new_uri.netloc == cur_uri.netloc
+                    and new_uri.path == cur_uri.path)):
             logger.info("Removed: %s" % origin)
             del existing_origins[i]
             break
