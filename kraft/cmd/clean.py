@@ -58,8 +58,9 @@ from kraft.util import make_progressbar
     help='Show progress of build.',
     default=True
 )
+@click.argument('libs', nargs=-1)
 @click.pass_context
-def cmd_clean(ctx, workdir=None, proper=False, progress=True):
+def cmd_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
     """
     Clean the build artifacts of a Unikraft unikernel application.
     """
@@ -72,6 +73,7 @@ def cmd_clean(ctx, workdir=None, proper=False, progress=True):
             workdir=workdir,
             proper=proper,
             progress=progress,
+            libs=libs,
         )
 
     except Exception as e:
@@ -85,7 +87,7 @@ def cmd_clean(ctx, workdir=None, proper=False, progress=True):
 
 
 @click.pass_context
-def kraft_clean(ctx, workdir=None, proper=False, progress=True):
+def kraft_clean(ctx, workdir=None, proper=False, progress=True, libs=None):
     """
     Cleans the build artifacts of a Unikraft unikernel.
     """
@@ -104,11 +106,17 @@ def kraft_clean(ctx, workdir=None, proper=False, progress=True):
             )
 
         else:
-            make = app.make_raw(
-                extra="clean"
-            )
-
-        make_progressbar(make)
+            if len(libs) is not None and len(libs) > 0:
+                for lib in list(libs):
+                    make = app.make_raw(
+                        extra="clean-lib%s" % lib
+                    )
+                    make_progressbar(make)
+            else:
+                make = app.make_raw(
+                    extra="clean"
+                )
+                make_progressbar(make)
 
     else:
         app.clean(
