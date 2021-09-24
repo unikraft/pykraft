@@ -33,6 +33,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -388,6 +389,35 @@ class Application(Component):
                     version=version,
                     manifest=manifest,
                 ))
+
+        self.save_yaml()
+
+        return True
+
+    @click.pass_context
+    def remove_lib(ctx, self, lib=None, purge=False):
+        if lib is None or str(lib) == "":
+            logger.warn("No library to remove")
+            return False
+
+        elif isinstance(lib, six.string_types):
+            _, name, _, _ = break_component_naming_format(lib)
+            manifests = maniest_from_name(name)
+
+            if len(manifests) == 0:
+                logger.warn("Unknown library: %s" % lib)
+                return False
+
+            for manifest in manifests:
+                if manifest.type != ComponentType.LIB:
+                    continue
+
+                self.config.libraries.remove(name, purge)
+                break
+
+            if purge and os.path.exists(manifest.localdir):
+                logger.info("Purging lib/%s..." % name)
+                shutil.rmtree(manifest.localdir)
 
         self.save_yaml()
 
