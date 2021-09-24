@@ -33,6 +33,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import shutil
 
 import click
 import kconfiglib
@@ -340,6 +341,26 @@ class ComponentManager(object):
             raise TypeError("expected Component")
 
         self._components.append(component)
+
+    def remove(self, component=None, purge=False):
+        if component is None:
+            raise ValueError("expected component")
+
+        if isinstance(component, six.string_types):
+            for i, c in enumerate(self._components):
+                if c.name == component:
+                    if purge and os.path.exists(c.localdir):
+                        logger.info("Purging lib/%s..." % component)
+                        shutil.rmtree(c.localdir)
+
+                    else:
+                        logger.info("Removing lib/%s..." % component)
+
+                    del self._components[i]
+
+                    return True
+
+        return False
 
     def get(self, name=None):
         for component in self._components:
