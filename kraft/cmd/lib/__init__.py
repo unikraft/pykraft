@@ -37,6 +37,7 @@ import click
 from .add import cmd_lib_add
 from .bump import cmd_lib_bump
 from .init import cmd_lib_init
+from .remove import cmd_lib_remove
 
 
 @click.group(name='lib', short_help='Unikraft library commands.')
@@ -52,3 +53,4 @@ def grp_lib(ctx):
 grp_lib.add_command(cmd_lib_bump)
 grp_lib.add_command(cmd_lib_init)
 grp_lib.add_command(cmd_lib_add)
+grp_lib.add_command(cmd_lib_remove)
