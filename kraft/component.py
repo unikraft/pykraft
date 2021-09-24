@@ -340,7 +340,11 @@ class ComponentManager(object):
         if not isinstance(component, Component):
             raise TypeError("expected Component")
 
+        logger.info("Adding %s@%s..." % (component.manifest, component.version))
+
         self._components.append(component)
+
+        return True
 
     def remove(self, component=None, purge=False):
         if component is None:
