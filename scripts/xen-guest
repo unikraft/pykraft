@@ -123,6 +123,20 @@ cpu2pool()
     return 0
 }
 
+# 24bit base for mac addresses
+_NETDEV_HWADDR_BASE=$(( (($RANDOM % 256) * 65536) + (($RANDOM % 256) * 256) + ($RANDOM % 256) ))
+
+_netdev_hwaddr()
+{
+    local NICID=${1:-0}
+    local HWADDR=$(( ${_NETDEV_HWADDR_BASE} + ${NICID} ))
+
+    printf '00:16:3e:%02x:%02x:%02x' \
+	   $(( ($HWADDR / 65536) % 256 )) \
+	   $(( ($HWADDR / 256)   % 256 )) \
+	   $((  $HWADDR          % 256 ))
+}
+
 attach_natvif()
 {
 	cat > "${TEMP}/vif-nat" <<EOF
@@ -171,7 +185,7 @@ EOF
 	cp "${XEN_SCRIPT_DIR}/logging.sh" "${TEMP}/"            || die "Failed to copy ${XEN_SCRIPT_DIR}/logging.sh"
 	cp "${XEN_SCRIPT_DIR}/locking.sh" "${TEMP}/"            || die "Failed to copy ${XEN_SCRIPT_DIR}/locking.sh"
 
-	VIFS_CFG+="'bridge=null,script=${TEMP}/vif-nat', "
+	VIFS_CFG+="'bridge=null,mac=$( _netdev_hwaddr ${NICID} ),script=${TEMP}/vif-nat', "
 	HAS_NATVIF=0
 	(( NICID++ ))
 }
@@ -301,15 +315,15 @@ while getopts :h:nb:o:V:d:k:i:a:c:m:p:xDG:g:P OPT; do
 		attach_natvif
 		;;
 	b)
-		VIFS_CFG+="'bridge=${OPTARG},script=vif-bridge', "
+		VIFS_CFG+="'bridge=${OPTARG},mac=$( _netdev_hwaddr ${NICID} ),script=vif-bridge', "
 		(( NICID++ ))
 		;;
 	o)
-		VIFS_CFG+="'bridge=${OPTARG},script=vif-openvswitch', "
+		VIFS_CFG+="'bridge=${OPTARG},mac=$( _netdev_hwaddr ${NICID} ),script=vif-openvswitch', "
 		(( NICID++ ))
 		;;
 	V)
-		VIFS_CFG+="'type=nmif,bridge=${OPTARG},script=nmif-vale', "
+		VIFS_CFG+="'type=nmif,bridge=${OPTARG},mac=$( _netdev_hwaddr ${NICID} ),script=nmif-vale', "
 		(( NICID++ ))
 		;;
 	d)
