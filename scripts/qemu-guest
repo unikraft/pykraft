@@ -372,6 +372,7 @@ fi
 ##
 QEMU_BASE_ARGS=()
 QEMU_ARGS=()
+QEMU_PID=
 SOCK_MONITOR="/run/$( basename "$0" )-$$_monitor.socket"
 SOCK_SERIAL="/run/$( basename "$0" )-$$_serial.socket"
 PIDFILE="/run/$( basename "$0" )-$$_qemu.pid"
@@ -433,7 +434,32 @@ if [ $? -ne 0 ]; then
 	echo "Error: Could not create ${TEMP}" 1>&2
 	exit 2
 fi
-trap "rm -rf \"${TEMP}\"" exit
+
+sighandler_abort()
+{
+	# terminate detached QEMU process if it was created
+	if [ ${OPT_BACKGROUND} -ne 0 -a ! -z ${QEMU_PID} ]; then
+		kill -SIGTERM ${QEMU_PID} > /dev/null 2>&1
+	fi
+}
+
+sighandler_exit()
+{
+	# restore terminal settings
+	stty sane
+
+	# delete temporary files
+	if [ ${OPT_BACKGROUND} -ne 0 ]; then
+		rm -rf "${TEMP}"
+	fi
+}
+
+trap sighandler_exit exit
+trap sighandler_abort SIGHUP
+trap sighandler_abort SIGINT
+trap sighandler_abort SIGQUIT
+trap sighandler_abort SIGKILL
+trap sighandler_abort SIGTERM
 
 usage()
 {
@@ -934,10 +960,15 @@ QEMU_RET=$?
 if [ $QEMU_RET -ne 0 ]; then
 	exit $QEMU_RET
 fi
+if [ ! -f "${PIDFILE}" ]; then
+	printf 'PIDfile ${PIDFILE} was not created' 1>&2
+	exit 1
+fi
+QEMU_PID="$( cat "${PIDFILE}" )"
 printf '**************************************************************************\n'
 printf ' QEMU:\n'
 printf '   Name:                  %s\n' "${ARG_GUESTNAME}"
-printf '   PID:                   %s\n' "$( cat "${PIDFILE}" )"
+printf '   PID:                   %s\n' "${QEMU_PID}"
 printf '   Monitor socket:        %s\n' "${SOCK_MONITOR}"
 if [ ${OPT_BACKGROUND} -eq 0 ]; then
 	printf '   Serial socket:         %s\n' "${SOCK_SERIAL}"
@@ -997,18 +1028,14 @@ else
 fi
 
 if [ ${OPT_BACKGROUND} -ne 0 ]; then
-	trap "stty sane" 0 1 2 3 15 # restore terminal settings
-
 	printf 'Connecting to serial output...\n'
 	if [ ${OPT_CTRLC} -eq 0 ]; then
 		socat -,icanon=0,echo=0 unix-client:"${SOCK_SERIAL}"
 	else
-		socat -,icanon=0,echo=0,isig=0 unix-client:"${SOCK_SERIAL}"
+		socat -,sane,icanon=0,echo=0,isig=0 unix-client:"${SOCK_SERIAL}"
 	fi
-	if [ -f "${PIDFILE}" ]; then
-		kill "$( cat "${PIDFILE}" )" > /dev/null 2>&1
-	fi
-	stty sane # restore terminal settings
+	echo "Console terminated, terminating guest (PID: ${QEMU_PID})..." 1>&2
+	kill -SIGTERM "${QEMU_PID}" > /dev/null 2>&1
 	exit 0
 fi
 exit $QEMU_RET
