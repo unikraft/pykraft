@@ -39,7 +39,6 @@ import click
 
 from kraft.app import Application
 from kraft.cmd.list import kraft_list_pull
-from kraft.const import UNIKRAFT_WORKDIR
 from kraft.logger import logger
 
 
@@ -72,13 +71,13 @@ def kraft_lib_add(ctx, workdir=None, lib=None):
     metavar="PATH"
 )
 @click.option(
-    '--dump', '-d', 'dumps_local',
+    '--pull/--no-pull', 'pull',
     help='Save libraries into project directory.',
-    is_flag=True,
+    default=True,
 )
 @click.argument('lib', required=False, nargs=-1)
 @click.pass_context
-def cmd_lib_add(ctx, workdir=None, lib=None, dumps_local=False):
+def cmd_lib_add(ctx, workdir=None, lib=None, pull=False):
     """
     Add a library to the unikraft application project.
     """
@@ -87,10 +86,9 @@ def cmd_lib_add(ctx, workdir=None, lib=None, dumps_local=False):
         workdir = os.getcwd()
 
     try:
-        if dumps_local:
+        if pull:
             kraft_list_pull(
-                name=lib,
-                workdir=os.path.join(workdir, UNIKRAFT_WORKDIR)
+                name=lib
             )
 
         if not kraft_lib_add(workdir=workdir, lib=lib):
