@@ -604,14 +604,14 @@ EOF
 		;;
 	d)
 		QEMU_ARGS+=("-drive")
-		QEMU_ARGS+=("file=${OPTARG},if=none,id=hvirtio${VIRTIOID},format=raw,aio=native,cache.direct=on")
+		QEMU_ARGS+=("file=${OPTARG},if=none,id=hvirtio${VIRTIOID},format=raw")
 		QEMU_ARGS+=("-device")
 		QEMU_ARGS+=("virtio-blk-pci,scsi=off,drive=hvirtio${VIRTIOID},id=virtio${VIRTIOID}")
 		(( VIRTIOID++ ))
 		;;
 	q)
 		QEMU_ARGS+=("-drive")
-		QEMU_ARGS+=("file=${OPTARG},if=none,id=hvirtio${VIRTIOID},format=qcow2,aio=native")
+		QEMU_ARGS+=("file=${OPTARG},if=none,id=hvirtio${VIRTIOID},format=qcow2")
 		QEMU_ARGS+=("-device")
 		QEMU_ARGS+=("virtio-blk-pci,scsi=off,drive=hvirtio${VIRTIOID},id=virtio${VIRTIOID}")
 		(( VIRTIOID++ ))
