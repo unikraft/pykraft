@@ -284,7 +284,6 @@ usage()
 	echo "                             Note: An 172.62.<random>.0/30 network is created, no DNS is provided"
 	echo "  -b [BRIDGE]                Attach a virtual NIC (netfront) to an existing Linux bridge BRIDGE"
 	echo "  -o [OVS]                   Attach a virtual NIC (netfront) to an existing Open vSwitch SWITCH"
-	echo "  -V [BRIDGE]                Attach a virtual NIC (netmapfront) to a vale bridge BRIDGE"
 	echo "  -d [IMAGE/DEVICE]          Attach a block storage device based on a raw IMAGE/DEVICE"
 	echo "  -k [KERNEL]                KERNEL image to boot directly"
 	echo "  -i [INITRD]                Init-ramdisk INITRD for -k"
@@ -305,7 +304,7 @@ usage()
 	echo "  $0 -c 2 -m 2048 -b virbr0 -b virbr1 -k vmlinuz -d root.raw -d /dev/sdb -d /dev/sdc"
 }
 
-while getopts :h:nb:o:V:d:k:i:a:c:m:p:xDG:g:P OPT; do
+while getopts :h:nb:o:d:k:i:a:c:m:p:xDG:g:P OPT; do
     case ${OPT} in
 	n)
 		if [ "$HAS_NATVIF" -ne 0 -a "$NICID" -ne 0 ]; then
@@ -320,10 +319,6 @@ while getopts :h:nb:o:V:d:k:i:a:c:m:p:xDG:g:P OPT; do
 		;;
 	o)
 		VIFS_CFG+="'bridge=${OPTARG},mac=$( _netdev_hwaddr ${NICID} ),script=vif-openvswitch', "
-		(( NICID++ ))
-		;;
-	V)
-		VIFS_CFG+="'type=nmif,bridge=${OPTARG},mac=$( _netdev_hwaddr ${NICID} ),script=nmif-vale', "
 		(( NICID++ ))
 		;;
 	d)
