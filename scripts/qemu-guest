@@ -339,6 +339,20 @@ _ideid_2_unit()
     printf '%d' "$UNIT"
 }
 
+# 24bit base for mac addresses
+_NETDEV_HWADDR_BASE=$(( (($RANDOM % 256) * 65536) + (($RANDOM % 256) * 256) + ($RANDOM % 256) ))
+
+_netdev_hwaddr()
+{
+    local NICID=${1:-0}
+    local HWADDR=$(( ${_NETDEV_HWADDR_BASE} + ${NICID} ))
+
+    printf '52:54:00:%02x:%02x:%02x' \
+	   $(( ($HWADDR / 65536) % 256 )) \
+	   $(( ($HWADDR / 256)   % 256 )) \
+	   $((  $HWADDR          % 256 ))
+}
+
 ##
 ## ARE WE ROOT?
 ##
@@ -491,14 +505,14 @@ while getopts :hnN:b:V:f:G:d:q:S:I:e:k:i:a:c:m:v:lrs:p:HxCDG:g:PT:WQ:M:t: OPT; d
 		QEMU_ARGS+=("-netdev")
 		QEMU_ARGS+=("user,id=hostnet${NICID}")
 		QEMU_ARGS+=("-device")
-		QEMU_ARGS+=("virtio-net-pci,netdev=hostnet${NICID},id=net${NICID}")
+		QEMU_ARGS+=("virtio-net-pci,mac=$( _netdev_hwaddr ${NICID} ),netdev=hostnet${NICID},id=net${NICID}")
 		(( NICID++ ))
 		;;
 	N)
 		QEMU_ARGS+=("-netdev")
 		QEMU_ARGS+=("user,id=hostnet${NICID},hostfwd=tcp::${OPTARG}-:22")
 		QEMU_ARGS+=("-device")
-		QEMU_ARGS+=("virtio-net-pci,netdev=hostnet${NICID},id=net${NICID}")
+		QEMU_ARGS+=("virtio-net-pci,mac=$( _netdev_hwaddr ${NICID} ),netdev=hostnet${NICID},id=net${NICID}")
 		(( NICID++ ))
 		;;
 	b)
@@ -520,7 +534,7 @@ EOF
 		QEMU_ARGS+=("-netdev")
 		QEMU_ARGS+=("tap,id=hnet${NICID},vhost=off,script=${TEMP}/ifup${NICID}.sh,downscript=${TEMP}/ifdown${NICID}.sh")
 		QEMU_ARGS+=("-device")
-		QEMU_ARGS+=("virtio-net-pci,netdev=hnet${NICID},id=net${NICID}")
+		QEMU_ARGS+=("virtio-net-pci,mac=$( _netdev_hwaddr ${NICID} ),netdev=hnet${NICID},id=net${NICID}")
 		(( NICID++ ))
 		;;
 	V)
@@ -550,7 +564,7 @@ EOF
 		QEMU_ARGS+=("-netdev")
 		QEMU_ARGS+=("tap,id=hnet${NICID},vhost=off,script=${TEMP}/ifup${NICID}.sh,downscript=${TEMP}/ifdown${NICID}.sh")
 		QEMU_ARGS+=("-device")
-		QEMU_ARGS+=("virtio-net-pci,netdev=hnet${NICID},id=net${NICID}")
+		QEMU_ARGS+=("virtio-net-pci,mac=$( _netdev_hwaddr ${NICID} ),netdev=hnet${NICID},id=net${NICID}")
 		(( NICID++ ))
 		;;
 	f)
