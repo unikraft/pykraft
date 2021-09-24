@@ -702,6 +702,13 @@ EOF
 done
 shift $(( OPTIND - 1 ))
 
+# Sanity check: TTY availble? socat will need it
+if [ $OPT_BACKGROUND -ne 0 ]; then
+	if [ ! -t 0 -o ! -t 1 ]; then
+		echo "A TTY is required for foreground mode (see option -x)" 1>&2
+		exit 2
+	fi
+fi
 
 case "$ARG_MACHINETYPE" in
 	"arm64v")
