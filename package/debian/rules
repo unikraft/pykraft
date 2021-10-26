@@ -21,12 +21,6 @@ SNAKE = /usr/bin/python3
 DH_VENV_ARGS = --python=$(SNAKE) --upgrade-pip \
 	--preinstall "setuptools>=38" --preinstall "wheel"
 
-ifneq ($(HTTP_PROXY),)
-DH_VENV_ARGS += --extra-pip-arg=--proxy=$(HTTP_PROXY)
-else ifneq ($(http_proxy),)
-DH_VENV_ARGS += --extra-pip-arg=--proxy=$(http_proxy)
-endif
-
 PACKAGE = $(shell dh_listpackages)
 VERSION = $(shell $(SNAKE) setup.py --version)
 SDIST_DIR = $(CURDIR)

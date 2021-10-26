@@ -9,8 +9,6 @@ image_resource:
 params:
   DOCKERFILE: package/docker/Dockerfile.qemu
   CONTEXT: .
-  BUILD_ARG_HTTP_PROXY: ((http_proxy))
-  BUILD_ARG_HTTPS_PROXY: ((https_proxy))
   # BUILD_ARG_QEMU_VERSION: ((kraft_qemu_version))
 
 inputs:

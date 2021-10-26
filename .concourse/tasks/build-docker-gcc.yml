@@ -9,8 +9,6 @@ image_resource:
 params:
   DOCKERFILE: package/docker/Dockerfile.gcc
   CONTEXT: .
-  BUILD_ARG_HTTP_PROXY: ((http_proxy))
-  BUILD_ARG_HTTPS_PROXY: ((https_proxy))
   # BUILD_ARG_UK_ARCH: x86_64
   # BUILD_ARG_GCC_VERSION: 9.2.0
   # BUILD_ARG_BINUTILS_VERSION: 2.31.1

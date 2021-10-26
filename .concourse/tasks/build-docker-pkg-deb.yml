@@ -9,8 +9,6 @@ image_resource:
 params:
   DOCKERFILE: package/docker/Dockerfile.pkg-deb
   CONTEXT: .
-  BUILD_ARG_HTTP_PROXY: ((http_proxy))
-  BUILD_ARG_HTTPS_PROXY: ((https_proxy))
   # BUILD_ARG_PKG_VENDOR: debian
   # BUILD_ARG_PKG_DISTRIBUTION: stretch
 

@@ -13,8 +13,6 @@ inputs:
 params:
   DOCKERFILE: package/docker/Dockerfile.kraft
   CONTEXT: .
-  BUILD_ARG_HTTP_PROXY: ((http_proxy))
-  BUILD_ARG_HTTPS_PROXY: ((https_proxy))
   # BUILD_ARG_GCC_VERSION: ((kraft_gcc_version))
   # BUILD_ARG_UK_ARCH: ((kraft_uk_arch))
   # BUILD_ARG_GCC_PREFIX: ((kraft_gcc_prefix))
