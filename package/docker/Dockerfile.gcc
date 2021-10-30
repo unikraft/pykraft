@@ -143,3 +143,4 @@ COPY --from=gcc-build /out/bin/ /bin/
 COPY --from=gcc-build /out/include/ /include/
 COPY --from=gcc-build /out/lib/ /lib/
 COPY --from=gcc-build /out/libexec/ /libexec/
+COPY --from=gcc-build /out/${GCC_PREFIX} /${GCC_PREFIX}

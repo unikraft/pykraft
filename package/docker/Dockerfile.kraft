@@ -44,18 +44,22 @@ FROM python:3.6-slim AS kraft
 
 ARG GCC_PREFIX=x86_64-linux-gnu
 
-COPY --from=gcc-x86_64 /bin/            /bin
-COPY --from=gcc-x86_64 /lib/gcc/        /lib/gcc
-COPY --from=gcc-x86_64 /include/        /include
-COPY --from=gcc-x86_64 /libexec/gcc/    /libexec/gcc
+COPY --from=gcc-x86_64 /bin/              /bin
+COPY --from=gcc-x86_64 /lib/gcc/          /lib/gcc
+COPY --from=gcc-x86_64 /include/          /include
+COPY --from=gcc-x86_64 /libexec/gcc/      /libexec/gcc
+COPY --from=gcc-x86_64 /x86_64-linux-gnu  /x86_64-linux-gnu
 
-COPY --from=gcc-arm /bin/               /bin
-COPY --from=gcc-arm /lib/gcc/           /lib/gcc
-COPY --from=gcc-arm /libexec/gcc/       /libexec/gcc
 
-COPY --from=gcc-arm64 /bin/             /bin
-COPY --from=gcc-arm64 /lib/gcc/         /lib/gcc
-COPY --from=gcc-arm64 /libexec/gcc/     /libexec/gcc
+COPY --from=gcc-arm /bin/                 /bin
+COPY --from=gcc-arm /lib/gcc/             /lib/gcc
+COPY --from=gcc-arm /libexec/gcc/         /libexec/gcc
+COPY --from=gcc-arm /arm-linux-gnueabihf  /arm-linux-gnueabihf
+
+COPY --from=gcc-arm64 /bin/               /bin
+COPY --from=gcc-arm64 /lib/gcc/           /lib/gcc
+COPY --from=gcc-arm64 /libexec/gcc/       /libexec/gcc
+COPY --from=gcc-arm64 /aarch64-linux-gnu/ /aarch64-linux-gnu
 
 RUN set -xe; \
     ln -s /bin/${GCC_PREFIX}-as         /bin/as; \
