@@ -88,6 +88,9 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
 
             binaries.append(binname)
 
+        if(len(binaries) == 0):
+            raise ValueError("Unikernel binary not found.(Please check that your application name is the same as directory name)")
+
         target_answer = None
 
         binaries = list(set(binaries))
