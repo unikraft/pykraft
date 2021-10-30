@@ -313,6 +313,8 @@ jobs:
                   kraft: pull-request
                 params:
                   TARGET: kraft-dev
+                  BUILD_ARG_GCC_VERSION: pr-((.:pull-request-number))
+                  BUILD_ARG_QEMU_VERSION: pr-((.:pull-request-number))
                 on_success: #@ pull_request_status("success", "docker-kraft-dev", "Successfully built unikraft/kraft:dev-pr-((.:pull-request-number))")
                 on_failure: #@ pull_request_status("failure", "docker-kraft-dev", "Failed to build unikraft/kraft:dev-pr-((.:pull-request-number))")
 
