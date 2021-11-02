@@ -124,6 +124,7 @@ RUN set -xe; \
       bison \
       unzip \
       uuid-runtime \
+      openssh-client \
       autoconf \
       xz-utils; \
     rm -Rf /var/cache/apt/*; \

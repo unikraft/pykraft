@@ -10,8 +10,8 @@ architecture = "x86_64"
 
 [list]
 origins = [
-  "http://github.com/unikraft/unikraft.git",
-  "http://github.com/unikraft/plat-*",
-  "http://github.com/unikraft/app-*",
-  "http://github.com/unikraft/lib-*",
+  "https://github.com/unikraft/unikraft.git",
+  "https://github.com/unikraft/plat-*",
+  "https://github.com/unikraft/app-*",
+  "https://github.com/unikraft/lib-*",
 ]
