@@ -32,8 +32,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import subprocess
 import platform
+import subprocess
 
 import kraft.util as util
 from .runner import Runner
