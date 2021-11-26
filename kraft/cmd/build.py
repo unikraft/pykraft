@@ -62,8 +62,9 @@ def kraft_build(ctx, verbose=False, workdir=None, fetch=True, prepare=True,
 
     n_proc = None
     if fast:
-        # This simply set the `-j` flag which signals to make to use all cores.
-        n_proc = 0
+        # This simply set the `-j` flag to -1 which signals to make to use all
+        # cores.
+        n_proc = -1
 
     if fetch:
         app.fetch()
@@ -72,7 +73,10 @@ def kraft_build(ctx, verbose=False, workdir=None, fetch=True, prepare=True,
         app.prepare()
 
     if progress:
-        return_code = make_progressbar(app.make_raw(verbose=verbose))
+        return_code = make_progressbar(app.make_raw(
+            verbose=verbose,
+            n_proc=n_proc
+        ))
 
     else:
         return_code = app.build(
