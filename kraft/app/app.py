@@ -208,7 +208,7 @@ class Application(Component):
         logger.debug("Running:\n%s" % ' '.join(cmd))
         subprocess.run(cmd)
 
-    def make_raw(self, extra=None, verbose=False):
+    def make_raw(self, extra=None, n_proc=None, verbose=False):
         """
         Return a string with a correctly formatted make entrypoint for this
         application.
@@ -219,6 +219,11 @@ class Application(Component):
             '-C', self.config.unikraft.localdir,
             ('A=%s' % self._localdir)
         ]
+
+        if n_proc is not None and n_proc < 0:
+            cmd.append('-j')
+        elif n_proc is not None and n_proc > 0:
+            cmd.append('-j%s' % str(n_proc))
 
         if verbose:
             cmd.append('V=1')
@@ -247,12 +252,14 @@ class Application(Component):
         return cmd
 
     @click.pass_context
-    def make(ctx, self, extra=None, verbose=False):
+    def make(ctx, self, extra=None, n_proc=None, verbose=False):
         """
         Run a make target for this project.
         """
         cmd = self.make_raw(
-            extra=extra, verbose=verbose
+            extra=extra,
+            n_proc=n_proc,
+            verbose=verbose
         )
         return util.execute(cmd)
 
@@ -423,10 +430,8 @@ class Application(Component):
         return True
 
     @click.pass_context
-    def build(ctx, self, target=None, n_proc=0, verbose=False):
+    def build(ctx, self, target=None, n_proc=None, verbose=False):
         extra = []
-        if n_proc is not None and n_proc > 0:
-            extra.append('-j%s' % str(n_proc))
 
         # Create a no-op when target is False
         if target is False:
@@ -435,7 +440,7 @@ class Application(Component):
         elif target is not None:
             extra.append(target)
 
-        return self.make(extra, verbose)
+        return self.make(extra, n_proc, verbose)
 
     def list_possible_mirrors(self):
         extra = []
