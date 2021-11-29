@@ -127,7 +127,8 @@ RUN set -xe; \
       gawk \
       socat \
       bison \
-      bindgen \
+      bindgen \ 
+      bzip2 \
       unzip \
       uuid-runtime \
       openssh-client \
