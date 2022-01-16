@@ -102,7 +102,9 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
                 ),
             ])
             target_answer = answers['target']
-
+        elif len(binaries) == 0:
+            logger.critical("No target binary found.")
+            sys.exit(1)
         else:
             target_answer = binaries[0]
 
