@@ -355,6 +355,10 @@ class Application(Component):
         try:
             return_code = self.make([
                 ('UK_DEFCONFIG=%s' % path),
+                # see #80 and #83, the fallback behavior once name field is missing in the original kraft.yaml
+                # is to use the parent folder name, and the missing field will be automatically complemented
+                # (ensured by config.load_config() implementation)
+                ('CONFIG_UK_NAME=%s' % self.config.name),
                 'defconfig'
             ])
         finally:
