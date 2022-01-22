@@ -238,6 +238,7 @@ jobs:
                   kraft: #@ "kraft-{}".format(branch)
                 params:
                   TARGET: kraft
+                  BUILD_ARG_GCC_SUFFIX: -staging
                   BUILD_ARG_GCC_VERSION: #@ versions.gcc
 
               - load_var: docker-kraft-digest
@@ -259,6 +260,7 @@ jobs:
                   kraft: #@ "kraft-{}".format(branch)
                 params:
                   TARGET: kraft-dev
+                  BUILD_ARG_GCC_SUFFIX: -staging
                   BUILD_ARG_GCC_VERSION: #@ versions.gcc
 
               - load_var: docker-kraft-dev-digest

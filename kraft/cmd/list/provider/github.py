@@ -213,13 +213,17 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
 
     _type, _name, _, _ = break_component_naming_format(repo.name)
 
+    remote_git = repo.html_url
+    if "git@" in origin or "ssh://" in origin:
+        remote_git = repo.ssh_url
+
     item = ManifestItem(
         provider=ListProviderType.GITHUB,
         name=_name,
         description=repo.description,
         type=_type.shortname,
         dist=UNIKRAFT_RELEASE_STABLE,
-        git=repo.git_url,
+        git=remote_git,
         manifest=origin,
     )
 

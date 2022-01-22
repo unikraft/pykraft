@@ -32,6 +32,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import platform
 import subprocess
 
 import kraft.util as util
@@ -67,8 +68,8 @@ class KVMRunner(Runner):
         elif self.architecture == "arm64":
             self._cmd.extend(('-t', 'arm64v'))
 
-        # if platform.machine() != self.architecture:
-        #     self._cmd.append('-W')
+        if platform.machine() != self.architecture:
+            self._cmd.append('-W')
 
         if self.arguments:
             self._cmd.extend(('-a', self.arguments))
