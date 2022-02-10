@@ -12,13 +12,20 @@ The `kraft` tool and Unikraft build system have a number of package
 requirements; please run the following command (on `apt-get`-based systems) to
 install the requirements:
 
-    apt-get install -y --no-install-recommends build-essential libncurses-dev libyaml-dev flex git wget socat bison unzip uuid-runtime;
+    apt-get install -y --no-install-recommends build-essential libncurses-dev libyaml-dev flex git wget socat bison unzip uuid-runtime python3-pip;
 
 To install `kraft` simply run:
 
     pip3 install git+https://github.com/unikraft/kraft.git@staging
 
 You can then type `kraft` to see its help menu
+
+## Setting up kraft
+
+The kraft app needs to additional steps to be fully configured. 
+
+    kraft list update
+    kraft list pull unikraft 
 
 ## Building an Application
 
