@@ -64,7 +64,7 @@ def execute(cmd="", env={}, dry_run=False, use_logger=False):
         )
 
         for line in popen.stdout:
-            line = line.strip().decode('ascii')
+            line = line.strip().decode('utf-8')
             if use_logger:
                 logger.info(line)
             else:
@@ -140,7 +140,7 @@ def make_progressbar(make=""):
 
             for line in popen.stdout:
                 t.update()
-                line = line.strip().decode('ascii')
+                line = line.strip().decode('utf-8')
                 if line.startswith("make: Leaving directory") is False and \
                         line.startswith("make: Entering directory") is False:
                     print(line)

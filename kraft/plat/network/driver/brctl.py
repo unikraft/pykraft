@@ -98,7 +98,7 @@ class BRCTLDriver(NetworkDriver):
 
         if err == b"can't get info No such device\n":
             return False
-        elif "does not exist!" in err.decode('ascii'):
+        elif "does not exist!" in err.decode('utf-8'):
             return False
 
         return True
