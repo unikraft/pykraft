@@ -185,7 +185,9 @@ def get_component_from_github(ctx, origin=None, org=None, repo=None):
     from .types import ListProviderType
 
     if isinstance(repo, str):
-        if ".git" in repo:
+        if repo == '.github':
+            pass
+        elif ".git" in repo:
             repo = repo.split(".")[0]
         github_api = Github(ctx.obj.env.get('UK_KRAFT_GITHUB_TOKEN', None))
         repo = github_api.get_repo(
