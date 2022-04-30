@@ -12,7 +12,7 @@ The `kraft` tool and Unikraft build system have a number of package
 requirements; please run the following command (on `apt-get`-based systems) to
 install the requirements:
 
-    apt-get install -y --no-install-recommends build-essential libncurses-dev libyaml-dev flex git wget socat bison unzip uuid-runtime;
+    apt-get install -y --no-install-recommends build-essential libncurses-dev libyaml-dev flex git wget socat bison unzip uuid-runtime python3-pip;
 
 Note: Ubuntu 20.04 users may suffer from issue [#29](https://github.com/unikraft/kraft/issues/29) due to this [bug](https://bugs.launchpad.net/ubuntu/+source/socat/+bug/1883957) of `socat-1.7.3.3`. If you are using Ubuntu 20.04, please make sure to compile and install the latest version of `socat` retrieved from [this page](http://www.dest-unreach.org/socat/download/).
 
@@ -21,6 +21,13 @@ To install `kraft` simply run:
     pip3 install git+https://github.com/unikraft/kraft.git@staging
 
 You can then type `kraft` to see its help menu
+
+## Setting up kraft
+
+The kraft app needs to additional steps to be fully configured. 
+
+    kraft list update
+    kraft list pull unikraft 
 
 ## Building an Application
 
