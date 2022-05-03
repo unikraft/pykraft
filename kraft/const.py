@@ -168,6 +168,7 @@ UK_VERSION_VARNAME = '$(%s_VERSION)'
 
 UK_CORE_ARCHS = [
     'x86_64',
+    'x86_64-sgx'
     'arm64',
     'arm',
 ]
