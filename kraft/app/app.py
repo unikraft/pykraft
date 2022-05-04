@@ -513,7 +513,7 @@ class Application(Component):
     def run(self, target=None, initrd=None, background=False,  # noqa: C901
             paused=False, gdb=4123, dbg=False, virtio_nic=None, bridge=None,
             interface=None, dry_run=False, args=None, memory=64, cpu_sockets=1,
-            cpu_cores=1):
+            cpu_cores=1, epc_size=64):
 
         if target is None:
             raise KraftError('Target not set')
@@ -553,6 +553,9 @@ class Application(Component):
 
         if cpu_cores:
             runner.set_cpu_cores(cpu_cores)
+
+        if epc_size:
+            runner.add_sgx(epc_size)
 
         for volume in self.config.volumes.all():
             if volume.driver is VolumeDriver.VOL_9PFS:

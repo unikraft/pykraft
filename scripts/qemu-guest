@@ -504,6 +504,7 @@ usage()
 	echo "  -k [KERNEL]                Enable direct kernel boot with KERNEL"
 	echo "  -i [INITRD]                Init-ramdisk INITRD for -k"
 	echo "  -a [ARGUMENTS]             Kernel arguments for -k"
+	echo "	-X [SGX-EPC-SIZE]          Enable Intel SGX and set EPC size"
 	echo "  -l                         Enable virtio-balloon"
 	echo "  -r                         Enable virtio-rng"
 	echo "  -C                         Do not terminate guest with CTRL-C"
@@ -520,7 +521,7 @@ usage()
 	echo "  $0 -c 2 -m 2048 -b virbr0 -b virbr1 -q root.qcow2 -d /dev/sdb -d /dev/sdc"
 }
 
-while getopts :hnN:b:V:f:G:d:q:S:I:e:k:i:a:c:m:v:lrs:p:HxCDG:g:PT:WQ:M:t: OPT; do
+while getopts :hnN:b:V:f:G:d:q:S:I:e:k:i:a:X:c:m:v:lrs:p:HxCDG:g:PT:WQ:M:t: OPT; do
         case ${OPT} in
 	v)
 		OPT_VIDEOVNC=0
@@ -673,6 +674,14 @@ EOF
 	a)
 		ARG_APPEND="${OPTARG}"
 		OPT_APPEND=0
+		;;
+	X)
+		QEMU_ARGS+=("-cpu")
+		QEMU_ARGS+=("host,+sgx-provisionkey")
+		QEMU_ARGS+=("-object")
+		QEMU_ARGS+=("memory-backend-epc,id=mem1,size=${OPTARG}M,prealloc=on")
+		QEMU_ARGS+=("-M")
+		QEMU_ARGS+=("sgx-epc.0.memdev=mem1,sgx-epc.0.node=0")
 		;;
 	p)
 		ARG_VCPUPIN=$( _expand_num_list "${OPTARG}" )
