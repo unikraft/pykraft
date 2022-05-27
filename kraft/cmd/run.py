@@ -33,6 +33,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import string
 import sys
 
 import click
@@ -46,7 +47,7 @@ from kraft.logger import logger
 def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
               background=False, paused=False, gdb=4123, dbg=False,
               virtio_nic=None, bridge=None, interface=None, dry_run=False,
-              args=None, memory=64, cpu_sockets=1, cpu_cores=1):
+              args=None, memory=64, cpu_sockets=1, cpu_cores=1, binary_path=None):
     """
     Starts the unikraft application once it has been successfully built.
     """
@@ -91,6 +92,17 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
         target_answer = None
 
         binaries = list(set(binaries))
+        
+        # TODO: clarify error message for binary name not matched error
+        if len(binaries) == 0:
+            print("""No binary found. 
+It would possibly due to that you use the manual 'make menuconfig/kmenuconfig/...' to configure/build the application but use 'kraft run' to run it. Under such circumstance, 'make *config' will use the current directory name as the default binary name, but 'kraft' will take the value of 'name' field from 'kraft.yaml' to retrieve the binary file. This error will happen when they are not identical.
+Suggested fixes:
+1. update the 'name' field of 'kraft.yaml', or
+2. redo the 'make *config', and remember to change the image name based on 'kraft.yaml'
+3. speficy the architecture, platform and binary path correspondingly using options speficied in the help message (type 'kraft run -h' for details)
+""")
+            raise Exception("Binary not found.")
 
         # Prompt user for binary selection
         if len(binaries) > 1:
@@ -213,12 +225,18 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
     help='Specify an alternative directory for the library (default is cwd).',
     metavar="PATH"
 )
+@click.option(
+    '--binary-path', '-B', 'binary_path',
+    help="The path of the binary file (by default kraft will use the name in kraft.yaml to retrieve the binary file).",
+    type=string
+)
 @click.argument('args', nargs=-1)
 @click.pass_context
 def cmd_run(ctx, target=None, plat=None, arch=None, initrd=None,
             background=False, paused=False, gdb=4123, dbg=False,
             virtio_nic=None, bridge=None, interface=None, dry_run=False,
-            args=None, memory=64, cpu_sockets=1, cpu_cores=1, workdir=None):
+            args=None, memory=64, cpu_sockets=1, cpu_cores=1, workdir=None,
+            binary_path=None):
 
     if workdir is None:
         workdir = os.getcwd()
@@ -242,6 +260,7 @@ def cmd_run(ctx, target=None, plat=None, arch=None, initrd=None,
             memory=memory,
             cpu_sockets=cpu_sockets,
             cpu_cores=cpu_cores,
+            binary_path=binary_path
         )
 
     except Exception as e:
