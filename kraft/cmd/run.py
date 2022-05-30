@@ -98,7 +98,7 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
             
             if len(binaries) == 0:
                 print("""No binary found. 
-    It would possibly due to that you use the manual 'make menuconfig/kmenuconfig/...' to configure/build the application but use 'kraft run' to run it. Under such circumstance, 'make *config' will use the current directory name as the default binary name, but 'kraft' will take the value of 'name' field from 'kraft.yaml' to retrieve the binary file. This error will happen when they are not identical.
+    If the application is built successfully, this would possibly due to that you use the manual 'make menuconfig/kmenuconfig/...' to configure/build the application but use 'kraft run' to run it. Under such circumstance, 'make *config' will use the current directory name as the default binary name, but 'kraft' will take the value of 'name' field from 'kraft.yaml' to retrieve the binary file. This error will happen when they are not identical.
     Suggested fixes:
     1. update the 'name' field of 'kraft.yaml', or
     2. redo the 'make *config', and remember to change the image name based on 'kraft.yaml'
