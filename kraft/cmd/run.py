@@ -40,7 +40,9 @@ import click
 import inquirer
 
 from kraft.app import Application
+from kraft.const import UK_CORE_ARCHS, UK_CORE_PLATS
 from kraft.logger import logger
+from kraft.target.target import Target
 
 
 @click.pass_context # noqa
@@ -57,72 +59,85 @@ def kraft_run(ctx, appdir=None, target=None, plat=None, arch=None, initrd=None,
         if click.confirm('It appears you have not configured your application.  Would you like to do this now?', default=True):  # noqa: E501
             app.configure()
 
-    if len(app.config.targets.all()) == 1:
-        target = app.config.targets.all()[0]
+    if binary_path is None:
+        if len(app.config.targets.all()) == 1:
+            target = app.config.targets.all()[0]
 
-    elif len(app.binaries) == 1:
-        target = app.binaries[0]
-
-    else:
-        for t in app.config.targets.all():
-            # Did the user specific a target-name?
-            if target is not None and target == t.name:
-                target = t
-                break
-
-            # Did the user specify arch AND plat combo? Does it exist?
-            elif arch == t.architecture.name \
-                    and plat == t.platform.name:
-                target = t
-                break
-
-    # The user did not specify something
-    if target is None:
-        binaries = []
-        for t in app.binaries:
-            if not os.path.exists(t.binary):
-                continue
-
-            binname = os.path.basename(t.binary_debug if dbg is True else t.binary)
-            if t.name is not None:
-                binname = "%s (%s)" % (binname, t.name)
-
-            binaries.append(binname)
-
-        target_answer = None
-
-        binaries = list(set(binaries))
-        
-        # TODO: clarify error message for binary name not matched error
-        if len(binaries) == 0:
-            print("""No binary found. 
-It would possibly due to that you use the manual 'make menuconfig/kmenuconfig/...' to configure/build the application but use 'kraft run' to run it. Under such circumstance, 'make *config' will use the current directory name as the default binary name, but 'kraft' will take the value of 'name' field from 'kraft.yaml' to retrieve the binary file. This error will happen when they are not identical.
-Suggested fixes:
-1. update the 'name' field of 'kraft.yaml', or
-2. redo the 'make *config', and remember to change the image name based on 'kraft.yaml'
-3. speficy the architecture, platform and binary path correspondingly using options speficied in the help message (type 'kraft run -h' for details)
-""")
-            raise Exception("Binary not found.")
-
-        # Prompt user for binary selection
-        if len(binaries) > 1:
-            answers = inquirer.prompt([
-                inquirer.List(
-                    'target',
-                    message="Which target would you like to run?",
-                    choices=binaries,
-                ),
-            ])
-            target_answer = answers['target']
+        elif len(app.binaries) == 1:
+            target = app.binaries[0]
 
         else:
-            target_answer = binaries[0]
+            for t in app.config.targets.all():
+                # Did the user specific a target-name?
+                if target is not None and target == t.name:
+                    target = t
+                    break
 
-        # Work backwards from binary name
-        for t in app.binaries:
-            if target_answer == os.path.basename(t.binary):
-                target = t
-                break
+                # Did the user specify arch AND plat combo? Does it exist?
+                elif arch == t.architecture.name \
+                        and plat == t.platform.name:
+                    target = t
+                    break
+
+        # The user did not specify something
+        if target is None:
+            binaries = []
+            for t in app.binaries:
+                if not os.path.exists(t.binary):
+                    continue
+
+                binname = os.path.basename(t.binary_debug if dbg is True else t.binary)
+                if t.name is not None:
+                    binname = "%s (%s)" % (binname, t.name)
+
+                binaries.append(binname)
+
+            target_answer = None
+
+            binaries = list(set(binaries))
+            
+            if len(binaries) == 0:
+                print("""No binary found. 
+    It would possibly due to that you use the manual 'make menuconfig/kmenuconfig/...' to configure/build the application but use 'kraft run' to run it. Under such circumstance, 'make *config' will use the current directory name as the default binary name, but 'kraft' will take the value of 'name' field from 'kraft.yaml' to retrieve the binary file. This error will happen when they are not identical.
+    Suggested fixes:
+    1. update the 'name' field of 'kraft.yaml', or
+    2. redo the 'make *config', and remember to change the image name based on 'kraft.yaml'
+    3. specify the architecture, platform and binary path correspondingly using options specified in the help message (type 'kraft run -h' for details)
+    """)
+                raise Exception("Binary not found.")
+
+            # Prompt user for binary selection
+            if len(binaries) > 1:
+                answers = inquirer.prompt([
+                    inquirer.List(
+                        'target',
+                        message="Which target would you like to run?",
+                        choices=binaries,
+                    ),
+                ])
+                target_answer = answers['target']
+
+            else:
+                target_answer = binaries[0]
+
+            # Work backwards from binary name
+            for t in app.binaries:
+                if target_answer == os.path.basename(t.binary):
+                    target = t
+                    break
+
+    elif plat is not None and arch is not None:
+        if arch not in UK_CORE_ARCHS:
+            raise Exception("Architecture %s is not supported" % arch)
+        if plat not in UK_CORE_PLATS:
+            raise Exception("Platform %s is not supported" % plat)
+            
+        target = Target(architecture=arch, platform=plat)
+        target.binary = binary_path # no need to check existance here, app.py:525 will gracefully check it
+
+    else:
+        print("Please speficy target platform and architecture together with binary path")
+        raise Exception("platform/architecture not specified")
 
     app.run(
         target=target,
@@ -228,7 +243,7 @@ Suggested fixes:
 @click.option(
     '--binary-path', '-B', 'binary_path',
     help="The path of the binary file (by default kraft will use the name in kraft.yaml to retrieve the binary file).",
-    type=string
+    metavar="PATH"
 )
 @click.argument('args', nargs=-1)
 @click.pass_context
