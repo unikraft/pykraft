@@ -87,7 +87,7 @@ Influential environmental variables:
 
 Help:
   For help using thihs tool, please open an issue on the Github repository:
-  https://gitub.com/unikraft/kraft
+  https://github.com/unikraft/kraft
 EOF
 }
 
