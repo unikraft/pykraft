@@ -50,7 +50,7 @@ def make_list_vars(Makefile=None, origin=None):
         A dict mapping keys to the corresponding variable.
     """
 
-    p = subprocess.getoutput("make -pnB -f %s" % Makefile)
+    p = subprocess.getoutput("LC_ALL=C make -pnB -f %s" % Makefile)
 
     M = {}
     re_var = re.compile(r"^#\s*Variables\b")  # start of variable segment
