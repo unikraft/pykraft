@@ -62,9 +62,7 @@ def kraft_build(ctx, verbose=False, workdir=None, fetch=True, prepare=True,
 
     n_proc = None
     if fast:
-        # This simply set the `-j` flag to -1 which signals to make to use all
-        # cores.
-        n_proc = -1
+        n_proc = int(fast)
 
     if fetch:
         app.fetch()
@@ -128,8 +126,11 @@ def kraft_build(ctx, verbose=False, workdir=None, fetch=True, prepare=True,
 )
 @click.option(
     '--fast', '-j', 'fast',
-    help='Use all CPU cores to build the application.',
-    is_flag=True
+    help='Use more CPU cores to build the application.',
+    type=int,
+    is_flag=False,
+    flag_value=-1,
+    default=1
 )
 @click.option(
     '--force', '-F', 'force_build',
