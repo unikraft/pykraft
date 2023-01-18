@@ -133,8 +133,11 @@ from kraft.logger import logger
 )
 @click.option(
     '--fast', '-j', 'fast',
-    help='Use all CPU cores to build the application.',
-    is_flag=True
+    help='Use more CPU cores to build the application.',
+    type=int,
+    is_flag=False,
+    flag_value=-1,
+    default=1
 )
 @click.option(
     '--with-makefile', '-M', 'create_makefile',
