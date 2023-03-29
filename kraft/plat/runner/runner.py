@@ -201,6 +201,11 @@ class Runner(object):
         if cpu_cores and isinstance(cpu_cores, int):
             self._cmd.extend(('-c', cpu_cores))
 
+    def add_sgx(self, epc_size=None):
+        if epc_size and isinstance(epc_size, int):
+            self._cmd.extend(('-X', '%d' % epc_size))
+
+
     def execute(self, extra_args=None, background=False, paused=False, dry_run=False):
         raise RunnerError('Using undefined runner driver')
 
