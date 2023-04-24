@@ -101,6 +101,34 @@ else
 		$(DOCKER_BUILD_EXTRA) $(DOCKERDIR)
 endif
 
+# GO build targets
+GOLANG_VERSION          ?= 1.15.6
+
+.PHONY: docker-gotools
+docker-gotools: GOTOOLS_TARGET ?= gotools
+ifeq ($(GOTOOLS_TARGET),gotools-build)
+docker-gotools: IMAGE_NAME ?= $(ORG)/gotools:$(GOLANG_VERSION)-build
+else
+docker-gotools: IMAGE_NAME ?= $(ORG)/gotools:$(GOLANG_VERSION)
+endif
+docker-gotools:
+ifneq (,$(findstring help,$(MAKECMDGOALS)))
+	@echo "Usage: [GOTOOLS_TARGET=... IMAGE_NAME=...] $(MAKE) $@                         "
+	@echo "                                                                              "
+	@echo "  This command build extension tools which allows developers to build         "
+	@echo "  "unikernels from existing applications.                                     "
+	@echo 
+else
+	$(DOCKER) build \
+		--build-arg GOLANG_VERSION=$(GOLANG_VERSION) \
+		--tag $(IMAGE_NAME) \
+		--cache-from $(ORG)/gotools:$(GOLANG_VERSION) \
+		--cache-from $(IMAGE_NAME) \
+		--file $(DOCKERDIR)/Dockerfile.gotools \
+		--target $(GOTOOLS_TARGET) \
+		$(DOCKER_BUILD_EXTRA) $(KRAFTDIR)
+endif
+
 # GCC build targets
 GCC_VERSION         ?= 9.2.0
 BINUTILS_VERSION    ?= 2.31.1

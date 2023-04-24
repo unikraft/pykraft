@@ -1,0 +1,40 @@
+{
+  "unikernels": [
+    {
+      "buildPath": "/Users/unicore/buildCompare/lib-sqlite",
+      "ignoredPlats": [
+        "linuxu",
+        "xen"
+      ],
+      "kernel": "lib-sqlite3_kvm-x86_64.dbg",
+      "splitSection": ".text",
+      "displayMapping": true,
+      "displayStatSize": false,
+      "displayElfFile": [
+        "sections"
+      ],
+      "displaySectionInfo": [],
+      "findSectionByAddress": [
+        "0x43a74e"
+      ],
+      "compareGroup": 1
+    },
+    {
+      "buildPath": "/Users/unicore/buildCompare/app-helloworld",
+      "ignoredPlats": [
+        "linuxu",
+        "xen"
+      ],
+      "kernel": "lib-redis_kvm-x86_64.dbg",
+      "splitSection": ".text",
+      "displayElfFile": [],
+      "displayMapping": true,
+      "displayStatSize": true,
+      "displaySectionInfo": [],
+      "findSectionByAddress": [
+        "0x427836"
+      ],
+      "compareGroup": 1
+    }
+  ]
+}

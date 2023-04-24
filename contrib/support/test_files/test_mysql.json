@@ -1,0 +1,8 @@
+{
+  "typeTest": "exec",
+  "timeMsCommand": 3000,
+  "listCommands": [
+    "mysql -uroot --execute=\"SHOW DATABASES; \"",
+    "mysql -uroot < /home/gain/go/src/tools/testfiles/queries_mysql.txt"
+  ]
+}

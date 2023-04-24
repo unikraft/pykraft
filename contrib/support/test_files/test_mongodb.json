@@ -1,0 +1,11 @@
+{
+  "typeTest": "exec",
+  "timeMsCommand": 4000,
+  "listCommands": [
+    "mongo -eval \"db.hostInfo()\"",
+    "mongo test_db -eval \"printjson(db.getCollectionNames())\"",
+    "mongo test_db -eval \"db.help()\"",
+    "mongo < queries_mongo1.js",
+    "mongo \"mongodb://myUserAdmin:abc123@localhost/test?authSource=admin\" < queries_mongo2.js"
+  ]
+}

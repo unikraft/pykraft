@@ -32,6 +32,7 @@
 KRAFTDIR             ?= $(CURDIR)
 DOCKERDIR            ?= $(KRAFTDIR)/docker
 DISTDIR              ?= $(KRAFTDIR)/dist
+BINDIR               ?= $(KRAFTDIR)/bin
 
 APP_NAME             ?= kraft
 PKG_NAME             ?= unikraft-tools
@@ -41,7 +42,7 @@ PKG_DISTRIBUTION     ?= sid
 APP_VERSION          ?= $(shell $(SNAKE) setup.py --version)
 REPO                 ?= https://github.com/unikraft/kraft
 ORG                  ?= unikraft
-
+INSTALL_PREFIX       ?= /usr/local
 
 # Make uilities
 _EMPTY               :=
@@ -70,6 +71,8 @@ TAR                  ?= tar
 CP                   ?= cp
 CD                   ?= cd
 
+# Used to detect if go is installed
+GOPATH=$(shell go env GOPATH)
 
 # Setup Make's default goal
 .DEFAULT_GOAL        := all
@@ -109,6 +112,7 @@ ifeq ($(subst help,,$(MAKECMDGOALS)),)
 	@echo "Docker container build targets:                                               "
 	@echo "  docker-gcc               Build gcc and binutils in Docker container.        "
 	@echo "  docker-qemu              Build qemu in a Docker container.                  "
+	@echo "  docker-gotools           Build contributed Go-based tools in a container.   "
 	@echo "  docker-kraft             Build the kraft Docker container.                  "
 	@echo "  docker-linuxk            Build the Linux kernel in a container.             "
 	@echo "  docker-pkg-deb           Build a Debian-based packaging environment.        "
@@ -280,15 +284,29 @@ get-version:
 	$(Q)echo $(APP_VERSION)
 endif
 
+ifeq ($(id -u) , 0)
+    SUDO=
+else
+    SUDO=sudo
+endif
 
 .PHONY: install
 ifneq (,$(findstring help,$(MAKECMDGOALS)))
 install: no-help
 else
-install:
-	$(Q)$(SNAKE) setup.py install
+ifdef GOPATH
+install: copycontribfiles contrib
+	$(SUDO) $(SNAKE) setup.py install --prefix=$(INSTALL_PREFIX)
+	$(SUDO) $(CP) -vr $(KRAFTDIR)/bin/* $(INSTALL_PREFIX)/bin
+else
+install: contrib
+	$(SUDO) $(SNAKE) setup.py install --prefix=$(INSTALL_PREFIX)
+endif
 endif
 
+copycontribfiles:
+	$(Q)$(MKDIR) -p $(GOPATH)/src/github.com/unikraft/kraft/
+	$(CP) -vr contrib/ $(GOPATH)/src/github.com/unikraft/kraft/
 
 .PHONY: $(.PROXY)test
 .PHONY: $(.PROXY)test-all
@@ -363,6 +381,12 @@ properclean:
 	$(Q)$(RM) -Rfv $(DISTDIR)/*
 endif
 
+
+ifdef GOPATH
+include $(KRAFTDIR)/contrib/Makefile
+else
+$(warning GO is not installed: do not install the kraft-devel tools)
+endif
 
 include $(KRAFTDIR)/package/docker/Makefile
 

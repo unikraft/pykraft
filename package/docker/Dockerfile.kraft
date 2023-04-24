@@ -91,7 +91,12 @@ RUN set -xe; \
 COPY --from=qemu /bin/                  /bin
 COPY --from=qemu /share/qemu/           /share/qemu
 
-WORKDIR /usr/src/kraft
+COPY --from=gotools /usr/bin/kraft-devel-builder /bin/
+COPY --from=gotools /usr/bin/kraft-devel-crawler /bin/
+COPY --from=gotools /usr/bin/kraft-devel-depender /bin/
+COPY --from=gotools /usr/bin/kraft-devel-verifier /bin/
+COPY --from=gotools /usr/bin/kraft-devel-binary-analyser /bin/
+
 
 COPY .git                               /usr/src/kraft/.git
 COPY kraft                              /usr/src/kraft/kraft
@@ -123,6 +128,7 @@ RUN set -xe; \
       flex \
       git \
       wget \
+      curl \
       patch \
       gawk \
       socat \
@@ -164,5 +170,22 @@ RUN set -xe; \
     chmod +x /usr/bin/ytt; \
     wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64; \
     chmod +x /usr/bin/yq
+
+ENTRYPOINT [ "" ]
+
+FROM kraft AS kraft-devel
+
+ARG GO_VERSION=1.15.6
+
+WORKDIR /usr/src/github.com/unikraft/kraft/
+
+ENV GOPATH=/usr
+ENV PATH=${PATH}:/usr/local/go/bin
+
+RUN set -xe; \
+    curl -L https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz -o /tmp/go.tar.gz; \
+    tar -vxzf /tmp/go.tar.gz -C /usr/local; \
+    rm -Rf /tmp/go.tar.gz; \
+		pip install -r ./requirements-dev.txt
 
 ENTRYPOINT [ "" ]
